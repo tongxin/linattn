@@ -107,6 +107,21 @@ scripts/             doc generation
 reports/             generated numbers (JSON + markdown), with the environment recorded
 ```
 
+### Continuous integration
+
+`.github/workflows/ci.yml` runs the validation suite plus the small benchmarks on
+every push, and a `-m gpu` job for the Triton parity tests. It is **not part of the
+initial pushed commit**: pushing a workflow file requires the `workflow` scope on
+the GitHub token, which the CLI token used for the first push did not have. To add
+it:
+
+```bash
+gh auth refresh -h github.com -s workflow      # interactive, opens a browser
+git add .github/workflows/ci.yml
+git commit -m "ci: validation + benchmark workflow"
+git push
+```
+
 ## Citing the variants
 
 Each implementation carries its own citation in `paper = (...)` and each doc page
