@@ -1,10 +1,28 @@
-# Convenience targets. `make check` is the battery that must pass before a commit.
-PYTHON ?= .venv/bin/python
+# Everything runs on CPU. `make install` sets the venv up, `make check` is the
+# battery that must pass before a commit, `make all` reproduces every number in
+# reports/ (a few minutes on a laptop).  Override the interpreter with
+# `make PYTHON=python3 <target>` if you prefer to install elsewhere.
+PY ?= 3.13
+VENV_PY := .venv/bin/python
+# use the venv when it exists, otherwise whatever `python3` is on PATH
+PYTHON ?= $(shell test -x $(VENV_PY) && echo $(VENV_PY) || echo python3)
+
 export PYTHONPATH := src
 
-.PHONY: check docs bench experiments all
+.PHONY: help venv install check docs bench experiments all clean
 
-check:  ## tests + documentation consistency
+help:  ## list targets
+	@grep -hE '^[a-z]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /: /' | column -t -s ':'
+
+venv:  ## create .venv (uv venv --python $(PY))
+	uv venv --python $(PY) .venv
+
+install: venv  ## editable install of the package plus test dependencies
+	uv pip install --python $(VENV_PY) -e ".[dev]"
+	@echo
+	@echo "ready.  try:  make check   |   $(VENV_PY) -m linattn.cli backends"
+
+check:  ## validation suite + documentation consistency (fast)
 	$(PYTHON) -m pytest tests -q
 
 docs:  ## regenerate per-variant documentation from the code
@@ -19,4 +37,9 @@ experiments:  ## the three studies behind the survey's empirical claims
 	$(PYTHON) experiments/state_capacity.py
 	$(PYTHON) experiments/hybrid_recall.py --steps 250
 
-all: docs check bench experiments
+all: docs check bench experiments  ## everything above, in order
+
+clean:  ## remove generated reports and caches (keeps .venv)
+	rm -f reports/suite_*.json reports/suite_*.md reports/decode_*.json reports/decode_*.md
+	rm -f reports/hybrid_recall.* reports/selector_capacity.* reports/state_capacity.*
+	rm -rf .pytest_cache __pycache__ */__pycache__ */*/__pycache__

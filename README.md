@@ -23,24 +23,57 @@ inconsistent in its measurements. This repository does three things about that:
 ## Quick start
 
 ```bash
-uv venv --python 3.13 .venv && source .venv/bin/activate
-uv pip install -e ".[dev]"
+make install                                  # creates .venv and installs the package + pytest
+source .venv/bin/activate
 
 python -m linattn.cli backends                       # what can this machine run?
 python -m linattn.cli variants                       # the catalogue, with citations
 python -m linattn.cli cost --seq 131072              # analytic cost model
 python -m linattn.cli select --variant quest --seq 4096 --structured
 
-python -m pytest tests -q                            # correctness gates
-python bench/run_suite.py --seq 2048 --budget 256     # quality/cost sweep -> reports/
-python bench/bench_decode.py --seq 65536              # bytes-read scaling (C kernel)
-python experiments/hybrid_recall.py --steps 300       # MQAR vs. state size
-python experiments/state_capacity.py                 # exact recall vs state size
-python scripts/gen_variant_docs.py                    # regenerate docs/variants/
+make check                                            # correctness gates (75 tests, seconds)
+make bench                                            # quality/cost + decode-IO -> reports/
+make experiments                                      # the three studies -> reports/
 ```
 
 Everything runs on CPU. The Triton kernels are imported lazily, validated by a
 parity harness, and skipped with an explicit reason when there is no CUDA GPU.
+
+## Running the benchmarks after cloning
+
+The only hard dependency is **PyTorch**; there is nothing to compile and no GPU or
+network access needed at run time. `reports/` in this repository was produced on a
+CPU-only laptop, so anything you generate is directly comparable in kind.
+
+```bash
+git clone https://github.com/tongxin/linattn && cd linattn
+
+make install          # uv venv --python 3.13 .venv  +  uv pip install -e ".[dev]"
+make check            #   ~5 s   validation suite, writes nothing
+make bench            #   ~10 s  reports/suite_<T>_<budget>.md + reports/decode_<T>_<dim>.md
+make experiments      #  ~3 min  reports/{selector_capacity,state_capacity,hybrid_recall}.md
+make all              # docs + check + bench + experiments
+```
+
+`make` uses `.venv/bin/python` when it exists and falls back to `python3`, so the
+same targets work with a conda/global install (`make PYTHON=python3 bench`). To
+pin a different interpreter for the venv: `make install PY=3.12`.
+
+What you get, and what to read first:
+
+| command | output | what it answers |
+| --- | --- | --- |
+| `make check` | nothing (exit status) | does every variant honour its budget, reduce to dense at full budget, stay causal, and match the chunked/recurrent state algorithms bit-for-bit in float64? |
+| `make bench` | `reports/suite_*.md` | for every variant at one common budget: error vs. dense, attention-mass recall, KV entries read per query, state size, wall clock |
+| | `reports/decode_*.md` | decode time vs. **bytes read** (C kernel vs. torch), i.e. the argument the whole literature rests on |
+| `make experiments` | `reports/selector_capacity.md` | can a learned indexer/gate rank keys like softmax, before vs. after fitting? |
+| | `reports/state_capacity.md` | deterministic capacity curve of a fixed-size delta-rule state |
+| | `reports/hybrid_recall.md` | how much exact attention a hybrid needs (and an honest note on where MQAR stops discriminating) |
+
+If something does not run, `python -m linattn.cli backends` prints exactly what your
+machine can do (CUDA / MPS / Triton / FlexAttention / thread count), and every
+report header records the same environment so numbers stay attributable. Details,
+knobs and troubleshooting: [docs/reproducing.md](docs/reproducing.md).
 
 ## The variants
 

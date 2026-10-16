@@ -1,6 +1,6 @@
 # Associative-recall capacity of a fixed-size delta-rule state
 
-*Generated 2026-10-16T10:32:48Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-10-16T12:31:12Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
 No training involved: random key/value vectors are written through the exact delta-rule recurrence (keys L2-normalised, beta=0.99, decay=0.99) and read back with the same keys. `retrieval_cosine` is the mean cosine fidelity between the retrieved and the true value; the state holds `d_state * d_value` floats, so the curve is really about *associations per unit of state* -- the quantity a hybrid trades against exact-attention layers.
 

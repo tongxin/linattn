@@ -1,6 +1,6 @@
 # MQAR accuracy vs. persistent state size for hybrid stacks
 
-*Generated 2026-10-16T10:35:08Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-10-16T12:33:04Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
 MQAR with 4 pairs per sequence, seq_len=128, 6 layers, d_model=96, 250 training steps, one seed. `state_bytes_per_seq` counts the persistent state only (KV for attention layers is counted per token, the linear state per sequence), which is why a hybrid's advantage grows with sequence length.
 

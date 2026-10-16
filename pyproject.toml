@@ -7,15 +7,20 @@ name = "linattn"
 version = "0.1.0"
 description = "Survey plus reference implementations, kernels and validation harness for sparse, compressed-state and co-designed attention variants"
 readme = "README.md"
-requires-python = ">=3.10"
+# Upper bound is deliberate: PyTorch wheels stop at cp314, and on 3.15 the resolver
+# fails only *after* downloading everything (see docs/reproducing.md).
+requires-python = ">=3.10,<3.15"
 license = { text = "MIT" }
 authors = [{ name = "linattn contributors" }]
-dependencies = ["torch>=2.4", "numpy>=1.24"]
+# torch is the only hard dependency: every variant, kernel wrapper, benchmark and
+# experiment in this repository runs on CPU with nothing else installed.
+dependencies = ["torch>=2.4"]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.4", "matplotlib>=3.8"]
+# `pytest` is needed for `make check`; `triton` only for the CUDA parity tests
+# (`pytest -m gpu`), which are skipped automatically when no GPU is present.
+dev = ["pytest>=7.4"]
 gpu = ["triton>=3.0"]
-report = ["transformers>=4.44", "matplotlib>=3.8", "pandas>=2.0"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/linattn"]

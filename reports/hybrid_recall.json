@@ -1,6 +1,6 @@
 {
   "name": "hybrid_recall",
-  "generated_utc": "2026-10-16T10:35:08Z",
+  "generated_utc": "2026-10-16T12:33:04Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",

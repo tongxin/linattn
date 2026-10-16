@@ -1,6 +1,6 @@
 {
   "name": "state_capacity",
-  "generated_utc": "2026-10-16T10:32:48Z",
+  "generated_utc": "2026-10-16T12:31:12Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",

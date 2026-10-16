@@ -1,6 +1,6 @@
 {
   "name": "selector_capacity",
-  "generated_utc": "2026-10-16T09:13:08Z",
+  "generated_utc": "2026-10-16T12:31:11Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",

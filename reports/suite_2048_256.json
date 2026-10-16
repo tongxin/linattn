@@ -1,6 +1,6 @@
 {
   "name": "suite_2048_256",
-  "generated_utc": "2026-10-16T09:11:24Z",
+  "generated_utc": "2026-10-16T12:30:55Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
@@ -20,7 +20,7 @@
       "mass_recall": null,
       "kv_reads": 2048.0,
       "state_bytes": 2097152.0,
-      "latency_ms": 81.04075002484024,
+      "latency_ms": 70.81558392383158,
       "peak_mib": 0.0,
       "extra": {},
       "reads_per_query": 2048.0,
@@ -36,7 +36,7 @@
       "mass_recall": null,
       "kv_reads": 243.5595703125,
       "state_bytes": 266240.0,
-      "latency_ms": 48.34483296144754,
+      "latency_ms": 43.632542015984654,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 243.5595703125
@@ -54,7 +54,7 @@
       "mass_recall": null,
       "kv_reads": 243.5595703125,
       "state_bytes": 266240.0,
-      "latency_ms": 42.094375006854534,
+      "latency_ms": 41.163124958984554,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 243.5595703125
@@ -72,7 +72,7 @@
       "mass_recall": null,
       "kv_reads": 480.75,
       "state_bytes": 2097152.0,
-      "latency_ms": 18.67241703439504,
+      "latency_ms": 18.05666706059128,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 480.75,
@@ -91,7 +91,7 @@
       "mass_recall": null,
       "kv_reads": 480.0,
       "state_bytes": 2097152.0,
-      "latency_ms": 18.989791977219284,
+      "latency_ms": 18.611000035889447,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 480.0,
@@ -110,7 +110,7 @@
       "mass_recall": null,
       "kv_reads": 480.0,
       "state_bytes": 2097152.0,
-      "latency_ms": 18.530083005316556,
+      "latency_ms": 18.397250096313655,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 480.0,
@@ -129,7 +129,7 @@
       "mass_recall": null,
       "kv_reads": 480.75,
       "state_bytes": 2097152.0,
-      "latency_ms": 18.03462509997189,
+      "latency_ms": 18.352624960243702,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 480.75,
@@ -148,7 +148,7 @@
       "mass_recall": 0.8761532024795535,
       "kv_reads": 368.2734375,
       "state_bytes": 2097152.0,
-      "latency_ms": 64.07804100308567,
+      "latency_ms": 64.13187505677342,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 368.2734375,
@@ -168,7 +168,7 @@
       "mass_recall": 0.539172571697273,
       "kv_reads": 298.4501953125,
       "state_bytes": 2097152.0,
-      "latency_ms": 84.0634589549154,
+      "latency_ms": 79.7610420268029,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 298.4501953125,
@@ -191,7 +191,7 @@
       "mass_recall": 1.0,
       "kv_reads": 887.46875,
       "state_bytes": 2097152.0,
-      "latency_ms": 71.4795000385493,
+      "latency_ms": 74.72266594413668,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 887.46875,
@@ -212,7 +212,7 @@
       "mass_recall": 0.9666583920667509,
       "kv_reads": 99.66796875,
       "state_bytes": 2097152.0,
-      "latency_ms": 64.59133408498019,
+      "latency_ms": 63.59362497460097,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 99.66796875,
@@ -232,7 +232,7 @@
       "mass_recall": 1.0,
       "kv_reads": 449.90625,
       "state_bytes": 2097152.0,
-      "latency_ms": 54.62879198603332,
+      "latency_ms": 52.018500049598515,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 449.90625,
@@ -252,7 +252,7 @@
       "mass_recall": 1.0,
       "kv_reads": 533.5643920898438,
       "state_bytes": 2097152.0,
-      "latency_ms": 72.06670904997736,
+      "latency_ms": 73.94875003956258,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 533.5643920898438,
@@ -272,7 +272,7 @@
       "mass_recall": 0.6485294112400206,
       "kv_reads": 449.5,
       "state_bytes": 2097152.0,
-      "latency_ms": 54.68699999619275,
+      "latency_ms": 48.5108750872314,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 449.5,
@@ -291,7 +291,7 @@
       "mass_recall": null,
       "kv_reads": 768.0,
       "state_bytes": 2097152.0,
-      "latency_ms": 103.61758305225521,
+      "latency_ms": 90.28429200407118,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 768.0,
@@ -310,7 +310,7 @@
       "mass_recall": null,
       "kv_reads": 2048.0,
       "state_bytes": 262144.0,
-      "latency_ms": 51.70475004706532,
+      "latency_ms": 46.61466693505645,
       "peak_mib": 0.0,
       "extra": {},
       "reads_per_query": 2048.0,

@@ -510,6 +510,7 @@ Two structural conclusions:
 
 | what you want | where to look |
 | --- | --- |
+| how to install and reproduce every number after cloning | [reproducing.md](reproducing.md) |
 | the mechanisms, in code, with citations | `src/linattn/variants/*.py` (each class carries its own citation) |
 | one page per variant: mechanism, usage, cost, caveats | `docs/variants/*.md` |
 | how selection is expressed for a compiler-generated kernel | `src/linattn/kernels/flex_mask.py` |
