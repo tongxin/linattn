@@ -1,0 +1,119 @@
+{
+  "name": "decode_65536_64",
+  "generated_utc": "2026-10-16T09:12:52Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": false,
+    "triton_installed": false,
+    "flex_attention_importable": true
+  },
+  "records": [
+    {
+      "policy": "torch_dense",
+      "budget": 65536,
+      "kv_entries": 65536,
+      "bytes_read_mib": 32.0,
+      "ms": 0.5049159517511725,
+      "bandwidth_gib_s": 61.89148885397129
+    },
+    {
+      "policy": "c_naive",
+      "budget": 256,
+      "kv_entries": 256,
+      "bytes_read_mib": 0.125,
+      "ms": 0.009209034033119678,
+      "bandwidth_gib_s": 13.255495859933001
+    },
+    {
+      "policy": "c_tiled",
+      "budget": 256,
+      "kv_entries": 256,
+      "bytes_read_mib": 0.125,
+      "ms": 0.009750016033649445,
+      "bandwidth_gib_s": 12.520011462412837
+    },
+    {
+      "policy": "c_naive",
+      "budget": 1024,
+      "kv_entries": 1024,
+      "bytes_read_mib": 0.5,
+      "ms": 0.018290942534804344,
+      "bandwidth_gib_s": 26.695248157435813
+    },
+    {
+      "policy": "c_tiled",
+      "budget": 1024,
+      "kv_entries": 1024,
+      "bytes_read_mib": 0.5,
+      "ms": 0.02258399035781622,
+      "bandwidth_gib_s": 21.62068094538519
+    },
+    {
+      "policy": "c_naive",
+      "budget": 2048,
+      "kv_entries": 2048,
+      "bytes_read_mib": 1.0,
+      "ms": 0.03054109402000904,
+      "bandwidth_gib_s": 31.975360783087982
+    },
+    {
+      "policy": "c_tiled",
+      "budget": 2048,
+      "kv_entries": 2048,
+      "bytes_read_mib": 1.0,
+      "ms": 0.0398330157622695,
+      "bandwidth_gib_s": 24.516408846076285
+    },
+    {
+      "policy": "c_naive",
+      "budget": 8192,
+      "kv_entries": 8192,
+      "bytes_read_mib": 4.0,
+      "ms": 0.1076249172911048,
+      "bandwidth_gib_s": 36.29503369962498
+    },
+    {
+      "policy": "c_tiled",
+      "budget": 8192,
+      "kv_entries": 8192,
+      "bytes_read_mib": 4.0,
+      "ms": 0.1485410612076521,
+      "bandwidth_gib_s": 26.29744239230445
+    },
+    {
+      "policy": "torch_selected",
+      "budget": 256,
+      "kv_entries": 256,
+      "bytes_read_mib": 0.125,
+      "ms": 0.00600004568696022,
+      "bandwidth_gib_s": 20.34489716724874
+    },
+    {
+      "policy": "torch_selected",
+      "budget": 1024,
+      "kv_entries": 1024,
+      "bytes_read_mib": 0.5,
+      "ms": 0.010292045772075653,
+      "bandwidth_gib_s": 47.442584381503934
+    },
+    {
+      "policy": "torch_selected",
+      "budget": 2048,
+      "kv_entries": 2048,
+      "bytes_read_mib": 1.0,
+      "ms": 0.015916884876787663,
+      "bandwidth_gib_s": 61.35387090875846
+    },
+    {
+      "policy": "torch_selected",
+      "budget": 8192,
+      "kv_entries": 8192,
+      "bytes_read_mib": 4.0,
+      "ms": 0.052749994210898876,
+      "bandwidth_gib_s": 74.05214082834752
+    }
+  ]
+}

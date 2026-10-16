@@ -1,0 +1,69 @@
+{
+  "name": "hybrid_recall",
+  "generated_utc": "2026-10-16T10:35:08Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": false,
+    "triton_installed": false,
+    "flex_attention_importable": true
+  },
+  "records": [
+    {
+      "model": "dense_attention_only",
+      "accuracy": 1.0,
+      "loss": 0.000743286102078855,
+      "state_bytes_per_seq": 4608.0,
+      "attention_layers": 6,
+      "linear_layers": 0,
+      "kind": "gdn"
+    },
+    {
+      "model": "hybrid_1in2_gdn",
+      "accuracy": 1.0,
+      "loss": 0.0006861244910396636,
+      "state_bytes_per_seq": 39168.0,
+      "attention_layers": 3,
+      "linear_layers": 3,
+      "kind": "gdn"
+    },
+    {
+      "model": "hybrid_1in4_gdn",
+      "accuracy": 1.0,
+      "loss": 0.0007218041573651135,
+      "state_bytes_per_seq": 50688.0,
+      "attention_layers": 2,
+      "linear_layers": 4,
+      "kind": "gdn"
+    },
+    {
+      "model": "hybrid_1in4_kda",
+      "accuracy": 1.0,
+      "loss": 0.0007006843807175756,
+      "state_bytes_per_seq": 50688.0,
+      "attention_layers": 2,
+      "linear_layers": 4,
+      "kind": "kda"
+    },
+    {
+      "model": "hybrid_1in4_ssd",
+      "accuracy": 1.0,
+      "loss": 0.0007293723174370825,
+      "state_bytes_per_seq": 50688.0,
+      "attention_layers": 2,
+      "linear_layers": 4,
+      "kind": "ssd"
+    },
+    {
+      "model": "linear_only_gdn",
+      "accuracy": 1.0,
+      "loss": 0.0006968205561861396,
+      "state_bytes_per_seq": 73728.0,
+      "attention_layers": 0,
+      "linear_layers": 6,
+      "kind": "gdn"
+    }
+  ]
+}

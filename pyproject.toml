@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "linattn"
+version = "0.1.0"
+description = "Survey plus reference implementations, kernels and validation harness for sparse, compressed-state and co-designed attention variants"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "linattn contributors" }]
+dependencies = ["torch>=2.4", "numpy>=1.24"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "matplotlib>=3.8"]
+gpu = ["triton>=3.0"]
+report = ["transformers>=4.44", "matplotlib>=3.8", "pandas>=2.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/linattn"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "slow: long running tests",
+    "gpu: requires a CUDA GPU (skipped automatically when unavailable)",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"

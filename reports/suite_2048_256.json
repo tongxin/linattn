@@ -1,0 +1,321 @@
+{
+  "name": "suite_2048_256",
+  "generated_utc": "2026-10-16T09:11:24Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": false,
+    "triton_installed": false,
+    "flex_attention_importable": true
+  },
+  "records": [
+    {
+      "variant": "dense",
+      "family": "dense",
+      "seq": 2048,
+      "rel_err": 0.0,
+      "max_abs_err": 0.0,
+      "mass_recall": null,
+      "kv_reads": 2048.0,
+      "state_bytes": 2097152.0,
+      "latency_ms": 81.04075002484024,
+      "peak_mib": 0.0,
+      "extra": {},
+      "reads_per_query": 2048.0,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "sliding_window",
+      "family": "local",
+      "seq": 2048,
+      "rel_err": 0.8804035296159511,
+      "max_abs_err": 5.084205890530655,
+      "mass_recall": null,
+      "kv_reads": 243.5595703125,
+      "state_bytes": 266240.0,
+      "latency_ms": 48.34483296144754,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 243.5595703125
+      },
+      "reads_per_query": 243.5595703125,
+      "state_kib": 260.0,
+      "error": ""
+    },
+    {
+      "variant": "streaming_sink",
+      "family": "local",
+      "seq": 2048,
+      "rel_err": 0.8804035296159511,
+      "max_abs_err": 5.084205890530655,
+      "mass_recall": null,
+      "kv_reads": 243.5595703125,
+      "state_bytes": 266240.0,
+      "latency_ms": 42.094375006854534,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 243.5595703125
+      },
+      "reads_per_query": 243.5595703125,
+      "state_kib": 260.0,
+      "error": ""
+    },
+    {
+      "variant": "h2o",
+      "family": "eviction",
+      "seq": 2048,
+      "rel_err": 0.8249635233787995,
+      "max_abs_err": 5.74522408673157,
+      "mass_recall": null,
+      "kv_reads": 480.75,
+      "state_bytes": 2097152.0,
+      "latency_ms": 18.67241703439504,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 480.75,
+        "evicted_tokens": 898.625
+      },
+      "reads_per_query": 480.75,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "snapkv",
+      "family": "eviction",
+      "seq": 2048,
+      "rel_err": 0.27960365270382354,
+      "max_abs_err": 5.745221635356787,
+      "mass_recall": null,
+      "kv_reads": 480.0,
+      "state_bytes": 2097152.0,
+      "latency_ms": 18.989791977219284,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 480.0,
+        "evicted_tokens": 896.0
+      },
+      "reads_per_query": 480.0,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "pyramidkv",
+      "family": "eviction",
+      "seq": 2048,
+      "rel_err": 0.27960365270382354,
+      "max_abs_err": 5.745221635356787,
+      "mass_recall": null,
+      "kv_reads": 480.0,
+      "state_bytes": 2097152.0,
+      "latency_ms": 18.530083005316556,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 480.0,
+        "evicted_tokens": 896.0
+      },
+      "reads_per_query": 480.0,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "random_eviction",
+      "family": "eviction",
+      "seq": 2048,
+      "rel_err": 0.7981548852400608,
+      "max_abs_err": 5.745224095394031,
+      "mass_recall": null,
+      "kv_reads": 480.75,
+      "state_bytes": 2097152.0,
+      "latency_ms": 18.03462509997189,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 480.75,
+        "evicted_tokens": 898.625
+      },
+      "reads_per_query": 480.75,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "quest",
+      "family": "selection",
+      "seq": 2048,
+      "rel_err": 0.12451980275514579,
+      "max_abs_err": 0.8620741276585947,
+      "mass_recall": 0.8761532024795535,
+      "kv_reads": 368.2734375,
+      "state_bytes": 2097152.0,
+      "latency_ms": 64.07804100308567,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 368.2734375,
+        "pages_per_query": 7.7464599609375,
+        "mass_recall": 0.8761532024795535
+      },
+      "reads_per_query": 368.2734375,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "minference",
+      "family": "selection",
+      "seq": 2048,
+      "rel_err": 0.8743503828137661,
+      "max_abs_err": 5.036429908805817,
+      "mass_recall": 0.539172571697273,
+      "kv_reads": 298.4501953125,
+      "state_bytes": 2097152.0,
+      "latency_ms": 84.0634589549154,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 298.4501953125,
+        "pattern_a_shape": 1.0,
+        "pattern_vertical_slash": 1.0,
+        "pattern_block_sparse": 1.0,
+        "resolved_pattern_id": 0.0,
+        "mass_recall": 0.539172571697273
+      },
+      "reads_per_query": 298.4501953125,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "flexprefill",
+      "family": "selection",
+      "seq": 2048,
+      "rel_err": 0.4392193356557924,
+      "max_abs_err": 4.202230976920649,
+      "mass_recall": 1.0,
+      "kv_reads": 887.46875,
+      "state_bytes": 2097152.0,
+      "latency_ms": 71.4795000385493,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 887.46875,
+        "blocks_per_query": 14.35888671875,
+        "structured": 0.0,
+        "mass_recall": 1.0
+      },
+      "reads_per_query": 887.46875,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "xattention",
+      "family": "selection",
+      "seq": 2048,
+      "rel_err": 1.227100980141737,
+      "max_abs_err": 5.751148284924321,
+      "mass_recall": 0.9666583920667509,
+      "kv_reads": 99.66796875,
+      "state_bytes": 2097152.0,
+      "latency_ms": 64.59133408498019,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 99.66796875,
+        "blocks_per_query": 12.89599609375,
+        "mass_recall": 0.9666583920667509
+      },
+      "reads_per_query": 99.66796875,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "moba",
+      "family": "selection",
+      "seq": 2048,
+      "rel_err": 0.7059782462332482,
+      "max_abs_err": 4.8785376613934694,
+      "mass_recall": 1.0,
+      "kv_reads": 449.90625,
+      "state_bytes": 2097152.0,
+      "latency_ms": 54.62879198603332,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 449.90625,
+        "blocks_per_query": 7.89697265625,
+        "mass_recall": 1.0
+      },
+      "reads_per_query": 449.90625,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "dsa",
+      "family": "selection",
+      "seq": 2048,
+      "rel_err": 0.26001903441150587,
+      "max_abs_err": 5.003221271234411,
+      "mass_recall": 1.0,
+      "kv_reads": 533.5643920898438,
+      "state_bytes": 2097152.0,
+      "latency_ms": 72.06670904997736,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 533.5643920898438,
+        "tokens_per_query": 661.0643920898438,
+        "mass_recall": 1.0
+      },
+      "reads_per_query": 533.5643920898438,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "seerattention_r",
+      "family": "selection",
+      "seq": 2048,
+      "rel_err": 0.7337713589420628,
+      "max_abs_err": 4.438064037826683,
+      "mass_recall": 0.6485294112400206,
+      "kv_reads": 449.5,
+      "state_bytes": 2097152.0,
+      "latency_ms": 54.68699999619275,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 449.5,
+        "mass_recall": 0.6485294112400206
+      },
+      "reads_per_query": 449.5,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "nsa",
+      "family": "native",
+      "seq": 2048,
+      "rel_err": 0.7585916219562346,
+      "max_abs_err": 3.8160473746332237,
+      "mass_recall": null,
+      "kv_reads": 768.0,
+      "state_bytes": 2097152.0,
+      "latency_ms": 103.61758305225521,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 768.0,
+        "selected_blocks_per_query": 7.89697265625
+      },
+      "reads_per_query": 768.0,
+      "state_kib": 2048.0,
+      "error": ""
+    },
+    {
+      "variant": "mla",
+      "family": "compressed",
+      "seq": 2048,
+      "rel_err": 2.6921849949019347,
+      "max_abs_err": 17.349725626916495,
+      "mass_recall": null,
+      "kv_reads": 2048.0,
+      "state_bytes": 262144.0,
+      "latency_ms": 51.70475004706532,
+      "peak_mib": 0.0,
+      "extra": {},
+      "reads_per_query": 2048.0,
+      "state_kib": 256.0,
+      "error": ""
+    }
+  ]
+}

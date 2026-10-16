@@ -1,0 +1,403 @@
+% Machine-readable citations for everything this repository implements or cites.
+% Variant classes in src/linattn/variants/ carry the same entries inline.
+
+@misc{linattn_repo,
+  title = {linattn: sparse, compressed-state and co-designed attention},
+  note  = {Survey, reference implementations, kernels and validation harness}
+}
+
+% ---------------------------------------------------------------------------------------
+% Selection: training-free, query-aware
+% ---------------------------------------------------------------------------------------
+@inproceedings{quest2024,
+  title     = {Quest: Query-Aware Sparsity for Efficient Long-Context LLM Inference},
+  author    = {Tang, Jiaming and Zhao, Yilong and Zhu, Kan and Xiao, Guangxuan and Kasikci, Baris and Han, Song},
+  booktitle = {ICML},
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2406.10774}
+}
+@inproceedings{minference2024,
+  title     = {MInference 1.0: Accelerating Pre-filling for Long-Context LLMs via Dynamic Sparse Attention},
+  author    = {Jiang, Huiqiang and Li, Yucheng and Zhang, Chengruidong and Wu, Qianhui and Luo, Xufang and Ahn, Surin and Han, Zhenhua and Abdi, Amir H and Li, Dongsheng and Lin, Chin-Yew and others},
+  booktitle = {NeurIPS},
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2407.02490}
+}
+@inproceedings{xattention2025,
+  title     = {XAttention: Block Sparse Attention with Antidiagonal Scoring},
+  author    = {Xu, Ruyi and Xiao, Guangxuan and Huang, Haofeng and Guo, Junxian and Han, Song},
+  booktitle = {ICML},
+  year      = {2025},
+  url       = {https://arxiv.org/abs/2503.16428}
+}
+@article{flexprefill2025,
+  title  = {FlexPrefill: A Context-Aware Sparse Attention Mechanism for Efficient Long-Sequence Inference},
+  author = {Lai, Xunhao and Lu, Jianqiao and Chen, Lin and Wang, Weishu and Sun, Yide and Zhang, Chenlin and Hu, Shujun},
+  year   = {2025},
+  url    = {https://arxiv.org/abs/2502.20766}
+}
+@article{moba2025,
+  title  = {MoBA: Mixture of Block Attention for Long-Context LLMs},
+  author = {Lu, Enzhe and Jiang, Zhejun and Liu, Jingyuan and Du, Yuming and Jiang, Tao and Hong, Chao and Liu, Shaowei and Xu, Weixuan and Guo, Yuyang and Hu, Jian and others},
+  year   = {2025},
+  url    = {https://arxiv.org/abs/2502.13189}
+}
+
+% ---------------------------------------------------------------------------------------
+% Eviction / compaction
+% ---------------------------------------------------------------------------------------
+@inproceedings{h2o2023,
+  title     = {H2O: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models},
+  author    = {Zhang, Zhenyu and Sheng, Ying and Zhou, Tianyi and Chen, Tianlong and Zheng, Lianmin and Cai, Ruisi and Song, Zhao and Tian, Yuandong and R{\'e}, Christopher and Barrett, Clark and others},
+  booktitle = {NeurIPS},
+  year      = {2023},
+  url       = {https://arxiv.org/abs/2306.14048}
+}
+@inproceedings{snapkv2024,
+  title     = {SnapKV: LLM Knows What You are Looking for Before Generation},
+  author    = {Li, Yuhong and Huang, Yingbing and Yang, Bowen and Venkitesh, Bharat and Locatelli, Acyr and Ye, Hanchen and Cai, Tianle and Lewis, Patrick and Chen, Deming},
+  booktitle = {NeurIPS},
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2404.14469}
+}
+@article{pyramidkv2024,
+  title  = {PyramidKV: Dynamic KV Cache Compression based on Pyramidal Information Funneling},
+  author = {Cai, Zefan and Zhang, Yichi and Gao, Bofei and Liu, Yuliang and Liu, Tianyu and Lu, Kangning and Xiong, Wayne and Dong, Yue and Chang, Baobao and Hu, Junjie and others},
+  year   = {2024},
+  url    = {https://arxiv.org/abs/2406.02069}
+}
+@article{randomattention2026,
+  title  = {Random Attention: Rethinking KV Cache Eviction for Efficient Reasoning},
+  author = {Wang, Heng and Qiu, Jielin and Zhao, Wenting and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2609.03430}
+}
+@article{pageentropy2026,
+  title  = {Page-EntroKV: Hardware-Aligned, Entropy-Weighted KV-Cache Eviction under Grouped-Query Attention},
+  author = {Inbasekaran, S},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2610.03135}
+}
+
+% ---------------------------------------------------------------------------------------
+% Native sparse attention and production designs
+% ---------------------------------------------------------------------------------------
+@inproceedings{nsa2025,
+  title     = {Native Sparse Attention: Hardware-Aligned and Natively Trainable Sparse Attention},
+  author    = {Yuan, Jingyang and Gao, Huazuo and Dai, Damai and Luo, Junyu and Zhao, Liang and Zhang, Zhengyan and Xie, Zhenda and Wei, Y. X. and Wang, Lean and Xiao, Zhiping and others},
+  booktitle = {ACL},
+  year      = {2025},
+  url       = {https://arxiv.org/abs/2502.11089}
+}
+@misc{dsv32,
+  title = {DeepSeek-V3.2: Pushing the Frontier of Open Large Language Models},
+  author = {{DeepSeek-AI}},
+  year  = {2025},
+  url   = {https://huggingface.co/deepseek-ai/DeepSeek-V3.2}
+}
+@article{dsv41flash,
+  title  = {DeepSeek-V4.1-Flash: Pushing the Limits of KV Cache Compression},
+  author = {{DeepSeek-AI}},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2609.19969}
+}
+@article{cobs2026,
+  title  = {COBS: Cumulant Order Block Sparse Attention},
+  author = {Tian, Alexander and Ghai, Aditya and Neelam, Sanjit and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2607.09052}
+}
+@article{sas2026,
+  title  = {SAS: Simple Attention Sparsification via End-to-End Optimization of Context Ranking},
+  author = {Li, Zhiwei and Zhu, Lei and Gu, Hao and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2609.13141}
+}
+@article{seerattentionr2025,
+  title  = {SeerAttention-R: Sparse Attention Adaptation for Long Reasoning},
+  author = {Gao, Yizhao and others},
+  year   = {2025},
+  url    = {https://arxiv.org/abs/2506.08889}
+}
+@article{lisa2026,
+  title  = {LISA: Linear-Indexed Sparse Attention for Efficient Long-Context Reasoning},
+  author = {Zhao, Yu and Zhang, Zekun and Jiang, Fan and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2607.19358}
+}
+
+% ---------------------------------------------------------------------------------------
+% Indexer / selection systems work (2026)
+% ---------------------------------------------------------------------------------------
+@article{streamindex2026,
+  title  = {StreamIndex: Memory-Bounded Compressed Sparse Attention via Streaming Top-k},
+  author = {Jaber, Jaber and Jaber, Osama},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2605.02568}
+}
+@article{longcatlsa2026,
+  title  = {LongCat Sparse Attention: Taming the Lightning via Streaming-aware Hierarchical Cross-Layer Indexing},
+  author = {Zan, Wen and Zhang, Jiaqi and Tan, Jianchao and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2608.01662}
+}
+@article{indexcache2026,
+  title  = {IndexCache: Accelerating Sparse Attention via Cross-Layer Index Reuse},
+  author = {Bai, Yushi and Dong, Qian and Jiang, Ting and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2603.12201}
+}
+@article{spin2026,
+  title  = {SPIN: Shadow Predictive Indexer for Sparse Attention},
+  author = {Fu, Yao and Chang, Jiahan and Zhao, Ritchie and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2610.09025}
+}
+@article{hisa2026,
+  title  = {HISA: Efficient Hierarchical Indexing for Fine-Grained Sparse Attention},
+  author = {Xu, Yufei and Meng, Fanxu and Jiang, Fan and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2603.28458}
+}
+@article{pivot2026,
+  title  = {PIVOT: Efficient Query-Group Indexing for Token-Level Sparse Attention},
+  author = {Liu, Hong and Cheng, Yuan and Niu, Lin and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2607.24593}
+}
+@article{litetopk2026,
+  title  = {LiteTopK: Exploiting the Curse of Dimensionality for a Fused Indexer-TopK Kernel in Long-Context Sparse Attention},
+  author = {Yin, Ziqi and Gao, Jianyang and Yin, Peiqi and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2607.11976}
+}
+@article{misa2026,
+  title  = {MISA: Mixture of Indexer Sparse Attention for Long-Context LLM Inference},
+  author = {Zhou, Ruijie and Meng, Fanxu and Xu, Yufei and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2605.07363}
+}
+@article{hysparse2_2026,
+  title  = {HySparse2: Hybrid Sparse Attention with Two-Level KV Sharing},
+  author = {Wei, Jianyu and Gao, Yizhao and Zhang, Qihao and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2609.26368}
+}
+@article{sparseengine2026,
+  title  = {SparseEngine: Sparse-First Inference Engine},
+  author = {Hao, Jitai and Gu, Quansheng and Huang, Qiang and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2609.39068}
+}
+@article{guessverify2026,
+  title  = {Guess-Verify-Refine: Data-Aware Top-K for Sparse-Attention Decoding on Blackwell via Temporal Correlation},
+  author = {Cheng, Long and Zhao, Ritchie and Liu, Timmy and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2604.22312}
+}
+@article{freesolo2026,
+  title  = {FreeSolo: Linear-time Sparse Attention with Zero-Shot Length Extrapolation},
+  author = {Shi, Zekun and Price, Alastair James Arthur},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2610.17191}
+}
+@article{namoh2026,
+  title  = {Scaling Parameter and Context in Attention: Native Sparse Attention from Mixture-of-Head},
+  author = {Fu, Zizhuo and Wang, Runsheng and Li, Meng},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2609.38832}
+}
+
+% ---------------------------------------------------------------------------------------
+% Compressed state: linear attention, SSMs, hybrids
+% ---------------------------------------------------------------------------------------
+@article{mla2024,
+  title  = {DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model},
+  author = {{DeepSeek-AI}},
+  year   = {2024},
+  url    = {https://arxiv.org/abs/2405.04434}
+}
+@article{mamba2_2024,
+  title  = {Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality},
+  author = {Dao, Tri and Gu, Albert},
+  year   = {2024},
+  url    = {https://arxiv.org/abs/2405.21060}
+}
+@inproceedings{gdn2025,
+  title     = {Gated Delta Networks: Improving Mamba2 with Delta Rule},
+  author    = {Yang, Songlin and Kautz, Jan and Hatamizadeh, Ali},
+  booktitle = {ICLR},
+  year      = {2025},
+  url       = {https://arxiv.org/abs/2412.06464}
+}
+@article{kimilinear2025,
+  title  = {Kimi Linear: An Expressive, Efficient Attention Architecture},
+  author = {{Kimi Team}},
+  year   = {2025},
+  url    = {https://arxiv.org/abs/2510.26692}
+}
+@article{kimik3_2026,
+  title  = {Kimi K3: Open Frontier Intelligence},
+  author = {{Kimi Team}},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2607.24653}
+}
+@article{gdn2_2026,
+  title  = {Gated DeltaNet-2: Decoupling Erase and Write in Linear Attention},
+  author = {Yang, Songlin and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2605.22791}
+}
+@article{minimax01_2025,
+  title  = {MiniMax-01: Scaling Foundation Models with Lightning Attention},
+  author = {{MiniMax}},
+  year   = {2025},
+  url    = {https://arxiv.org/abs/2501.08313}
+}
+@article{leapquant2026,
+  title  = {LeapQuant: Efficient Linear Attention with Accurate Recurrent State Quantization},
+  author = {Pan, Yi and Xi, Haocheng and Zhu, Kan and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2609.38166}
+}
+@article{gatesight2026,
+  title  = {GateSight: Recurrent Memory Anticipates Attention Memory for Query-Agnostic KV Eviction in Hybrid LLMs},
+  author = {Li, Junjie and Lou, Jiong and Li, Jie},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2610.14754}
+}
+@article{deltas2026,
+  title  = {DeltaS: Reading the Gated Linear Attention State for KV Cache Eviction in Streaming Video},
+  author = {Kwon, Taeyoun and Kim, Seungjin and Kim, Hyeonyu and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2609.27470}
+}
+@article{hla2026,
+  title  = {HLA: Expressive Hybrid Linear Attention via Chunk-Wise Dynamic Mixing},
+  author = {Chen, Zhuokun and Lin, Xi and Wu, Xiyu and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2610.05842}
+}
+@article{replayssm2026,
+  title  = {ReplaySSM: Cache SSM Inputs, Not State},
+  author = {Liou, Ze-Wei and Nover, Harris and Naik, Amey and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2610.13778}
+}
+@article{lowbitstate2026,
+  title  = {Preserving Updates in Low-Bit Recurrent State Quantization},
+  author = {Li, Haotian and Dong, Liran and Xiao, Kaicheng and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2610.15709}
+}
+
+% ---------------------------------------------------------------------------------------
+% Structural sparsity baselines
+% ---------------------------------------------------------------------------------------
+@inproceedings{streamingllm2024,
+  title     = {Efficient Streaming Language Models with Attention Sinks},
+  author    = {Xiao, Guangxuan and Tian, Yuandong and Chen, Beidi and Han, Song and Lewis, Mike},
+  booktitle = {ICLR},
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2309.17453}
+}
+@inproceedings{duoattention2024,
+  title     = {DuoAttention: Efficient Long-Context LLM Inference with Retrieval and Streaming Heads},
+  author    = {Xiao, Guangxuan and Tang, Jiaming and Zong, Jingwei and Darvish, Rouzbeh and others},
+  booktitle = {ICLR},
+  year      = {2025},
+  url       = {https://arxiv.org/abs/2410.10819}
+}
+@article{lserve2025,
+  title  = {LServe: Efficient Long-sequence LLM Serving with Unified Sparse Attention},
+  author = {Yang, Shang and Sheng, Yilong and Zhao, Tiger Yicheng and others},
+  year   = {2025},
+  url    = {https://arxiv.org/abs/2502.14866}
+}
+@article{starattention2024,
+  title  = {Star Attention: Efficient LLM Inference over Long Sequences},
+  author = {Acharya, Shantanu and Kolar, Rajesh and others},
+  year   = {2024},
+  url    = {https://arxiv.org/abs/2411.17116}
+}
+@article{shadowkv2024,
+  title  = {ShadowKV: KV Cache in Shadows for High-Throughput Long-Context LLM Inference},
+  author = {Sun, Hanshi and Chang, Li-Wen and Bao, Yujian and others},
+  year   = {2024},
+  url    = {https://arxiv.org/abs/2410.21465}
+}
+
+% ---------------------------------------------------------------------------------------
+% Kernels, numerics, co-design
+% ---------------------------------------------------------------------------------------
+@article{bf16grad2026,
+  title  = {Broken Symmetry in BF16 Attention: Why FlashAttention Gradients Blow Up Late in Training},
+  author = {Chen, Junlin and Dong, Daize and Di, Huanwei and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2609.34272}
+}
+@article{mpfa2026,
+  title  = {MpFA: Hardware-Efficient Train-Free QK4V8 FlashAttention Kernels on Blackwell GPUs},
+  author = {Deng, Chencheng and Fang, Jianbin and Dong, Dezun},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2609.33135}
+}
+@article{fp4fa4_2026,
+  title  = {Hardware-Aware FP4 FlashAttention-4},
+  author = {Hu, Robert},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2609.04105}
+}
+@article{pimdecode2026,
+  title  = {Heterogeneous LLM Serving with General-Purpose Processing-Near-Memory for Retrieval-Based Sparse Attention},
+  author = {Ham, Hyungkyu and Bae, Junhyeong and Lee, Seungheon and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2608.03555}
+}
+@article{ssdkv2026,
+  title  = {Efficient Agentic LLM Serving over SSD-based Sparse KV Storage},
+  author = {He, Wenhao and Zhang, Ping and Hu, Xiaohe and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2609.36938}
+}
+@article{essv32_2025,
+  title  = {ESS: An Offload-Centric Latent-Cache Management Architecture for DeepSeek-V3.2-Exp},
+  author = {Chen, Xinhang and others},
+  year   = {2025},
+  url    = {https://arxiv.org/abs/2512.10576}
+}
+@article{swepruner2026,
+  title  = {SWE-Pruner Pro: The Coder LLM Already Knows What to Prune},
+  author = {Wang, Yuhang and Shi, Yuling and Zhang, Shaoqiu and others},
+  year   = {2026},
+  url    = {https://arxiv.org/abs/2607.18213}
+}
+
+% ---------------------------------------------------------------------------------------
+% Public discussion (used for practitioner-side claims only)
+% ---------------------------------------------------------------------------------------
+@misc{hn_v32,
+  title = {Hacker News discussion: DeepSeek-v3.2: Pushing the frontier of open large language models},
+  note  = {982 points, 465 comments, December 2025},
+  url   = {https://news.ycombinator.com/item?id=46108780}
+}
+@misc{hn_kimilinear,
+  title = {Hacker News discussion: Kimi Linear: An Expressive, Efficient Attention Architecture},
+  note  = {306 points, July 2026},
+  url   = {https://news.ycombinator.com/item?id=49082022}
+}
+@misc{hn_deltanet_family,
+  title = {Hacker News discussion: A walk through of the DeltaNet family of linear attention variants},
+  note  = {297 points, 126 comments, July 2026},
+  url   = {https://news.ycombinator.com/item?id=49085909}
+}
+@misc{hn_lru,
+  title = {Hacker News discussion: LRU is harder to beat than the KV-cache papers suggest},
+  note  = {108 points; measures agentic KV-cache reuse on 393 real Claude Code sessions},
+  url   = {https://news.ycombinator.com/item?id=49643543}
+}
+@misc{hn_fa4,
+  title = {Hacker News discussion: We reverse-engineered Flash Attention 4},
+  note  = {134 points, September 2025},
+  url   = {https://news.ycombinator.com/item?id=45403582}
+}

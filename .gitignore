@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+data/
+reports/artifacts/
+!reports/*.md
+!reports/*.json
+*.bin
+*.safetensors
+.DS_Store

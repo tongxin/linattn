@@ -1,0 +1,120 @@
+{
+  "name": "state_capacity",
+  "generated_utc": "2026-10-16T10:32:48Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": false,
+    "triton_installed": false,
+    "flex_attention_importable": true
+  },
+  "records": [
+    {
+      "associations": 4,
+      "d_state": 8,
+      "state_floats": 512,
+      "retrieval_cosine": 0.8277266954498165,
+      "state_norm": 3.9640023654779193
+    },
+    {
+      "associations": 4,
+      "d_state": 32,
+      "state_floats": 2048,
+      "retrieval_cosine": 0.9583043297391212,
+      "state_norm": 3.8882283383857765
+    },
+    {
+      "associations": 4,
+      "d_state": 128,
+      "state_floats": 8192,
+      "retrieval_cosine": 0.9852001911123873,
+      "state_norm": 3.9131542821966923
+    },
+    {
+      "associations": 16,
+      "d_state": 8,
+      "state_floats": 512,
+      "retrieval_cosine": 0.5775957313435316,
+      "state_norm": 7.255606308924648
+    },
+    {
+      "associations": 16,
+      "d_state": 32,
+      "state_floats": 2048,
+      "retrieval_cosine": 0.8363186420338612,
+      "state_norm": 7.387648222051103
+    },
+    {
+      "associations": 16,
+      "d_state": 128,
+      "state_floats": 8192,
+      "retrieval_cosine": 0.945584460116713,
+      "state_norm": 7.321698251176793
+    },
+    {
+      "associations": 64,
+      "d_state": 8,
+      "state_floats": 512,
+      "retrieval_cosine": 0.3376064674296529,
+      "state_norm": 12.377331678825836
+    },
+    {
+      "associations": 64,
+      "d_state": 32,
+      "state_floats": 2048,
+      "retrieval_cosine": 0.5708489306836355,
+      "state_norm": 12.00219262965156
+    },
+    {
+      "associations": 64,
+      "d_state": 128,
+      "state_floats": 8192,
+      "retrieval_cosine": 0.8104560687497244,
+      "state_norm": 11.993355653714422
+    },
+    {
+      "associations": 256,
+      "d_state": 8,
+      "state_floats": 512,
+      "retrieval_cosine": 0.14192031374099673,
+      "state_norm": 13.964738884246625
+    },
+    {
+      "associations": 256,
+      "d_state": 32,
+      "state_floats": 2048,
+      "retrieval_cosine": 0.2665101160448601,
+      "state_norm": 13.949834466811312
+    },
+    {
+      "associations": 256,
+      "d_state": 128,
+      "state_floats": 8192,
+      "retrieval_cosine": 0.43761277682206473,
+      "state_norm": 13.979594214494536
+    },
+    {
+      "associations": 1024,
+      "d_state": 8,
+      "state_floats": 512,
+      "retrieval_cosine": 0.03476291593771757,
+      "state_norm": 14.090267434144664
+    },
+    {
+      "associations": 1024,
+      "d_state": 32,
+      "state_floats": 2048,
+      "retrieval_cosine": 0.07560543077632403,
+      "state_norm": 14.101561940184135
+    },
+    {
+      "associations": 1024,
+      "d_state": 128,
+      "state_floats": 8192,
+      "retrieval_cosine": 0.1223422618329803,
+      "state_norm": 14.021341269535506
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+"""Small CLI: ``python -m linattn.cli <command>``.
+
+Commands are deliberately few and map onto the questions the repo answers:
+
+``backends``   what can this machine actually run?
+``variants``   the variant catalogue, with family and citation
+``cost``       analytic cost model for a sequence length
+``select``     run one variant and report error vs. dense + attention-mass recall
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from typing import List, Optional
+
+import torch
+
+from linattn.core import dense_attention
+from linattn.harness import run_variant, structured_inputs, make_inputs
+from linattn.kernels import describe_backends
+from linattn.metrics import attention_mass, efficiency_table, mass_recall
+from linattn.registry import VARIANTS, build, describe
+
+
+def cmd_backends(args) -> int:
+    report = describe_backends()
+    for key, value in report.items():
+        print(f"{key:>26}: {value}")
+    return 0
+
+
+def cmd_variants(args) -> int:
+    for name in VARIANTS:
+        meta = describe(name)
+        trained = "needs-training" if meta["needs_training"] else "training-free"
+        print(f"{name:<18} {meta['family']:<10} {trained:<15} {meta['citation'][0] if meta['citation'] else ''}")
+    return 0
+
+
+def cmd_cost(args) -> int:
+    variants = [build(name, cfg_kwargs(args)) for name in (args.variants or list(VARIANTS))]
+    print(efficiency_table(variants, args.seq, batch=args.batch))
+    return 0
+
+
+def cfg_kwargs(args):
+    from linattn.core import AttnConfig
+
+    return AttnConfig(
+        n_heads=args.heads,
+        n_kv_heads=args.kv_heads,
+        head_dim=args.dim,
+        block_size=args.block_size,
+        window_size=args.window,
+        cache_budget=args.budget,
+        topk_blocks=args.topk_blocks,
+        topk_tokens=args.topk_tokens,
+    )
+
+
+def cmd_select(args) -> int:
+    cfg = cfg_kwargs(args)
+    if args.structured:
+        q, k, v = structured_inputs(1, cfg.n_heads, args.seq, cfg.head_dim, kv_heads=cfg.n_kv_heads, seed=args.seed)
+    else:
+        q, k, v = make_inputs(1, cfg.n_heads, args.seq, cfg.head_dim, kv_heads=cfg.n_kv_heads, seed=args.seed)
+    variant = build(args.variant, cfg)
+    dummy = torch.zeros_like(v)
+    rec = run_variant(variant, q, k, v, dtype=torch.float64)
+    mask, _ = _selection_mask(variant, q, k, v)
+    if mask is not None:
+        block = max(1, cfg.block_size)
+        mass = attention_mass(q.double(), k.double(), v.double(), block=block)
+        n_qb = mask.shape[-2] // block
+        n_kb = mask.shape[-1] // block
+        reduced = mask[..., : n_qb * block, : n_kb * block]
+        reduced = reduced.view(*mask.shape[:-2], n_qb, block, n_kb, block).any(-3).any(-1)
+        rec.mass_recall = float(mass_recall(mass[..., :n_qb, :n_kb], reduced).mean())
+        rec.extra["mass_recall"] = rec.mass_recall
+    print(json.dumps({"variant": rec.variant, "family": rec.family, **rec.as_dict()}, indent=2, default=str))
+    return 0
+
+
+def _selection_mask(variant, q, k, v):
+    """Best-effort extraction of a variant's read mask (for recall reporting)."""
+    from linattn.variants.selection import BlockSelectionAttention
+
+    if not isinstance(variant, BlockSelectionAttention):
+        return None, None
+    state = variant.prepare_state(q.shape[0], q.device, q.dtype)
+    state = variant.push_kv(state, k, v)
+    with torch.no_grad():
+        mask = variant.select(q, state, 0)
+    return mask, state
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="linattn", description="sparse / compressed-state attention toolkit")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    def add_shape_args(p):
+        p.add_argument("--seq", type=int, default=1024)
+        p.add_argument("--batch", type=int, default=1)
+        p.add_argument("--heads", type=int, default=8)
+        p.add_argument("--kv-heads", type=int, default=8, dest="kv_heads")
+        p.add_argument("--dim", type=int, default=64)
+        p.add_argument("--block-size", type=int, default=64, dest="block_size")
+        p.add_argument("--window", type=int, default=256)
+        p.add_argument("--budget", type=int, default=512)
+        p.add_argument("--topk-blocks", type=int, default=4, dest="topk_blocks")
+        p.add_argument("--topk-tokens", type=int, default=256, dest="topk_tokens")
+
+    sub.add_parser("backends", help="report available backends").set_defaults(func=cmd_backends)
+    sub.add_parser("variants", help="list variants").set_defaults(func=cmd_variants)
+
+    cost = sub.add_parser("cost", help="analytic cost model")
+    add_shape_args(cost)
+    cost.add_argument("--variants", nargs="*", default=None)
+    cost.set_defaults(func=cmd_cost)
+
+    sel = sub.add_parser("select", help="run one variant against dense attention")
+    add_shape_args(sel)
+    sel.add_argument("--variant", required=True)
+    sel.add_argument("--structured", action="store_true", help="plant retrieval structure in the inputs")
+    sel.add_argument("--seed", type=int, default=0)
+    sel.set_defaults(func=cmd_select)
+    return parser
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    args = build_parser().parse_args(argv)
+    return args.func(args)
+
+
+if __name__ == "__main__":  # pragma: no cover
+    sys.exit(main())

@@ -1,0 +1,39 @@
+{
+  "name": "selector_capacity",
+  "generated_utc": "2026-10-16T09:13:08Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": false,
+    "triton_installed": false,
+    "flex_attention_importable": true
+  },
+  "records": [
+    {
+      "selector": "dsa_indexer",
+      "cross_entropy_before": 5.720881045189522,
+      "cross_entropy_after": 5.352919167049615,
+      "mass_recall_before": 1.0,
+      "mass_recall_after": 1.0,
+      "budget_fraction": 0.789391040802002
+    },
+    {
+      "selector": "seerattention_gate",
+      "cross_entropy_before": 133.0814410239178,
+      "cross_entropy_after": 1.3854128896496434,
+      "mass_recall_before": 0.7223630544185042,
+      "mass_recall_after": 0.9880863115698061,
+      "budget_fraction": 0.5234375
+    },
+    {
+      "selector": "nsa_branch_gates",
+      "cross_entropy_before": NaN,
+      "cross_entropy_after": NaN,
+      "mass_recall_before": 0.26964881685428066,
+      "mass_recall_after": 0.3014100963355676,
+      "budget_fraction": NaN
+    }
+  ]
+}
