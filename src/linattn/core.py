@@ -243,6 +243,13 @@ class AttentionVariant:
         Returns ``(out, state)``.  ``out`` has the same shape as ``q``.  Passing a
         state returned by a previous call performs incremental decoding, which is
         what the cache-equivalence tests exercise.
+
+        Batching: every variant is written with an explicit batch dimension, so
+        ``B > 1`` is supported and each item is independent (``tests/test_batching.py``
+        checks that a batched call equals one call per item).  This is *equal-length*
+        batching only -- there is no ``lengths``/padding argument, so ragged or
+        continuously-batched requests need one call per sequence length (or an explicit
+        mask); see ``docs/reproducing.md``.
         """
         if q.dim() != 4:
             raise ValueError("q must have shape (B, H, T, D)")

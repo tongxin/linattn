@@ -42,11 +42,12 @@ def _torch_side(name: str, cfg: AttnConfig):
     return build(name, cfg.with_(extras=extras))
 
 
+@pytest.mark.parametrize("batch", [1, 2])
 @pytest.mark.parametrize("name", ["dense", "sliding_window", "quest"])
-def test_adapter_matches_torch(name, cfg):
+def test_adapter_matches_torch(name, batch, cfg):
     from linattn.kernels.mlx.adapter import build_mlx
 
-    q, k, v = structured_inputs(1, cfg.n_heads, 256, cfg.head_dim, kv_heads=cfg.n_kv_heads, seed=0)
+    q, k, v = structured_inputs(batch, cfg.n_heads, 256, cfg.head_dim, kv_heads=cfg.n_kv_heads, seed=0)
     mlx_out, _, mlx_stats = build_mlx(name, cfg).forward(q, k, v, chunk=256, collect_stats=True)
     torch_out, _, torch_stats = _torch_side(name, cfg).forward(q, k, v, chunk=256, collect_stats=True)
     assert rel_error(mlx_out, torch_out) < GPU_TOL, f"{name}: MLX and torch disagree"

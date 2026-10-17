@@ -40,10 +40,6 @@ class MlxAttention(AttentionVariant):
         super().__init__(cfg, **kw)
         if variant not in SUPPORTED:
             raise KeyError(f"mlx backend supports {SUPPORTED}, not {variant!r}")
-        if not mlx_available():
-            from linattn.kernels.mlx import mlx_import_error
-
-            raise RuntimeError(f"MLX is not available: {mlx_import_error()}")
         self.variant = variant
         self.name = f"mlx_{variant}"
         self._extra: Dict[str, float] = {}
@@ -51,6 +47,10 @@ class MlxAttention(AttentionVariant):
 
     # -- selection/execution ------------------------------------------------------
     def attend(self, q: torch.Tensor, state: Dict[str, Any], offset: int = 0) -> torch.Tensor:
+        if not mlx_available():
+            from linattn.kernels.mlx import mlx_import_error
+
+            raise RuntimeError(f"MLX is not available: {mlx_import_error()}")
         cfg = self.cfg
         q_mx = ops.to_mlx(q)
         k_mx = ops.to_mlx(state["k"])

@@ -1,6 +1,6 @@
 {
   "name": "suite_2048_256",
-  "generated_utc": "2026-10-17T10:44:19Z",
+  "generated_utc": "2026-10-17T12:31:43Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
@@ -8,6 +8,7 @@
     "cuda": false,
     "mps": false,
     "triton_installed": false,
+    "triton_msl": false,
     "flex_attention_importable": true,
     "mlx_installed": false,
     "mlx_metal": false
@@ -22,7 +23,7 @@
       "mass_recall": null,
       "kv_reads": 2048.0,
       "state_bytes": 2097152.0,
-      "latency_ms": 64.62520803324878,
+      "latency_ms": 65.44658297207206,
       "peak_mib": 0.0,
       "extra": {},
       "reads_per_query": 2048.0,
@@ -38,7 +39,7 @@
       "mass_recall": null,
       "kv_reads": 243.5595703125,
       "state_bytes": 266240.0,
-      "latency_ms": 44.40320795401931,
+      "latency_ms": 43.08412491809577,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 243.5595703125
@@ -56,7 +57,7 @@
       "mass_recall": null,
       "kv_reads": 243.5595703125,
       "state_bytes": 266240.0,
-      "latency_ms": 40.88937502820045,
+      "latency_ms": 41.2136249942705,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 243.5595703125
@@ -74,7 +75,7 @@
       "mass_recall": null,
       "kv_reads": 480.75,
       "state_bytes": 2097152.0,
-      "latency_ms": 18.153541954234242,
+      "latency_ms": 18.124665948562324,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 480.75,
@@ -93,7 +94,7 @@
       "mass_recall": 0.9125262135573158,
       "kv_reads": 444.6953125,
       "state_bytes": 2097152.0,
-      "latency_ms": 63.142958912067115,
+      "latency_ms": 62.5859999563545,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 444.6953125,
@@ -113,7 +114,7 @@
       "mass_recall": 0.539172571697273,
       "kv_reads": 298.4501953125,
       "state_bytes": 2097152.0,
-      "latency_ms": 82.20825006719679,
+      "latency_ms": 71.94516609888524,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 298.4501953125,
@@ -136,7 +137,7 @@
       "mass_recall": 1.0,
       "kv_reads": 887.46875,
       "state_bytes": 2097152.0,
-      "latency_ms": 71.92112505435944,
+      "latency_ms": 71.1985839297995,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 887.46875,
@@ -157,7 +158,7 @@
       "mass_recall": 0.9666583920667509,
       "kv_reads": 99.66796875,
       "state_bytes": 2097152.0,
-      "latency_ms": 63.958457903936505,
+      "latency_ms": 63.56929196044803,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 99.66796875,
@@ -177,7 +178,7 @@
       "mass_recall": 1.0,
       "kv_reads": 449.90625,
       "state_bytes": 2097152.0,
-      "latency_ms": 56.29633297212422,
+      "latency_ms": 52.627500030212104,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 449.90625,
@@ -197,7 +198,7 @@
       "mass_recall": 1.0,
       "kv_reads": 533.5643920898438,
       "state_bytes": 2097152.0,
-      "latency_ms": 72.52100005280226,
+      "latency_ms": 74.68658301513642,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 533.5643920898438,
@@ -217,7 +218,7 @@
       "mass_recall": 0.6485294112400206,
       "kv_reads": 449.5,
       "state_bytes": 2097152.0,
-      "latency_ms": 50.17704202327877,
+      "latency_ms": 50.01925001852214,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 449.5,
@@ -236,7 +237,7 @@
       "mass_recall": null,
       "kv_reads": 768.0,
       "state_bytes": 2097152.0,
-      "latency_ms": 89.74487497471273,
+      "latency_ms": 90.98016598727554,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 768.0,
@@ -255,7 +256,7 @@
       "mass_recall": null,
       "kv_reads": 2048.0,
       "state_bytes": 262144.0,
-      "latency_ms": 47.38741705659777,
+      "latency_ms": 47.026584041304886,
       "peak_mib": 0.0,
       "extra": {},
       "reads_per_query": 2048.0,

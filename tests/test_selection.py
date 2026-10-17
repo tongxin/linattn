@@ -6,6 +6,7 @@ import pytest
 import torch
 
 from linattn.core import AttnConfig, dense_attention
+from linattn.harness import structured_inputs
 from linattn.metrics import attention_mass, mass_recall, rel_error
 from linattn.registry import build
 from linattn.variants.selection import DSAAttention, SeerAttentionR, block_mask_to_token_mask
@@ -95,6 +96,23 @@ def test_minference_pattern_search_picks_a_pattern(cfg, structured):
     variant = build("minference", cfg.with_(extras={"pattern": "auto"}))
     variant.forward(q, k, v, chunk=q.shape[-2])
     assert variant.resolved in {"a_shape", "vertical_slash", "block_sparse"}
+
+
+@pytest.mark.parametrize("pattern", ["a_shape", "vertical_slash", "block_sparse"])
+@pytest.mark.parametrize("batch", [1, 3])
+def test_minference_patterns_support_batching(cfg, pattern, batch):
+    """Regression: the vertical-slash mask used ``v_top.shape[:-2]`` and therefore
+    reshaped ``(B,H,k)`` to ``(B,1,H*k)`` -- fine by accident at B=1, a crash at B=3.
+    """
+    q, k, v = structured_inputs(batch, cfg.n_heads, 192, cfg.head_dim, kv_heads=cfg.n_kv_heads, seed=2)
+    variant = build("minference", cfg.with_(extras={"pattern": pattern}))
+    out, _ = variant.forward(q, k, v, chunk=64)
+    assert out.shape == q.shape and torch.isfinite(out).all()
+    # batched result must equal the per-item result when the same instance is used
+    if batch > 1:
+        for i in range(batch):
+            single, _ = variant.forward(q[i : i + 1], k[i : i + 1], v[i : i + 1], chunk=64)
+            assert rel_error(out[i : i + 1], single) < 1e-9
 
 
 def test_dsa_fitting_beats_random_indexer(cfg, structured):

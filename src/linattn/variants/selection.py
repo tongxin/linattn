@@ -319,7 +319,10 @@ class MInferenceAttention(BlockSelectionAttention):
         allow = torch.zeros(q.shape[0], q.shape[1], t_q, t_k, dtype=torch.bool, device=device)
         vertical_hits = torch.zeros_like(allow)
         # a vertical line is a global column: every query row reads it
-        v_idx = v_top.reshape(*v_top.shape[:-2], 1, -1).expand(*allow.shape[:-1], -1)
+        # v_top is (B, H, n_vertical): keep B and H, broadcast over queries.  Using
+        # shape[:-2] here drops *two* dims and flattens (H, n_vertical) into one, which
+        # only broadcast by accident at B == 1 and crashed at B > 1.
+        v_idx = v_top.unsqueeze(-2).expand(*allow.shape[:-1], -1)
         vertical_hits.scatter_(-1, v_idx, True)
         allow = allow | vertical_hits
         for slot in range(s_off.shape[-2]):

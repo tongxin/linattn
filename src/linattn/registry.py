@@ -1,6 +1,6 @@
 """Name -> implementation registries.
 
-Two catalogues, because the two families have different interfaces:
+Three catalogues, because the families have different interfaces:
 
 ``VARIANTS``
     attention variants.  They take pre-projected ``(q, k, v)`` and implement the
@@ -11,10 +11,17 @@ Two catalogues, because the two families have different interfaces:
     DeltaNet-2).  They take a token embedding ``x`` of shape ``(B, T, d_model)`` and
     own their projections, so they cannot implement the ``(q, k, v)`` contract --
     registering them in ``VARIANTS`` would make ``build()`` and ``compare()`` lie.
+``KERNEL_VARIANTS``
+    backend-native implementations behind the same ``AttentionVariant`` API, named
+    ``<backend>_<variant>`` (currently ``mlx_dense``, ``mlx_quest``, ...).  These are
+    backends for an algorithm, not extra algorithm families, so the CLI catalogue
+    lists each variant once while ``build()`` can select a backend explicitly.
+    Their analytic cost model delegates to the matching torch variant, so they can
+    be costed without the accelerator runtime being installed.
 
 Keeping them in separate registries is right; keeping them *only* in the code (as
 happened until this was noticed) is not.  ``list_variants()`` and
-``list_mixers()`` are both surfaced by ``python -m linattn.cli variants`` so the
+``list_mixers()`` are surfaced by ``python -m linattn.cli variants`` so the
 catalogue you can read matches the catalogue you can run.
 """
 
@@ -41,12 +48,16 @@ from linattn.variants.selection import (
 
 __all__ = [
     "VARIANTS",
+    "KERNEL_VARIANTS",
     "MIXERS",
     "build",
+    "build_any",
     "build_mixer",
     "list_variants",
+    "list_kernel_variants",
     "list_mixers",
     "describe",
+    "describe_kernel",
     "describe_mixer",
     "MixerSpec",
 ]
@@ -72,6 +83,16 @@ VARIANTS: Dict[str, Type[AttentionVariant]] = {
     # compressed latent state
     "mla": MLAttention,
 }
+
+
+def _discover_kernel_variants() -> Dict[str, str]:
+    """Names of backend-native implementations, mapped to their torch reference."""
+    from linattn.kernels.mlx.variants import SUPPORTED as MLX_SUPPORTED
+
+    return {f"mlx_{name}": name for name in MLX_SUPPORTED}
+
+
+KERNEL_VARIANTS: Dict[str, str] = _discover_kernel_variants()
 
 
 @dataclass(frozen=True)
@@ -127,15 +148,32 @@ assert set(MIXERS) == set(STATE_KINDS), f"MIXERS {set(MIXERS)} != STATE_KINDS {s
 
 
 def build(name: str, cfg: AttnConfig | None = None, **kw: Any) -> AttentionVariant:
-    """Instantiate a variant by name (``cfg`` fields can be passed as keywords)."""
-    if name not in VARIANTS:
-        raise KeyError(f"unknown variant {name!r}; known: {sorted(VARIANTS)}")
-    return VARIANTS[name](cfg, **kw)
+    """Instantiate a torch or backend-native variant by name."""
+    if name in VARIANTS:
+        return VARIANTS[name](cfg, **kw)
+    if name in KERNEL_VARIANTS:
+        backend, _, base = name.partition("_")
+        if backend == "mlx":
+            from linattn.kernels.mlx.adapter import build_mlx
+
+            return build_mlx(base, cfg, **kw)
+    known = sorted([*VARIANTS, *KERNEL_VARIANTS])
+    raise KeyError(f"unknown variant {name!r}; known: {known}")
+
+
+def build_any(name: str, cfg: AttnConfig | None = None, **kw: Any) -> AttentionVariant:
+    """Alias for :func:`build` that makes the kernel dispatch explicit."""
+    return build(name, cfg, **kw)
 
 
 def list_variants() -> List[str]:
     """Canonical variant names, in the order used by the documentation."""
     return list(VARIANTS)
+
+
+def list_kernel_variants() -> List[str]:
+    """Canonical ``<backend>_<variant>`` names for backend-native implementations."""
+    return list(KERNEL_VARIANTS)
 
 
 def build_mixer(kind: str, **config_kwargs: Any) -> LinearAttentionLayer:
@@ -169,6 +207,8 @@ def describe_mixer(kind: str) -> Dict[str, Any]:
 
 def describe(name: str) -> Dict[str, Any]:
     """Metadata for one variant: family, whether it needs training, its citation."""
+    if name in KERNEL_VARIANTS:
+        return describe_kernel(name)
     cls = VARIANTS[name]
     return {
         "name": name,
@@ -177,4 +217,19 @@ def describe(name: str) -> Dict[str, Any]:
         "needs_training": getattr(cls, "trained", False),
         "citation": getattr(cls, "paper", ()),
         "docstring": (cls.__doc__ or "").strip().split("\n\n")[0].replace("\n", " "),
+    }
+
+
+def describe_kernel(name: str) -> Dict[str, Any]:
+    """Metadata for a backend-native variant, using its torch reference's citation."""
+    if name not in KERNEL_VARIANTS:
+        raise KeyError(f"unknown kernel variant {name!r}; known: {sorted(KERNEL_VARIANTS)}")
+    backend, _, base = name.partition("_")
+    meta = describe(base)
+    return {
+        **meta,
+        "name": name,
+        "class": f"{backend}_forward",
+        "family": backend,
+        "reference": base,
     }

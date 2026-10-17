@@ -1,6 +1,6 @@
 {
   "name": "mlx_decode",
-  "generated_utc": "2026-10-17T10:43:07Z",
+  "generated_utc": "2026-10-17T12:19:02Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
@@ -8,7 +8,10 @@
     "cuda": false,
     "mps": true,
     "triton_installed": false,
-    "flex_attention_importable": true
+    "triton_msl": false,
+    "flex_attention_importable": true,
+    "mlx_installed": true,
+    "mlx_metal": true
   },
   "records": [
     {
@@ -16,7 +19,7 @@
       "variant": "dense",
       "context": 4096,
       "reads_per_query": 4096.0,
-      "ms_per_step": 0.43524999637156725,
+      "ms_per_step": 0.646041939035058,
       "metal_kernel": 0.0
     },
     {
@@ -24,7 +27,7 @@
       "variant": "sliding_window",
       "context": 4096,
       "reads_per_query": 256.0,
-      "ms_per_step": 0.8857919601723552,
+      "ms_per_step": 0.8642090251669288,
       "metal_kernel": 0.0
     },
     {
@@ -32,7 +35,7 @@
       "variant": "quest",
       "context": 4096,
       "reads_per_query": 128.0,
-      "ms_per_step": 1.428958959877491,
+      "ms_per_step": 1.122875022701919,
       "metal_kernel": 1.0
     },
     {
@@ -40,7 +43,7 @@
       "variant": "dense",
       "context": 4096,
       "reads_per_query": 4096.0,
-      "ms_per_step": 0.42679207399487495,
+      "ms_per_step": 0.41816604789346457,
       "metal_kernel": 0.0
     },
     {
@@ -48,7 +51,7 @@
       "variant": "dense",
       "context": 16384,
       "reads_per_query": 16384.0,
-      "ms_per_step": 1.5012919902801514,
+      "ms_per_step": 1.3168749865144491,
       "metal_kernel": 0.0
     },
     {
@@ -56,7 +59,7 @@
       "variant": "sliding_window",
       "context": 16384,
       "reads_per_query": 256.0,
-      "ms_per_step": 1.1646670754998922,
+      "ms_per_step": 1.1892080074176192,
       "metal_kernel": 0.0
     },
     {
@@ -64,7 +67,7 @@
       "variant": "quest",
       "context": 16384,
       "reads_per_query": 128.0,
-      "ms_per_step": 2.31087498832494,
+      "ms_per_step": 1.590791973285377,
       "metal_kernel": 1.0
     },
     {
@@ -72,7 +75,7 @@
       "variant": "dense",
       "context": 16384,
       "reads_per_query": 16384.0,
-      "ms_per_step": 1.8586249789223075,
+      "ms_per_step": 1.6977499471977353,
       "metal_kernel": 0.0
     },
     {
@@ -80,7 +83,7 @@
       "variant": "dense",
       "context": 65536,
       "reads_per_query": 65536.0,
-      "ms_per_step": 4.223541007377207,
+      "ms_per_step": 4.112833994440734,
       "metal_kernel": 0.0
     },
     {
@@ -88,7 +91,7 @@
       "variant": "sliding_window",
       "context": 65536,
       "reads_per_query": 256.0,
-      "ms_per_step": 3.7529580295085907,
+      "ms_per_step": 3.726208000443876,
       "metal_kernel": 0.0
     },
     {
@@ -96,7 +99,7 @@
       "variant": "quest",
       "context": 65536,
       "reads_per_query": 128.0,
-      "ms_per_step": 5.178040941245854,
+      "ms_per_step": 5.799542064778507,
       "metal_kernel": 1.0
     }
   ]

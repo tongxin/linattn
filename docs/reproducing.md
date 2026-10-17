@@ -101,6 +101,22 @@ Three cautions that matter more than the numbers:
 | slow or stalling downloads | restricted or throttled network | use a mirror: `UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple make install`, or pre-download the wheel and `uv pip install <wheel>` |
 | reports look different from `reports/` | different machine, thread count, or torch version | compare the `environment` block in the JSON; the numbers are relative (ratios, recall, budgets), not absolute performance claims |
 
+## 5. Batch and request semantics
+
+| what | supported | notes |
+| --- | --- | --- |
+| equal-length batch (`B > 1`) | **yes** | every variant and mixer carries an explicit batch dimension. `tests/test_batching.py` asserts a batched call equals one call per item to < 1e-9, for single-shot prefill, chunked prefill and one-token-at-a-time decode |
+| per-item KV state | **yes** | state is `(B, H_kv, T, D)`; eviction variants compact each item independently (checked by a batched decode loop) |
+| MLX / Metal | **yes** | the Metal decode kernel's grid is `(32, h, b)`; verified at B = 2 in `tests/test_mlx.py` |
+| ragged / variable-length requests | **no** | there is no `lengths`/padding argument. Padding a short sequence would leak through the shared causal mask, so run one call per sequence length, or pass an explicit mask to `dense_attention` |
+| continuous batching / request scheduling | **no** | out of scope: this is a kernel-and-semantics repository, not a serving engine |
+| `random_eviction` batch invariance | **not applicable** | it draws from one RNG stream per call: deterministic for a fixed seed *and* shape, but a batched run is not equal to per-item runs by construction |
+
+```bash
+python bench/run_suite.py --seq 2048 --batch 4 --budget 256     # batched quality/cost sweep
+python -m pytest tests/test_batching.py -q                      # the batch guard
+```
+
 ## 5. Continuous integration
 
 `.github/workflows/ci.yml` runs `make check`, small benchmarks and a `-m gpu` job.

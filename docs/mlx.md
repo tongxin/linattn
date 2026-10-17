@@ -14,7 +14,12 @@ make check                    # MLX tests skip automatically if mlx is missing
 pytest tests/test_mlx.py -q   # the Metal parity suite
 make bench-mlx                # latency + numerics -> reports/mlx_decode.md
 python -m linattn.cli backends    # reports mlx_installed / mlx_metal
+python -m linattn.cli cost --seq 65536 --variants mlx_quest mlx_dsa
 ```
+
+`cost` lists each algorithm variant once and accepts explicit `mlx_*` backend names
+through `--variants`; their analytic cost delegates to the matching torch
+reference, so the table is available on a machine where MLX is not installed.
 
 ## What is implemented
 

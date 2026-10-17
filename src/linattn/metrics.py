@@ -30,6 +30,7 @@ __all__ = [
     "mass_recall",
     "sparsity_stats",
     "efficiency_table",
+    "text_table",
     "quality_table",
 ]
 
@@ -117,18 +118,61 @@ def sparsity_stats(selected: torch.Tensor) -> Dict[str, float]:
 # --------------------------------------------------------------------------------------
 # reporting helpers
 # --------------------------------------------------------------------------------------
-def efficiency_table(variants: Sequence[AttentionVariant], seq_len: int, batch: int = 1) -> str:
-    """Markdown table of analytic memory/FLOPs/read-budget for a set of variants."""
-    rows = [
-        "| variant | family | state @T (MiB) | attn FLOPs @T (G) | KV reads/query |",
-        "| --- | --- | --- | --- | --- |",
+def text_table(
+    headers: Sequence[str],
+    rows: Sequence[Sequence[str]],
+    *,
+    align: str = "l",
+) -> str:
+    """Render an aligned plain-text table suitable for a terminal."""
+    if len(align) != len(headers):
+        raise ValueError("align must have one entry per column")
+    body = [["" if cell is None else str(cell) for cell in row] for row in rows]
+    widths = [len(str(header)) for header in headers]
+    for row in body:
+        if len(row) != len(headers):
+            raise ValueError("every row must have one cell per column")
+        widths = [max(width, len(cell)) for width, cell in zip(widths, row)]
+
+    def pad(text: str, width: int, mode: str) -> str:
+        return text.rjust(width) if mode == "r" else text.ljust(width)
+
+    lines = [
+        "  ".join(pad(str(h), w, a) for h, w, a in zip(headers, widths, align)),
+        "  ".join("-" * w for w in widths),
     ]
+    lines += ["  ".join(pad(cell, w, a) for cell, w, a in zip(row, widths, align)).rstrip() for row in body]
+    return "\n".join(lines)
+
+
+def efficiency_table(
+    variants: Sequence[AttentionVariant],
+    seq_len: int,
+    batch: int = 1,
+    *,
+    markdown: bool = False,
+) -> str:
+    """Analytic memory/FLOPs/read-budget table for a set of variants.
+
+    The default is an aligned plain-text table for the CLI; pass
+    ``markdown=True`` when embedding the table in documentation.
+    """
+    headers = ["variant", "family", "state @T (MiB)", "attn FLOPs @T (G)", "KV reads/query"]
+    rows = []
     for v in variants:
         mem = v.memory_bytes(seq_len, batch) / 2**20
         fl = v.flops(seq_len, batch) / 1e9
         reads = v.read_budget(seq_len, batch)
-        rows.append(f"| `{v.name}` | {v.family} | {mem:.1f} | {fl:.1f} | {reads:,.0f} |")
-    return "\n".join(rows)
+        rows.append([v.name, v.family, f"{mem:.1f}", f"{fl:.1f}", f"{reads:,.0f}"])
+
+    if not markdown:
+        return text_table(headers, rows, align="llrrr")
+
+    lines = ["| " + " | ".join(headers) + " |"]
+    lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
+    for name, family, mem, fl, reads in rows:
+        lines.append(f"| `{name}` | {family} | {mem} | {fl} | {reads} |")
+    return "\n".join(lines)
 
 
 def quality_table(records: Sequence[Dict]) -> str:

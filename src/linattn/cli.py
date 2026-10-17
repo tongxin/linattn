@@ -20,8 +20,8 @@ import torch
 from linattn.core import dense_attention
 from linattn.harness import run_variant, structured_inputs, make_inputs
 from linattn.kernels import describe_backends
-from linattn.metrics import attention_mass, efficiency_table, mass_recall
-from linattn.registry import MIXERS, VARIANTS, build, build_mixer, describe, describe_mixer
+from linattn.metrics import attention_mass, efficiency_table, mass_recall, text_table
+from linattn.registry import MIXERS, VARIANTS, build, build_any, build_mixer, describe, describe_mixer
 
 
 def cmd_backends(args) -> int:
@@ -74,8 +74,23 @@ def cmd_mixers(args) -> int:
 
 
 def cmd_cost(args) -> int:
-    variants = [build(name, cfg_kwargs(args)) for name in (args.variants or list(VARIANTS))]
-    print(efficiency_table(variants, args.seq, batch=args.batch))
+    names = args.variants or list(VARIANTS)
+    variants = [build_any(name, cfg_kwargs(args)) for name in names]
+    print(efficiency_table(variants, args.seq, batch=args.batch, markdown=False))
+    print()
+    print("state mixers  (fixed-size state; x -> y, no growing KV cache)")
+    mixer_rows = []
+    for kind in MIXERS:
+        layer = build_mixer(kind, d_model=args.d_model, n_heads=args.mixer_heads, d_state=args.d_state)
+        floats = layer.cfg.n_heads * layer.cfg.d_state * layer.cfg.d_value
+        state_mib = layer.state_bytes(args.batch) / 2**20
+        flops_m = layer.decode_flops_per_token(args.batch) / 1e6
+        mixer_rows.append([kind, f"{floats:,}", f"{state_mib:.2f}", f"{flops_m:.1f}"])
+    print(text_table(
+        ["kind", "state floats", "state (MiB, fp32)", "decode FLOPs/token (M)"],
+        mixer_rows,
+        align="lrrr",
+    ))
     return 0
 
 
@@ -157,6 +172,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     cost = sub.add_parser("cost", help="analytic cost model")
     add_shape_args(cost)
+    cost.add_argument("--d-model", type=int, default=2048, dest="d_model")
+    cost.add_argument("--mixer-heads", type=int, default=16, dest="mixer_heads")
+    cost.add_argument("--d-state", type=int, default=128, dest="d_state")
     cost.add_argument("--variants", nargs="*", default=None)
     cost.set_defaults(func=cmd_cost)
 
