@@ -14,12 +14,18 @@ export PYTHONPATH := src
 help:  ## list targets
 	@grep -hE '^[a-z]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /: /' | column -t -s ':'
 
-venv:  ## create .venv (uv venv --python $(PY))
-	uv venv --python $(PY) .venv
+venv:  ## ensure .venv exists (idempotent, never prompts)
+	@if [ -x $(VENV_PY) ]; then \
+		printf 'reusing existing venv: %s (%s)\n' "$(CURDIR)/.venv" "$$($(VENV_PY) -V 2>&1)"; \
+	else \
+		printf 'creating .venv with Python %s\n' "$(PY)"; \
+		uv venv --python $(PY) --allow-existing .venv; \
+	fi
 
-install: venv  ## editable install of the package plus test dependencies
+install: venv  ## editable install of the package + pytest (safe to re-run)
 	uv pip install --python $(VENV_PY) -e ".[dev]"
 	@echo
+	@$(VENV_PY) -c "import linattn, torch, pytest; print('verified:', 'linattn', linattn.__version__, '| torch', torch.__version__, '| pytest', pytest.__version__)"
 	@echo "ready.  try:  make check   |   $(VENV_PY) -m linattn.cli backends"
 
 check:  ## validation suite + documentation consistency (fast)

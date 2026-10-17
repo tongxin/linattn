@@ -18,6 +18,12 @@ make install                 # uv venv --python 3.13 .venv && uv pip install -e 
 make PYTHON=python3 check    # or use an existing environment that has torch
 ```
 
+`make install` is safe to re-run: it reuses an existing `.venv` (and prints its
+Python version) rather than prompting to replace it, and re-installs the package
+in place. Delete `.venv` to force a fresh environment, and pass `PY=3.12` to pick
+the interpreter for a new one. The target ends by importing `linattn`, `torch` and
+`pytest`, so it fails loudly if the environment is not actually usable.
+
 There is no `numpy`, `matplotlib`, `pandas` or `transformers` dependency: nothing in
 the repository imports them (the manifest was trimmed to match, after an earlier
 version listed them speculatively). Plots are intentionally not produced — the
@@ -88,6 +94,7 @@ Three cautions that matter more than the numbers:
 | `pytest -m gpu` reports 0 tests | no CUDA GPU, or `triton` not installed | expected on a laptop: the Triton kernels are then exercised only through their torch fallbacks |
 | `bench_decode.py` prints "no C compiler available" | no `clang`/`cc`/`gcc` on `PATH` | install the platform compiler; the rest of the suite is unaffected |
 | `kernels/triton/*` imports fail | `triton` missing and no GPU | import paths are guarded; only the `-m gpu` tests need it |
+| `uv` fails with `Failed to initialize cache at ~/.cache/uv` | read-only home directory (sandboxed runner, locked-down CI) | point the cache elsewhere: `UV_CACHE_DIR=/tmp/uvcache make install` |
 | slow or stalling downloads | restricted or throttled network | use a mirror: `UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple make install`, or pre-download the wheel and `uv pip install <wheel>` |
 | reports look different from `reports/` | different machine, thread count, or torch version | compare the `environment` block in the JSON; the numbers are relative (ratios, recall, budgets), not absolute performance claims |
 

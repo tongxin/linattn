@@ -59,6 +59,12 @@ make all              # docs + check + bench + experiments
 same targets work with a conda/global install (`make PYTHON=python3 bench`). To
 pin a different interpreter for the venv: `make install PY=3.12`.
 
+`make install` is idempotent: it **reuses** an existing `.venv` (printing which
+interpreter it found) instead of asking to replace it, then reinstalls the package
+in place. Remove `.venv` yourself if you want a clean rebuild, and set `PY=...` to
+choose the interpreter for a new one. It finishes by importing `linattn`, `torch`
+and `pytest`, so a successful run is also a smoke test.
+
 What you get, and what to read first:
 
 | command | output | what it answers |
