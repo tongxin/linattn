@@ -14,7 +14,9 @@ Three backends are provided, in increasing order of how much hardware they assum
     hand-written Triton kernels for the operations where the compiler cannot win:
     fused indexer+top-k, paged selection, and the chunked delta-rule scan.
     Requires a CUDA GPU; each kernel ships with a ``*_torch`` fallback so the
-    interface is testable everywhere.
+    interface is testable everywhere.  On Apple Silicon the third-party
+    ``triton-msl`` backend can compile the *same* ``@triton.jit`` source to Metal
+    (alpha, per-kernel support) -- see ``docs/triton-on-apple.md``.
 
 ``linattn.kernels.describe_backends()`` reports what the current machine can run,
 which is what the benchmark scripts print in their report headers.
@@ -52,6 +54,15 @@ def has_flex_attention() -> bool:
         return False
 
 
+def has_triton_msl() -> bool:
+    """Third-party Apple-GPU Triton backend (``triton-msl``), if installed.
+
+    See ``docs/triton-on-apple.md``: it compiles ``@triton.jit`` to Metal, requires
+    Triton 3.7.x, and is alpha.  Detection is import-based so it stays optional.
+    """
+    return importlib.util.find_spec("triton_msl") is not None
+
+
 def describe_backends() -> Dict[str, object]:
     try:
         from linattn.kernels.mlx import metal_available, mlx_available
@@ -66,6 +77,7 @@ def describe_backends() -> Dict[str, object]:
         "cuda": has_cuda(),
         "mps": has_mps(),
         "triton_installed": has_triton(),
+        "triton_msl": has_triton_msl(),
         "flex_attention_importable": has_flex_attention(),
         "mlx_installed": mlx_ok,
         "mlx_metal": metal_ok,

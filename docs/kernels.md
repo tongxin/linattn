@@ -117,6 +117,10 @@ NVIDIA GPU); the C kernel has. The kernel-vs-reference parity tests are marked
 `gpu` and skipped automatically when no GPU is present, so the claim "the kernels
 agree with the reference" is testable but not claimed here for CUDA.
 
+For a Mac GPU the options are the MLX backend ([mlx.md](mlx.md)) or the third-party
+`triton-msl` compiler ([triton-on-apple.md](triton-on-apple.md));
+`python -m linattn.cli backends` reports whether either is installed.
+
 ## 3. The compiler path (the part most teams should use)
 
 Hand-written kernels are the wrong first move for most teams. The right move is

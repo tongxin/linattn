@@ -44,6 +44,12 @@ MLX-native primitives, a hand-written Metal paged-decode kernel, MLX
 re-implementations of dense/sliding/Quest/CSA, and an adapter that runs them through
 the same harness (`pytest tests/test_mlx.py`, `make bench-mlx`).
 
+To keep the `@triton.jit` source instead of porting to MLX, the third-party
+**`triton-msl`** compiler targets Metal through Triton's out-of-tree backend
+interface — alpha, pinned to Triton 3.7.0, and per-kernel support is
+source-dependent. Status, install path and caveats:
+[docs/triton-on-apple.md](docs/triton-on-apple.md).
+
 ## Running the benchmarks after cloning
 
 The only hard dependency is **PyTorch**; there is nothing to compile and no GPU or

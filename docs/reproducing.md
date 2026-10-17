@@ -13,6 +13,7 @@ the things that actually go wrong on a fresh machine.
 | `pytest` | `make check` | pulled in by `make install` (`.[dev]`) |
 | `triton` | only `pytest -m gpu` | CUDA-only; every Triton kernel has a torch fallback, and the GPU tests skip with a reason when no GPU is present |
 | `mlx` | only the Apple-Silicon backend | `uv pip install -e ".[mlx]"`; `pytest tests/test_mlx.py`, `make bench-mlx`. Skips cleanly elsewhere -- see [mlx.md](mlx.md) |
+| `triton-msl` | compiling the `@triton.jit` kernels for a Mac GPU | third-party, alpha, pinned to Triton 3.7.0 (no official macOS wheel): [triton-on-apple.md](triton-on-apple.md) |
 
 ```bash
 make install                 # uv venv --python 3.13 .venv && uv pip install -e ".[dev]"
