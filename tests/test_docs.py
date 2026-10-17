@@ -29,3 +29,13 @@ def test_variant_has_citation_in_code(name):
 def test_top_level_docs_exist():
     for name in ("survey.md", "evaluation-evidence.md", "frontier-gap.md", "kernels.md", "citations.bib"):
         assert (DOCS / name).exists(), f"missing docs/{name}"
+
+
+@pytest.mark.parametrize("kind", ["ssd", "gdn", "kda", "gdn2"])
+def test_state_mixers_page_documents_each_kind(kind):
+    """The mixers are not ``AttentionVariant``s, so they get their own page."""
+    page = DOCS / "variants" / "state_mixers.md"
+    assert page.exists(), "missing docs/variants/state_mixers.md (run scripts/gen_variant_docs.py)"
+    text = page.read_text(encoding="utf-8")
+    assert f"`{kind}`" in text, f"{kind} not documented on the state-mixers page"
+    assert "arxiv.org" in text

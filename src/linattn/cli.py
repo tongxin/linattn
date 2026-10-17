@@ -21,7 +21,7 @@ from linattn.core import dense_attention
 from linattn.harness import run_variant, structured_inputs, make_inputs
 from linattn.kernels import describe_backends
 from linattn.metrics import attention_mass, efficiency_table, mass_recall
-from linattn.registry import VARIANTS, build, describe
+from linattn.registry import MIXERS, VARIANTS, build, build_mixer, describe, describe_mixer
 
 
 def cmd_backends(args) -> int:
@@ -32,10 +32,44 @@ def cmd_backends(args) -> int:
 
 
 def cmd_variants(args) -> int:
+    print("attention variants  (q, k, v -> attention over a KV cache)")
     for name in VARIANTS:
         meta = describe(name)
         trained = "needs-training" if meta["needs_training"] else "training-free"
         print(f"{name:<18} {meta['family']:<10} {trained:<15} {meta['citation'][0] if meta['citation'] else ''}")
+    print()
+    print("state mixers  (x -> y with a fixed-size recurrent state; see docs/variants/state_mixers.md)")
+    for kind in MIXERS:
+        meta = describe_mixer(kind)
+        trained = "needs-training" if meta["needs_training"] else "training-free"
+        print(f"{kind:<18} {'mixer':<10} {trained:<15} {meta['citation'][0]}")
+    print()
+    print("hybrid stack  HybridLM interleaves attention layers with the mixers above "
+          "(see experiments/hybrid_recall.py)")
+    return 0
+
+
+def cmd_mixers(args) -> int:
+    """State/flop accounting per mixer kind at a given shape."""
+    from linattn.variants.recurrent import LinearAttentionConfig
+
+    cfg = LinearAttentionConfig(d_model=args.d_model, n_heads=args.heads, d_state=args.d_state)
+    print(f"{'kind':<8} {'decay':<34} {'state floats':>13} {'flops/token':>12}")
+    for kind in MIXERS:
+        layer = build_mixer(kind, d_model=args.d_model, n_heads=args.heads, d_state=args.d_state)
+        meta = describe_mixer(kind)
+        floats = layer.cfg.n_heads * layer.cfg.d_state * layer.cfg.d_value
+        print(f"{kind:<8} {meta['decay']:<34} {floats:>13} {layer.decode_flops_per_token():>12}")
+    print()
+    print("state size and per-token cost are identical across kinds; only the update")
+    print("rule (and therefore quality) differs. See reports/state_capacity.md for what")
+    print("a state of a given size can actually remember.")
+    print()
+    for kind in MIXERS:
+        meta = describe_mixer(kind)
+        print(f"{kind}: {meta['summary']}")
+        print(f"    recurrence: {meta['recurrence']}")
+        print(f"    gates: {meta['gates']}")
     return 0
 
 
@@ -113,7 +147,13 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--topk-tokens", type=int, default=256, dest="topk_tokens")
 
     sub.add_parser("backends", help="report available backends").set_defaults(func=cmd_backends)
-    sub.add_parser("variants", help="list variants").set_defaults(func=cmd_variants)
+    sub.add_parser("variants", help="list attention variants and state mixers").set_defaults(func=cmd_variants)
+
+    mixers = sub.add_parser("mixers", help="state-mixer accounting and recurrence forms")
+    mixers.add_argument("--d-model", type=int, default=2048, dest="d_model")
+    mixers.add_argument("--heads", type=int, default=16)
+    mixers.add_argument("--d-state", type=int, default=128, dest="d_state")
+    mixers.set_defaults(func=cmd_mixers)
 
     cost = sub.add_parser("cost", help="analytic cost model")
     add_shape_args(cost)

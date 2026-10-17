@@ -103,6 +103,12 @@ knobs and troubleshooting: [docs/reproducing.md](docs/reproducing.md).
 | native sparse | `nsa` | compressed + selected + window branches with learned gates |
 | compressed state | `mla`; `ssd` / `gdn` / `kda` / **`gdn2`** layers; `hybrid` | fixed-size state instead of a growing cache |
 
+`python -m linattn.cli variants` lists both families (attention variants **and**
+the state mixers), and `python -m linattn.cli mixers` prints each mixer's decay,
+gates, state size and per-token cost. The mixers have their own page,
+[docs/variants/state_mixers.md](docs/variants/state_mixers.md), because they take
+`x` rather than pre-projected `(q, k, v)`.
+
 Scored KV eviction (H2O, SnapKV, PyramidKV) was **retired** rather than shipped: on
 reasoning workloads the selection score contributes almost nothing, and uniform
 random eviction matches the strongest tuned selector while computing no scores

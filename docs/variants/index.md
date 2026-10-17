@@ -2,6 +2,8 @@
 
 One page per implemented variant, generated from the code by `scripts/gen_variant_docs.py`. The taxonomy behind the grouping is in [the survey](../survey.md#3-taxonomy).
 
+The fixed-size-state models are documented separately, because they take `x` instead of `(q, k, v)`: **[state mixers](state_mixers.md)** (SSD / Gated DeltaNet / KDA / Gated DeltaNet-2).
+
 | variant | family | training | mechanism |
 | --- | --- | --- | --- |
 | [`dense`](dense.md) | dense | no | Full softmax attention: the oracle, and the reference point for cost models. |
