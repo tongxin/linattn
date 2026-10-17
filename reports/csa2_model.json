@@ -1,0 +1,178 @@
+{
+  "name": "csa2_model",
+  "generated_utc": "2026-10-17T13:17:08Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": false,
+    "triton_installed": false,
+    "triton_msl": false,
+    "flex_attention_importable": true,
+    "mlx_installed": false,
+    "mlx_metal": false
+  },
+  "records": [
+    {
+      "experiment": "footprint",
+      "config": "csa2_reported",
+      "detail": "DeepSeek-V4.1-Flash reported global KV: 890 B/token across ~61 layers",
+      "bytes_per_token": 890.0,
+      "kib_per_token": 0.869140625,
+      "sharing_group": 0,
+      "bits": 4,
+      "divergence": 0.0
+    },
+    {
+      "experiment": "footprint",
+      "config": "csa2",
+      "detail": "576 values/token, fp4, shared over 4 layers",
+      "bytes_per_token": 5183.999999999999,
+      "kib_per_token": 5.062499999999999,
+      "sharing_group": 4,
+      "bits": 4,
+      "divergence": 0.0
+    },
+    {
+      "experiment": "footprint",
+      "config": "csa2_reach890",
+      "detail": "576 values/token, fp4, shared over 21 layers",
+      "bytes_per_token": 972.0,
+      "kib_per_token": 0.94921875,
+      "sharing_group": 21,
+      "bits": 4,
+      "divergence": 0.0
+    },
+    {
+      "experiment": "sharing",
+      "config": "sigma=0",
+      "detail": "4-layer groups, fp4, pool x32",
+      "bytes_per_token": 9.0,
+      "kib_per_token": 0.0087890625,
+      "sharing_group": 4,
+      "bits": 4,
+      "divergence": 0.0
+    },
+    {
+      "experiment": "sharing",
+      "config": "sigma=0.05",
+      "detail": "4-layer groups, fp4, pool x32",
+      "bytes_per_token": 9.0,
+      "kib_per_token": 0.0087890625,
+      "sharing_group": 4,
+      "bits": 4,
+      "divergence": 0.0677323117852211
+    },
+    {
+      "experiment": "sharing",
+      "config": "sigma=0.2",
+      "detail": "4-layer groups, fp4, pool x32",
+      "bytes_per_token": 9.0,
+      "kib_per_token": 0.0087890625,
+      "sharing_group": 4,
+      "bits": 4,
+      "divergence": 0.267198383808136
+    },
+    {
+      "experiment": "sharing",
+      "config": "sigma=1",
+      "detail": "4-layer groups, fp4, pool x32",
+      "bytes_per_token": 9.0,
+      "kib_per_token": 0.0087890625,
+      "sharing_group": 4,
+      "bits": 4,
+      "divergence": 1.002363681793213
+    },
+    {
+      "experiment": "cost",
+      "config": "dense_fp16 @ 32768",
+      "detail": "mlp",
+      "bytes_per_token": 249856.0,
+      "kib_per_token": 244.0,
+      "sharing_group": 0,
+      "bits": 0,
+      "divergence": 677.49340152139
+    },
+    {
+      "experiment": "cost",
+      "config": "dense_fp16 @ 131072",
+      "detail": "attn",
+      "bytes_per_token": 249856.0,
+      "kib_per_token": 244.0,
+      "sharing_group": 0,
+      "bits": 0,
+      "divergence": 9213.751477051474
+    },
+    {
+      "experiment": "cost",
+      "config": "dense_fp16 @ 1048576",
+      "detail": "attn",
+      "bytes_per_token": 249856.0,
+      "kib_per_token": 244.0,
+      "sharing_group": 0,
+      "bits": 0,
+      "divergence": 559325.4261818668
+    },
+    {
+      "experiment": "cost",
+      "config": "mla @ 32768",
+      "detail": "mlp",
+      "bytes_per_token": 70272.0,
+      "kib_per_token": 68.625,
+      "sharing_group": 0,
+      "bits": 0,
+      "divergence": 677.49340152139
+    },
+    {
+      "experiment": "cost",
+      "config": "mla @ 131072",
+      "detail": "attn",
+      "bytes_per_token": 70272.0,
+      "kib_per_token": 68.625,
+      "sharing_group": 0,
+      "bits": 0,
+      "divergence": 9213.751477051474
+    },
+    {
+      "experiment": "cost",
+      "config": "mla @ 1048576",
+      "detail": "attn",
+      "bytes_per_token": 70272.0,
+      "kib_per_token": 68.625,
+      "sharing_group": 0,
+      "bits": 0,
+      "divergence": 559325.4261818668
+    },
+    {
+      "experiment": "cost",
+      "config": "csa2 @ 32768",
+      "detail": "mlp",
+      "bytes_per_token": 5183.999999999999,
+      "kib_per_token": 5.062499999999999,
+      "sharing_group": 0,
+      "bits": 0,
+      "divergence": 677.49340152139
+    },
+    {
+      "experiment": "cost",
+      "config": "csa2 @ 131072",
+      "detail": "attn",
+      "bytes_per_token": 5184.0,
+      "kib_per_token": 5.0625,
+      "sharing_group": 0,
+      "bits": 0,
+      "divergence": 9213.751477051474
+    },
+    {
+      "experiment": "cost",
+      "config": "csa2 @ 1048576",
+      "detail": "attn",
+      "bytes_per_token": 5183.999999999999,
+      "kib_per_token": 5.062499999999999,
+      "sharing_group": 0,
+      "bits": 0,
+      "divergence": 559325.4261818668
+    }
+  ]
+}

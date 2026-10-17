@@ -216,6 +216,18 @@ NOTES: Dict[str, str] = {
         and cross-layer reuse on top of the compressed latent. The `compression_ratio`
         here reports the KV-footprint reduction for DeepSeek-V2-style shapes.
     """,
+    "csa2": """
+        This is the **per-layer** CSA2 mechanism: pooled groups, an FP4/FP8 cache with
+        per-group scales, indexer top-k over groups, and a raw local window kept disjoint
+        from the pooled groups so no token is counted twice. It is *not* the released
+        layer: there is no trained indexer, no published layer schedule, and the FP4 path
+        is a simulated codec (packed byte accounting, FP32 arithmetic after
+        dequantisation). Cross-layer reuse lives outside the variant, in
+        `kv/reuse.py` + `kv/csa2.py`, because it is a property of the layer *stack*.
+        `reports/csa2_model.md` shows the footprint decomposition (the reported 890
+        B/token is not what one-copy-per-four-layers yields) and the divergence that
+        sharing introduces as neighbouring layers disagree.
+    """,
 }
 
 

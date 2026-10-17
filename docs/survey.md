@@ -334,39 +334,48 @@ small number of exact-attention layers is the cheapest way to buy back retrieval
 ---
 
 ### 4.5 The KV storage and data-management layer
-+
-+The layer has its own building blocks, each with a distinct effect on cost:
-+
-+* **allocator** -- paged blocks with copy-on-write sharing (PagedAttention); block
-+  granularity is what lets sparse attention's block selection double as a cache
-+  lookup;
-+* **prefix/radix cache** -- content-hashed block chains (RadixAttention) that turn a
-+  prompt re-read into a lookup; this is where "input-heavy agentic workload" is
-+  actually paid for;
-+* **admission and eviction** -- LRU vs TTL-aware vs FIFO vs Belady; the public
-+  agentic-cache analysis finds LRU at the practical frontier and TTL gaps responsible
-+  for 17.5% of recompute;
-+* **tiering and offload** -- HBM/DRAM/SSD, processing-near-memory decode, SSD-backed
-+  sparse KV;
-+* **compression and quantisation** -- MLA latents, CSA groups, fp8/fp4 KV; these cut
-+  *bytes*, not attention FLOPs;
-+* **cross-layer reuse** -- sharing one index or one KV copy across layers
-+  (IndexCache, LongCat LSA);
-+* **state checkpoints** -- hybrids need snapshots of a recurrent state for prefix
-+  reuse (DASC, ReplaySSM), and their footprint is constant in context;
-+* **memory-guided eviction** -- using the recurrent state to decide what the
-+  attention layers keep (GateSight, DeltaS).
-+
-+The instrument added to this repository makes the trade-offs explicit
-+([kv-layer.md](kv-layer.md)). Its headline results, measured with the analytic model:
-+compressing KV from dense fp16 to MLA to CSA2 reduces the 1M-token footprint from
-+245 GiB to 69 GiB to 0.9 GiB while leaving attention time *unchanged* (it is
-+compute-bound); 10% sparse reads move attention below the MLP cost at 128k but buy
-+little below 2%; a KDA state removes the quadratic term entirely (272 ms vs 559 s at
-+1M) and is constant at 0.03 GiB; and on an agentic trace LRU sits at the Belady
-+bound while random eviction loses a third of the hit rate.
-+
-+## 5. What the evidence says about the workloads that matter
+
+The layer has its own building blocks, each with a distinct effect on cost:
+
+* **allocator** -- paged blocks with copy-on-write sharing (PagedAttention); block
+  granularity is what lets sparse attention's block selection double as a cache
+  lookup;
+* **prefix/radix cache** -- content-hashed block chains (RadixAttention) that turn a
+  prompt re-read into a lookup; this is where "input-heavy agentic workload" is
+  actually paid for;
+* **admission and eviction** -- LRU vs TTL-aware vs FIFO vs Belady; the public
+  agentic-cache analysis finds LRU at the practical frontier and TTL gaps responsible
+  for 17.5% of recompute;
+* **tiering and offload** -- HBM/DRAM/SSD, processing-near-memory decode, SSD-backed
+  sparse KV;
+* **compression and quantisation** -- MLA latents, CSA groups, fp8/fp4 KV; these cut
+  *bytes*, not attention FLOPs;
+* **cross-layer reuse** -- sharing one index or one KV copy across layers
+  (IndexCache, LongCat LSA);
+* **state checkpoints** -- hybrids need snapshots of a recurrent state for prefix
+  reuse (DASC, ReplaySSM), and their footprint is constant in context;
+* **memory-guided eviction** -- using the recurrent state to decide what the
+  attention layers keep (GateSight, DeltaS).
+
+The instrument added to this repository makes the trade-offs explicit
+([kv-layer.md](kv-layer.md)). Its headline results, measured with the analytic model:
+compressing KV from dense fp16 to MLA to CSA2 reduces the 1M-token footprint from
+245 GiB to 69 GiB to 0.9 GiB while leaving attention time *unchanged* (it is
+compute-bound); 10% sparse reads move attention below the MLP cost at 128k but buy
+little below 2%; a KDA state removes the quadratic term entirely (272 ms vs 559 s at
+1M) and is constant at 0.03 GiB; and on an agentic trace LRU sits at the Belady
+bound while random eviction loses a third of the hit rate.
+
+The layer is now modelled end to end as well: `kv/quant.py` (E2M1/FP8 group-wise
+codecs), `kv/reuse.py` (cross-layer sharing plans) and `kv/csa2.py` (a multi-layer
+stack that reads one representative's compressed KV) compose into CSA2. The
+composition does not reproduce the reported 890 B/token with one copy per four layers
+(~5.2 KiB/token); reaching ~890 requires roughly three stored copies across the model,
+or a smaller latent. Sharing divergence grows with how much neighbouring layers
+disagree (0 at identical layers, 0.27 at sigma=0.2, ~1.0 at independent layers), which
+is why cross-layer reuse has to be trained in rather than applied post hoc.
+
+## 5. What the evidence says about the workloads that matter
 
 Full detail and per-benchmark tables: [evaluation-evidence.md](evaluation-evidence.md).
 

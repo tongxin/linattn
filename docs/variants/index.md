@@ -18,4 +18,5 @@ The fixed-size-state models are documented separately, because they take `x` ins
 | [`dsa`](dsa.md) | selection | yes | DeepSeek Sparse Attention: learned lightning indexer + top-k token selection. |
 | [`seerattention_r`](seerattention_r.md) | selection | yes | Learned block pooling gate, adapted for long decoding. |
 | [`nsa`](nsa.md) | native | yes | Three-branch native sparse attention (inference semantics of NSA). |
+| [`csa2`](csa2.md) | native | yes | Compressed, low-precision, sparsely-selected attention (one layer). |
 | [`mla`](mla.md) | compressed | no | Latent KV cache with per-head up-projections. |

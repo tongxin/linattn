@@ -32,6 +32,7 @@ from typing import Any, Dict, List, Tuple, Type
 
 from linattn.core import AttentionVariant, AttnConfig, DenseAttention
 from linattn.variants.eviction import RandomEvictionBaseline
+from linattn.variants.csa2 import CSA2Attention
 from linattn.variants.local import SlidingWindowAttention, StreamingSinkAttention
 from linattn.variants.mla import MLAttention
 from linattn.variants.native_sparse import NSAAttention
@@ -80,6 +81,7 @@ VARIANTS: Dict[str, Type[AttentionVariant]] = {
     "seerattention_r": SeerAttentionR,
     # native (trainable) sparse attention
     "nsa": NSAAttention,
+    "csa2": CSA2Attention,
     # compressed latent state
     "mla": MLAttention,
 }

@@ -219,7 +219,9 @@ def build_parser() -> argparse.ArgumentParser:
     kv.add_argument("--output", type=int, default=4096)
     kv.add_argument("--batch", type=int, default=1)
     kv.add_argument("--hit-rate", type=float, default=0.0, dest="hit_rate")
-    kv.add_argument("--format", default="mla", choices=["dense_fp16", "dense_fp8", "mla", "csa2", "gdn_state"])
+    kv.add_argument("--format", default="mla",
+                    choices=["dense_fp16", "dense_fp8", "mla", "csa2", "csa2_reported", "csa2_reach890",
+                             "gdn_state"])
     kv.add_argument("--kv-read-fraction", type=float, default=1.0, dest="kv_read_fraction")
     kv.add_argument("--compute-kind", default="dense", choices=["dense", "sparse", "recurrent"],
                     dest="compute_kind")

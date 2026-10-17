@@ -38,7 +38,7 @@ to it.
 make check          # ~5 s   75 validation checks, writes nothing
 make bench          # ~10 s  reports/suite_<T>_<budget>.{json,md}, reports/decode_<T>_<dim>.{json,md}
 make bench-mlx      # Apple Silicon only: reports/mlx_decode.{json,md}
-make kv             # <1 s   reports/kv_economics.{json,md} (formats, hit rate, cache policies)
+make kv             # ~5 s   reports/kv_economics.{json,md} + reports/csa2_model.{json,md}
 make experiments    # ~3 min reports/{selector_capacity,state_capacity,hybrid_recall}.{json,md}
 make docs           # regenerate docs/variants/*.md from the class docstrings and cost models
 make all            # docs, check, bench, experiments

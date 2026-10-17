@@ -41,8 +41,9 @@ bench:  ## quality/cost sweep and the decode-IO benchmark -> reports/
 bench-mlx:  ## Apple Silicon: MLX/Metal decode benchmark (needs `make install` + mlx)
 	$(PYTHON) bench/bench_mlx.py --lengths 4096 16384 65536
 
-kv:  ## KV layer economics: formats, hit rate, cache policies -> reports/
+kv:  ## KV layer: economics, cache policies and the CSA2 stack model -> reports/
 	$(PYTHON) experiments/kv_economics.py
+	$(PYTHON) experiments/csa2_model.py
 
 experiments:  ## the three studies behind the survey's empirical claims
 	$(PYTHON) experiments/selector_capacity.py

@@ -64,7 +64,10 @@ which tier and what a miss costs**. That layer is modelled and measured here:
   variants);
 - `experiments/kv_economics.py` -> `reports/kv_economics.md`: format x context x hit
   rate, algorithm leverage (dense / 10% / 2% sparse / recurrent), and a policy sweep
-  on an agentic trace.
+  on an agentic trace;
+- `experiments/csa2_model.py` -> `reports/csa2_model.md`: CSA2 end to end --
+  footprint (reported 890 B/token vs the composed pieces), the divergence cross-layer
+  sharing introduces as layers disagree, and the attention term it leaves untouched.
 
 The headline: compression (MLA, CSA2) cuts footprint by orders of magnitude and leaves
 attention time unchanged; sparsity cuts attention until the MLP becomes the wall; a
@@ -124,6 +127,7 @@ knobs and troubleshooting: [docs/reproducing.md](docs/reproducing.md).
 | query-aware selection | `quest`, `minference`, `flexprefill`, `xattention`, `moba`, `dsa`, `seerattention_r` | keep the cache, choose which blocks/tokens to read |
 | native sparse | `nsa` | compressed + selected + window branches with learned gates |
 | compressed state | `mla`; `ssd` / `gdn` / `kda` / **`gdn2`** layers; `hybrid` | fixed-size state instead of a growing cache |
+| compressed + quantised (CSA2-style) | **`csa2`** | pooled key groups + FP4/FP8 cache + top-k group selection, with cross-layer sharing modelled by `CSA2Stack` |
 
 `python -m linattn.cli variants` lists both families (attention variants **and**
 the state mixers), and `python -m linattn.cli mixers` prints each mixer's decay,

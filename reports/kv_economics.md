@@ -1,6 +1,6 @@
 # KV layer economics: format, context and the value of a cache hit
 
-*Generated 2026-10-17T12:52:54Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-10-17T13:17:04Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
 Roofline cost model: attention = max(FLOPs, KV reads / HBM bandwidth), plus KV writes, tier promotion, recompute-on-miss and prefix-cache lookups. 61 layers, 32 KV heads x 128, fp16 tensor cores, H100-class bandwidths. The state format is charged linear-time FLOPs (it is a different algorithm, not just a smaller cache). `dominant` names the largest component -- that is the point of the table. Trace: 294 requests, 37 sessions over 19271 s, mean 78 blocks/request (1242 tokens); capacities [256, 1024, 4096] blocks x 16 tokens, ttl_lru TTL 300 s. Belady is a block-level upper bound, optimistic for prefix reuse.
 
@@ -42,18 +42,18 @@ Roofline cost model: attention = max(FLOPs, KV reads / HBM bandwidth), plus KV w
 | format | mla | 0 | 1048576 | 0 | 68.89 | 5.593e+05 | 2.612e+04 | 5.81e+05 | 22.08 | 1.166e+06 | recompute |
 | format | mla | 0 | 1048576 | 0.5 | 68.89 | 5.593e+05 | 2.612e+04 | 1.518e+05 | 22.08 | 7.372e+05 | attn |
 | format | mla | 0 | 1048576 | 0.9 | 68.89 | 5.593e+05 | 2.612e+04 | 8151 | 22.08 | 5.936e+05 | attn |
-| format | csa2 | 0 | 8192 | 0 | 0.01019 | 67.75 | 304.9 | 237.1 | 0.003265 | 610 | mlp |
-| format | csa2 | 0 | 8192 | 0.5 | 0.01019 | 67.75 | 304.9 | 110.1 | 0.003265 | 483 | mlp |
-| format | csa2 | 0 | 8192 | 0.9 | 0.01019 | 67.75 | 304.9 | 20.66 | 0.003265 | 393.6 | mlp |
-| format | csa2 | 0 | 32768 | 0 | 0.03056 | 677.5 | 914.6 | 1355 | 0.009794 | 2948 | recompute |
-| format | csa2 | 0 | 32768 | 0.5 | 0.03056 | 677.5 | 914.6 | 542 | 0.009794 | 2135 | mlp |
-| format | csa2 | 0 | 32768 | 0.9 | 0.03056 | 677.5 | 914.6 | 86.7 | 0.009794 | 1680 | mlp |
-| format | csa2 | 0 | 131072 | 0 | 0.112 | 9214 | 3354 | 1.192e+04 | 0.03591 | 2.449e+04 | recompute |
-| format | csa2 | 0 | 131072 | 0.5 | 0.112 | 9214 | 3354 | 3794 | 0.03591 | 1.636e+04 | attn |
-| format | csa2 | 0 | 131072 | 0.9 | 0.112 | 9214 | 3354 | 411.9 | 0.03591 | 1.298e+04 | attn |
-| format | csa2 | 0 | 1048576 | 0 | 0.8725 | 5.593e+05 | 2.612e+04 | 5.81e+05 | 0.2797 | 1.166e+06 | recompute |
-| format | csa2 | 0 | 1048576 | 0.5 | 0.8725 | 5.593e+05 | 2.612e+04 | 1.518e+05 | 0.2797 | 7.372e+05 | attn |
-| format | csa2 | 0 | 1048576 | 0.9 | 0.8725 | 5.593e+05 | 2.612e+04 | 8151 | 0.2797 | 5.936e+05 | attn |
+| format | csa2 | 0 | 8192 | 0 | 0.05933 | 67.75 | 304.9 | 237.1 | 0.01902 | 610.1 | mlp |
+| format | csa2 | 0 | 8192 | 0.5 | 0.05933 | 67.75 | 304.9 | 110.1 | 0.01902 | 483 | mlp |
+| format | csa2 | 0 | 8192 | 0.9 | 0.05933 | 67.75 | 304.9 | 20.66 | 0.01902 | 393.6 | mlp |
+| format | csa2 | 0 | 32768 | 0 | 0.178 | 677.5 | 914.6 | 1355 | 0.05705 | 2948 | recompute |
+| format | csa2 | 0 | 32768 | 0.5 | 0.178 | 677.5 | 914.6 | 542 | 0.05705 | 2135 | mlp |
+| format | csa2 | 0 | 32768 | 0.9 | 0.178 | 677.5 | 914.6 | 86.7 | 0.05705 | 1680 | mlp |
+| format | csa2 | 0 | 131072 | 0 | 0.6526 | 9214 | 3354 | 1.192e+04 | 0.2092 | 2.449e+04 | recompute |
+| format | csa2 | 0 | 131072 | 0.5 | 0.6526 | 9214 | 3354 | 3794 | 0.2092 | 1.636e+04 | attn |
+| format | csa2 | 0 | 131072 | 0.9 | 0.6526 | 9214 | 3354 | 411.9 | 0.2092 | 1.298e+04 | attn |
+| format | csa2 | 0 | 1048576 | 0 | 5.082 | 5.593e+05 | 2.612e+04 | 5.81e+05 | 1.629 | 1.166e+06 | recompute |
+| format | csa2 | 0 | 1048576 | 0.5 | 5.082 | 5.593e+05 | 2.612e+04 | 1.518e+05 | 1.629 | 7.372e+05 | attn |
+| format | csa2 | 0 | 1048576 | 0.9 | 5.082 | 5.593e+05 | 2.612e+04 | 8151 | 1.629 | 5.936e+05 | attn |
 | format | gdn_state | 0 | 8192 | 0 | 0.02979 | 3.176 | 304.9 | 205.4 | 0.01909 | 513.7 | mlp |
 | format | gdn_state | 0 | 8192 | 0.5 | 0.02979 | 3.176 | 304.9 | 102.7 | 0.01909 | 411 | mlp |
 | format | gdn_state | 0 | 8192 | 0.9 | 0.02979 | 3.176 | 304.9 | 20.53 | 0.01909 | 328.9 | mlp |

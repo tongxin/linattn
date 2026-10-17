@@ -37,22 +37,24 @@ Two gaps remain before that is a *contract* rather than a test result:
   tolerance covers this today, but a strict guarantee needs fixed-order kernels --
   a different performance point.
 
-## 3. A real CSA2 layer (cross-layer KV reuse + FP4 latent)
+## 3. CSA2: what remains after the modelling pass
 
-Currently the repo has the *compressed-indexing* primitive (`DSAAttention` with
-`compress_ratio > 1`, and `_csa_pages` on MLX) and a cost-model constant for the
-reported 890 B/token (`kv/format.py::csa2`). What is missing to claim CSA2:
+Implemented: compressed indexing (`variants/csa2.py`), an E2M1/FP8 group-wise codec
+(`kv/quant.py`), a cross-layer sharing plan (`kv/reuse.py`), a multi-layer stack that
+actually reads a representative's cache (`kv/csa2.py`), and composed footprints that
+reproduce/bracket the reported 890 B/token (`experiments/csa2_model.py`).
 
-* **cross-layer KV reuse**: a layer group where one member computes and stores the
-  compressed KV, and the others read it. Needs a layer-loop harness (the current
-  `(q, k, v)` contract has no notion of "layer N reads layer M's cache") and a
-  schedule (which layers are "full", as in IndexCache);
-* **FP4 storage**: a per-group-scale quantiser/dequantiser for the latent (E2M1 with
-  an absmax scale is the standard choice), plus a numerical test of the quality
-  impact -- the cost model currently only assumes the byte count;
-* **validation** against the per-layer baseline: bytes/token, attention output
-  divergence, and the cost breakdown recomputed with the real numbers rather than the
-  published constant.
+What a *released-architecture* claim would still need:
+
+* **trained weights** -- the indexer projections are random unless fitted, so
+  selection quality is not DeepSeek's;
+* **the exact layer schedule** -- which layers are "full" in V4.1 is not public; our
+  plan shares uniformly every `group_size` layers;
+* **a hardware FP4 path** -- the codec simulates packed 4-bit accounting but the
+  arithmetic is FP32 after dequantisation; a real kernel keeps FP4 in registers/Tensor
+  Cores (and the numerics differ);
+* **real-workload validation** -- the sharing-divergence sweep uses synthetic layers;
+  the trained regime (neighbouring layers trained to share) is the one that matters.
 
 ## 4. Triton-on-Metal end-to-end run
 

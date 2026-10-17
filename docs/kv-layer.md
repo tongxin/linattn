@@ -150,21 +150,67 @@ quality. Those matter for capacity planning and are better measured. What it *is
 is the question the survey keeps returning to -- **which term dominates, and did my
 change move it** -- and that question it answers exactly.
 
-## 7. CSA2: what it is, and what this repository actually implements
+## 7. CSA2: what it is, and what is implemented here
 
 **CSA2 = Compressed Sparse Attention 2**, the attention/KV design in
-DeepSeek-V4.1-Flash (arXiv:2609.19969). It is the composition of three mechanisms,
-not a single algorithm:
+DeepSeek-V4.1-Flash (arXiv:2609.19969). It composes three mechanisms:
 
-| component | what it does | in this repo? |
+| component | what it does | status |
 | --- | --- | --- |
-| **compressed indexing** | score *pooled* key groups instead of every token, then expand the selected groups back to tokens -- this is what makes the indexer cheap enough for every layer | **yes, as a primitive**: `DSAAttention(compress_ratio>1)` (torch) and `_csa_pages` (MLX) |
-| **cross-layer KV reuse** | one cached KV copy (or one index set) per *group* of layers instead of per layer; the surveyed papers are IndexCache (arXiv:2603.12201) and LongCat LSA (arXiv:2608.01662) | **no** -- neither the reuse schedule nor a shared-KV layer exists; the cost model can only *assume* a smaller footprint |
-| **FP4 KV** | store the latent at 4 bits per value with per-group scales, roughly halving bytes versus fp8 | **no** -- there is no quantiser; the `csa2` preset just hard-codes the reported 890 B/token |
-| **reported outcome** | 890 bytes/token of global KV at 1M context, ~1/4 of V4-Flash | a **cost-model constant** (`format.py::PRESETS["csa2"]`), used in `reports/kv_economics.md` |
+| **compressed indexing** | score *pooled* key groups instead of every token, then read the selected groups | **implemented**: `variants/csa2.py::CSA2Attention` (plus the DSA compressed path and MLX `_csa_pages`) |
+| **cross-layer KV reuse** | one stored KV copy per *group* of layers; the others read it | **implemented as a model**: `kv/reuse.py::CrossLayerPlan` + `kv/csa2.py::CSA2Stack` (and `DSAAttention`-style shared reading) |
+| **FP4 KV** | store the latent at 4 bits/value with per-group scales | **implemented as a codec**: `kv/quant.py` (E2M1, group-wise scales, plus FP8 e4m3) |
 
-So: the *indexing* idea is implemented and tested; the *storage* ideas (cross-layer
-sharing, FP4) are only modelled. Do not read the `csa2` row in the economics table as
-"we implemented CSA2" -- it is the published footprint plugged into the cost model so
-that the storage-vs-compute trade-off can be compared. `docs/roadmap.md` lists what a
-real CSA2 layer would need.
+`python experiments/csa2_model.py` runs all three end to end and writes
+`reports/csa2_model.md`.
+
+### The footprint does not simply "compose" to 890 B/token
+
+890 B/token is the number in the report. Composing the pieces at plausible settings
+gives a spread, and the spread is the useful result:
+
+| configuration | bytes/token (global, 61 layers) |
+| --- | ---: |
+| reported (V4.1-Flash) | **890** |
+| 576-value MLA latent, FP4, one copy per 4 layers | 5,184 |
+| 576-value MLA latent, FP4, ~3 copies total (group 21) | 972 |
+
+So 890 is consistent with roughly **three stored copies across the model**, or with a
+latent smaller than the 576-value MLA shape -- *not* with one copy per four layers.
+The lesson generalises: "cross-layer reuse" is a knob with an order of magnitude of
+range, and quoting a bytes/token number without the sharing group is not reproducible.
+The model keeps all three as named presets (`csa2_reported`, `csa2`, `csa2_reach890`)
+so the comparison is not lost.
+
+### Sharing has a price, and it is measurable
+
+`CSA2Stack` runs a multi-layer stack where each group reads one representative's
+compressed KV. Sweeping how much the layers disagree (`sigma`, where 0 means the
+group's layers have identical KV) gives:
+
+| layer disagreement | output divergence from per-layer storage |
+| --- | ---: |
+| 0 (identical) | **0.0000** |
+| 0.05 | 0.068 |
+| 0.20 | 0.267 |
+| 1.0 (independent) | 1.002 |
+
+Sharing is therefore an *architectural* property: it must be trained in, as CSA2 and
+IndexCache do. A post-hoc copy of one layer's cache into another is not free, and the
+model reports the divergence instead of assuming it away. Quantisation alone, by
+contrast, is mild: FP4 on the compressed cache moves the output by about 4% on these
+synthetic inputs (`tests/test_csa2.py` pins the ordering FP16 < FP8 < FP4 in error).
+
+### What is still not the released architecture
+
+* no trained checkpoint -- the indexer projections are random unless fitted, so the
+  *selection* quality here is not DeepSeek's;
+* no exact layer schedule (which layers are "full" in V4.1 is not public);
+* the FP4 path is a simulated codec, not a hardware kernel: bytes are accounted as
+  packed 4-bit plus scales, but the arithmetic runs in FP32 after dequantisation;
+* pooled keys on *random* synthetic data are nearly orthogonal, so the quality numbers
+  in the report describe the plumbing, not what a trained model would lose.
+
+What the model does establish, exactly: the byte accounting, the sharing multiplier,
+the divergence that reuse introduces as a function of layer disagreement, and that the
+storage win leaves the attention term untouched (see section 4).
