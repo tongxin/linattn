@@ -132,6 +132,35 @@ def cmd_select(args) -> int:
     return 0
 
 
+def cmd_kv_cost(args) -> int:
+    """KV-layer cost breakdown: which term dominates, and what a hit is worth."""
+    from linattn.kv import PRESETS, Hardware, ModelShape, Workload, breakdown
+
+    fmt = PRESETS[args.format]
+    hw = Hardware(kv_tier=args.kv_tier, cached_tier=args.cached_tier)
+    work = Workload(
+        prompt_tokens=args.prompt,
+        output_tokens=args.output,
+        batch=args.batch,
+        hit_rate=args.hit_rate,
+        kv_read_fraction=args.kv_read_fraction,
+        compute_kind=args.compute_kind,
+    )
+    b = breakdown(fmt, ModelShape(), hw, work)
+    print(f"format={fmt.name}  prompt={args.prompt:,}  output={args.output:,}  batch={args.batch}  "
+          f"hit_rate={args.hit_rate:.2f}  compute={args.compute_kind}")
+    print(f"KV footprint: {b.kv_bytes / 2**30:.2f} GiB ({b.cached_bytes / 2**30:.2f} GiB served from cache)")
+    print()
+    print(f"{'component':<12}{'ms':>12}{'share':>9}")
+    for name, ms in sorted(b.components.items(), key=lambda kv: -kv[1]):
+        share = 100.0 * ms / b.total_ms if b.total_ms else 0.0
+        print(f"{name:<12}{ms:>12.1f}{share:>8.1f}%")
+    print(f"{'total':<12}{b.total_ms:>12.1f}{100.0:>8.1f}%")
+    print()
+    print(f"dominant term: {b.dominant}   (aim algorithmic work here)")
+    return 0
+
+
 def _selection_mask(variant, q, k, v):
     """Best-effort extraction of a variant's read mask (for recall reporting)."""
     from linattn.variants.selection import BlockSelectionAttention
@@ -184,6 +213,19 @@ def build_parser() -> argparse.ArgumentParser:
     sel.add_argument("--structured", action="store_true", help="plant retrieval structure in the inputs")
     sel.add_argument("--seed", type=int, default=0)
     sel.set_defaults(func=cmd_select)
+
+    kv = sub.add_parser("kv-cost", help="KV layer cost breakdown (storage, hit rate, recompute)")
+    kv.add_argument("--prompt", type=int, default=131072)
+    kv.add_argument("--output", type=int, default=4096)
+    kv.add_argument("--batch", type=int, default=1)
+    kv.add_argument("--hit-rate", type=float, default=0.0, dest="hit_rate")
+    kv.add_argument("--format", default="mla", choices=["dense_fp16", "dense_fp8", "mla", "csa2", "gdn_state"])
+    kv.add_argument("--kv-read-fraction", type=float, default=1.0, dest="kv_read_fraction")
+    kv.add_argument("--compute-kind", default="dense", choices=["dense", "sparse", "recurrent"],
+                    dest="compute_kind")
+    kv.add_argument("--kv-tier", default="hbm", choices=["hbm", "dram", "ssd"], dest="kv_tier")
+    kv.add_argument("--cached-tier", default="hbm", choices=["hbm", "dram", "ssd"], dest="cached_tier")
+    kv.set_defaults(func=cmd_kv_cost)
     return parser
 
 

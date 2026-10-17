@@ -50,6 +50,28 @@ interface — alpha, pinned to Triton 3.7.0, and per-kernel support is
 source-dependent. Status, install path and caveats:
 [docs/triton-on-apple.md](docs/triton-on-apple.md).
 
+### KV storage layer
+
+Attention decides how many entries to read; the KV layer decides **which bytes are in
+which tier and what a miss costs**. That layer is modelled and measured here:
+
+- `src/linattn/kv/` -- KV formats in bytes/token (dense fp16/fp8, MLA, CSA2, fixed
+  recurrent state), a block prefix cache with LRU / TTL-LRU / FIFO / random and a
+  Belady oracle, an agentic trace generator, and a cost model that reports a
+  breakdown and names the dominant term;
+- `python -m linattn.cli kv-cost --prompt 131072 --hit-rate 0.8 --format mla` prints
+  that breakdown (`--hit-rate` is explicit, as is `--kv-read-fraction` for sparse
+  variants);
+- `experiments/kv_economics.py` -> `reports/kv_economics.md`: format x context x hit
+  rate, algorithm leverage (dense / 10% / 2% sparse / recurrent), and a policy sweep
+  on an agentic trace.
+
+The headline: compression (MLA, CSA2) cuts footprint by orders of magnitude and leaves
+attention time unchanged; sparsity cuts attention until the MLP becomes the wall; a
+KDA state removes the quadratic term entirely. Details: [docs/kv-layer.md](docs/kv-layer.md).
+Deferred work (ragged batching, batch invariance as a contract) is in
+[docs/roadmap.md](docs/roadmap.md).
+
 ## Running the benchmarks after cloning
 
 The only hard dependency is **PyTorch**; there is nothing to compile and no GPU or

@@ -94,6 +94,14 @@ about inventing new sparsity patterns.**
    attention, but this is inference from pricing, not documentation.
    See [frontier-gap.md](frontier-gap.md).
 
+10. **The KV storage layer is now a first-class design surface, not a serving
+    detail.** Model reports lead with bytes/token (890 B/token in V4.1-Flash, -75%
+    from the KDA hybrid), not only with attention speed; agentic sessions pay for
+    *re-reading* prefixes, and the hit rate decides whether a prompt is recomputed or
+    streamed back. The repo now models this explicitly: formats in bytes/token, a
+    prefix-cache simulator with LRU/TTL/Belady, and a cost breakdown whose output is
+    "which term dominates". See [kv-layer.md](kv-layer.md).
+
 ---
 
 ## 2. Method and sources
@@ -325,7 +333,40 @@ small number of exact-attention layers is the cheapest way to buy back retrieval
 
 ---
 
-## 5. What the evidence says about the workloads that matter
+### 4.5 The KV storage and data-management layer
++
++The layer has its own building blocks, each with a distinct effect on cost:
++
++* **allocator** -- paged blocks with copy-on-write sharing (PagedAttention); block
++  granularity is what lets sparse attention's block selection double as a cache
++  lookup;
++* **prefix/radix cache** -- content-hashed block chains (RadixAttention) that turn a
++  prompt re-read into a lookup; this is where "input-heavy agentic workload" is
++  actually paid for;
++* **admission and eviction** -- LRU vs TTL-aware vs FIFO vs Belady; the public
++  agentic-cache analysis finds LRU at the practical frontier and TTL gaps responsible
++  for 17.5% of recompute;
++* **tiering and offload** -- HBM/DRAM/SSD, processing-near-memory decode, SSD-backed
++  sparse KV;
++* **compression and quantisation** -- MLA latents, CSA groups, fp8/fp4 KV; these cut
++  *bytes*, not attention FLOPs;
++* **cross-layer reuse** -- sharing one index or one KV copy across layers
++  (IndexCache, LongCat LSA);
++* **state checkpoints** -- hybrids need snapshots of a recurrent state for prefix
++  reuse (DASC, ReplaySSM), and their footprint is constant in context;
++* **memory-guided eviction** -- using the recurrent state to decide what the
++  attention layers keep (GateSight, DeltaS).
++
++The instrument added to this repository makes the trade-offs explicit
++([kv-layer.md](kv-layer.md)). Its headline results, measured with the analytic model:
++compressing KV from dense fp16 to MLA to CSA2 reduces the 1M-token footprint from
++245 GiB to 69 GiB to 0.9 GiB while leaving attention time *unchanged* (it is
++compute-bound); 10% sparse reads move attention below the MLP cost at 128k but buy
++little below 2%; a KDA state removes the quadratic term entirely (272 ms vs 559 s at
++1M) and is constant at 0.03 GiB; and on an agentic trace LRU sits at the Belady
++bound while random eviction loses a third of the hit rate.
++
++## 5. What the evidence says about the workloads that matter
 
 Full detail and per-benchmark tables: [evaluation-evidence.md](evaluation-evidence.md).
 
@@ -567,3 +608,10 @@ FreeSolo (arXiv:2610.17191); NAMOH (arXiv:2609.38832); HySparse2
 (arXiv:2609.26368); SparseEngine (arXiv:2609.39068); DeltaS (arXiv:2609.27470);
 GateSight (arXiv:2610.14754); HLA (arXiv:2610.05842); Optimizing NSA
 (arXiv:2511.00819).
+
+KV storage layer: PagedAttention (arXiv:2309.06180); SGLang/RadixAttention
+(arXiv:2312.07104); InplaceKVCache (arXiv:2609.14507); SSD-backed sparse KV
+(arXiv:2609.36938); processing-near-memory decode (arXiv:2608.03555); ESS
+(arXiv:2512.10576); DASC (arXiv:2608.30386); ReplaySSM (arXiv:2610.13778); GateSight
+(arXiv:2610.14754); DeltaS (arXiv:2609.27470); SparseEngine (arXiv:2609.39068);
+HySparse2 (arXiv:2609.26368).

@@ -9,7 +9,7 @@ PYTHON ?= $(shell test -x $(VENV_PY) && echo $(VENV_PY) || echo python3)
 
 export PYTHONPATH := src
 
-.PHONY: help venv install check docs bench bench-mlx experiments all clean
+.PHONY: help venv install check docs bench bench-mlx kv experiments all clean
 
 help:  ## list targets
 	@grep -hE '^[a-z]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /: /' | column -t -s ':'
@@ -41,12 +41,15 @@ bench:  ## quality/cost sweep and the decode-IO benchmark -> reports/
 bench-mlx:  ## Apple Silicon: MLX/Metal decode benchmark (needs `make install` + mlx)
 	$(PYTHON) bench/bench_mlx.py --lengths 4096 16384 65536
 
+kv:  ## KV layer economics: formats, hit rate, cache policies -> reports/
+	$(PYTHON) experiments/kv_economics.py
+
 experiments:  ## the three studies behind the survey's empirical claims
 	$(PYTHON) experiments/selector_capacity.py
 	$(PYTHON) experiments/state_capacity.py
 	$(PYTHON) experiments/hybrid_recall.py --steps 250
 
-all: docs check bench experiments  ## everything above, in order
+all: docs check bench kv experiments  ## everything above, in order
 
 clean:  ## remove generated reports and caches (keeps .venv)
 	rm -f reports/suite_*.json reports/suite_*.md reports/decode_*.json reports/decode_*.md
