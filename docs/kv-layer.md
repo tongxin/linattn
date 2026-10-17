@@ -149,3 +149,22 @@ no P/D disaggregation latency, no SSD queue depth, no compression artefacts on
 quality. Those matter for capacity planning and are better measured. What it *is* for
 is the question the survey keeps returning to -- **which term dominates, and did my
 change move it** -- and that question it answers exactly.
+
+## 7. CSA2: what it is, and what this repository actually implements
+
+**CSA2 = Compressed Sparse Attention 2**, the attention/KV design in
+DeepSeek-V4.1-Flash (arXiv:2609.19969). It is the composition of three mechanisms,
+not a single algorithm:
+
+| component | what it does | in this repo? |
+| --- | --- | --- |
+| **compressed indexing** | score *pooled* key groups instead of every token, then expand the selected groups back to tokens -- this is what makes the indexer cheap enough for every layer | **yes, as a primitive**: `DSAAttention(compress_ratio>1)` (torch) and `_csa_pages` (MLX) |
+| **cross-layer KV reuse** | one cached KV copy (or one index set) per *group* of layers instead of per layer; the surveyed papers are IndexCache (arXiv:2603.12201) and LongCat LSA (arXiv:2608.01662) | **no** -- neither the reuse schedule nor a shared-KV layer exists; the cost model can only *assume* a smaller footprint |
+| **FP4 KV** | store the latent at 4 bits per value with per-group scales, roughly halving bytes versus fp8 | **no** -- there is no quantiser; the `csa2` preset just hard-codes the reported 890 B/token |
+| **reported outcome** | 890 bytes/token of global KV at 1M context, ~1/4 of V4-Flash | a **cost-model constant** (`format.py::PRESETS["csa2"]`), used in `reports/kv_economics.md` |
+
+So: the *indexing* idea is implemented and tested; the *storage* ideas (cross-layer
+sharing, FP4) are only modelled. Do not read the `csa2` row in the economics table as
+"we implemented CSA2" -- it is the published footprint plugged into the cost model so
+that the storage-vs-compute trade-off can be compared. `docs/roadmap.md` lists what a
+real CSA2 layer would need.

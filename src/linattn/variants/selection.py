@@ -670,10 +670,17 @@ class DSAAttention(BlockSelectionAttention):
     with the top ``k`` scores (2048 in the V3.2 release) are then read by the core
     attention, which in DeepSeek's case is MLA over the selected tokens.
 
-    ``compress_ratio > 1`` implements the V4/V4.1 *Compressed* Sparse Attention
-    (CSA) variant: the indexer scores pooled keys, and the selected groups expand
-    to the tokens they contain.  That is what makes the indexer cheap enough to
-    sit in front of every layer.
+    ``compress_ratio > 1`` implements the **compressed-indexing part** of CSA/CSA2:
+    the indexer scores pooled keys and the selected groups expand to the tokens they
+    contain -- the mechanism that makes the indexer cheap enough to sit in front of
+    every layer.
+
+    It is **not** CSA2.  CSA2 (DeepSeek-V4.1-Flash, arXiv:2609.19969) also (a)
+    reuses one cached KV copy across a group of layers and (b) stores the latent in
+    FP4.  This variant does neither: it is single-layer and fp32, and the ``csa2``
+    entry in ``kv/format.py`` is a cost-model constant taken from the report, not an
+    implementation.  See ``docs/kv-layer.md`` for the component-by-component mapping
+    and ``docs/roadmap.md`` for the gap.
 
     Because the indexer is a *learned* component, a randomly initialised one is
     meaningless; :meth:`fit` trains the indexer projections on calibration inputs

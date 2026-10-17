@@ -37,7 +37,24 @@ Two gaps remain before that is a *contract* rather than a test result:
   tolerance covers this today, but a strict guarantee needs fixed-order kernels --
   a different performance point.
 
-## 3. Triton-on-Metal end-to-end run
+## 3. A real CSA2 layer (cross-layer KV reuse + FP4 latent)
+
+Currently the repo has the *compressed-indexing* primitive (`DSAAttention` with
+`compress_ratio > 1`, and `_csa_pages` on MLX) and a cost-model constant for the
+reported 890 B/token (`kv/format.py::csa2`). What is missing to claim CSA2:
+
+* **cross-layer KV reuse**: a layer group where one member computes and stores the
+  compressed KV, and the others read it. Needs a layer-loop harness (the current
+  `(q, k, v)` contract has no notion of "layer N reads layer M's cache") and a
+  schedule (which layers are "full", as in IndexCache);
+* **FP4 storage**: a per-group-scale quantiser/dequantiser for the latent (E2M1 with
+  an absmax scale is the standard choice), plus a numerical test of the quality
+  impact -- the cost model currently only assumes the byte count;
+* **validation** against the per-layer baseline: bytes/token, attention output
+  divergence, and the cost breakdown recomputed with the real numbers rather than the
+  published constant.
+
+## 4. Triton-on-Metal end-to-end run
 
 `docs/triton-on-apple.md` verifies the `triton-msl` plugin, its entry point, and the
 unofficial Triton wheel for cp314/macOS 15+. The GPU run is deferred: it needs a 3.14
