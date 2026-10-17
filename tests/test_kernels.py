@@ -115,9 +115,9 @@ def test_delta_chunk_fallback_matches_layer():
     x = torch.randn(1, 16, 32, dtype=torch.float64)
     with torch.no_grad():
         y_ref, s_ref = layer.forward_recurrent(x)
-    q, k, v, beta, g = layer._project(x)
+    q, k, v, erase, write, g = layer._project(x)
     state = torch.zeros(1, cfg.n_heads, cfg.d_state, cfg.d_value, dtype=torch.float64)
-    out, new_state = delta_chunk(q, k, v, beta, g, state, use_erase=True, backend="torch")
+    out, new_state = delta_chunk(q, k, v, erase, g, state, use_erase=True, backend="torch")
     projected = layer.o_proj(out.transpose(1, 2).reshape(1, 16, -1))
     assert torch.allclose(projected, y_ref, atol=1e-8)
     assert torch.allclose(new_state, s_ref, atol=1e-8)

@@ -1,6 +1,6 @@
 {
   "name": "suite_2048_256",
-  "generated_utc": "2026-10-16T12:30:55Z",
+  "generated_utc": "2026-10-17T10:44:19Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
@@ -8,7 +8,9 @@
     "cuda": false,
     "mps": false,
     "triton_installed": false,
-    "flex_attention_importable": true
+    "flex_attention_importable": true,
+    "mlx_installed": false,
+    "mlx_metal": false
   },
   "records": [
     {
@@ -20,7 +22,7 @@
       "mass_recall": null,
       "kv_reads": 2048.0,
       "state_bytes": 2097152.0,
-      "latency_ms": 70.81558392383158,
+      "latency_ms": 64.62520803324878,
       "peak_mib": 0.0,
       "extra": {},
       "reads_per_query": 2048.0,
@@ -36,7 +38,7 @@
       "mass_recall": null,
       "kv_reads": 243.5595703125,
       "state_bytes": 266240.0,
-      "latency_ms": 43.632542015984654,
+      "latency_ms": 44.40320795401931,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 243.5595703125
@@ -54,7 +56,7 @@
       "mass_recall": null,
       "kv_reads": 243.5595703125,
       "state_bytes": 266240.0,
-      "latency_ms": 41.163124958984554,
+      "latency_ms": 40.88937502820045,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 243.5595703125
@@ -64,72 +66,15 @@
       "error": ""
     },
     {
-      "variant": "h2o",
-      "family": "eviction",
-      "seq": 2048,
-      "rel_err": 0.8249635233787995,
-      "max_abs_err": 5.74522408673157,
-      "mass_recall": null,
-      "kv_reads": 480.75,
-      "state_bytes": 2097152.0,
-      "latency_ms": 18.05666706059128,
-      "peak_mib": 0.0,
-      "extra": {
-        "reads_per_query": 480.75,
-        "evicted_tokens": 898.625
-      },
-      "reads_per_query": 480.75,
-      "state_kib": 2048.0,
-      "error": ""
-    },
-    {
-      "variant": "snapkv",
-      "family": "eviction",
-      "seq": 2048,
-      "rel_err": 0.27960365270382354,
-      "max_abs_err": 5.745221635356787,
-      "mass_recall": null,
-      "kv_reads": 480.0,
-      "state_bytes": 2097152.0,
-      "latency_ms": 18.611000035889447,
-      "peak_mib": 0.0,
-      "extra": {
-        "reads_per_query": 480.0,
-        "evicted_tokens": 896.0
-      },
-      "reads_per_query": 480.0,
-      "state_kib": 2048.0,
-      "error": ""
-    },
-    {
-      "variant": "pyramidkv",
-      "family": "eviction",
-      "seq": 2048,
-      "rel_err": 0.27960365270382354,
-      "max_abs_err": 5.745221635356787,
-      "mass_recall": null,
-      "kv_reads": 480.0,
-      "state_bytes": 2097152.0,
-      "latency_ms": 18.397250096313655,
-      "peak_mib": 0.0,
-      "extra": {
-        "reads_per_query": 480.0,
-        "evicted_tokens": 896.0
-      },
-      "reads_per_query": 480.0,
-      "state_kib": 2048.0,
-      "error": ""
-    },
-    {
       "variant": "random_eviction",
-      "family": "eviction",
+      "family": "baseline",
       "seq": 2048,
       "rel_err": 0.7981548852400608,
       "max_abs_err": 5.745224095394031,
       "mass_recall": null,
       "kv_reads": 480.75,
       "state_bytes": 2097152.0,
-      "latency_ms": 18.352624960243702,
+      "latency_ms": 18.153541954234242,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 480.75,
@@ -143,19 +88,19 @@
       "variant": "quest",
       "family": "selection",
       "seq": 2048,
-      "rel_err": 0.12451980275514579,
-      "max_abs_err": 0.8620741276585947,
-      "mass_recall": 0.8761532024795535,
-      "kv_reads": 368.2734375,
+      "rel_err": 0.09581745994946368,
+      "max_abs_err": 0.6623245915381718,
+      "mass_recall": 0.9125262135573158,
+      "kv_reads": 444.6953125,
       "state_bytes": 2097152.0,
-      "latency_ms": 64.13187505677342,
+      "latency_ms": 63.142958912067115,
       "peak_mib": 0.0,
       "extra": {
-        "reads_per_query": 368.2734375,
-        "pages_per_query": 7.7464599609375,
-        "mass_recall": 0.8761532024795535
+        "reads_per_query": 444.6953125,
+        "pages_per_query": 7.8155517578125,
+        "mass_recall": 0.9125262135573158
       },
-      "reads_per_query": 368.2734375,
+      "reads_per_query": 444.6953125,
       "state_kib": 2048.0,
       "error": ""
     },
@@ -168,7 +113,7 @@
       "mass_recall": 0.539172571697273,
       "kv_reads": 298.4501953125,
       "state_bytes": 2097152.0,
-      "latency_ms": 79.7610420268029,
+      "latency_ms": 82.20825006719679,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 298.4501953125,
@@ -191,7 +136,7 @@
       "mass_recall": 1.0,
       "kv_reads": 887.46875,
       "state_bytes": 2097152.0,
-      "latency_ms": 74.72266594413668,
+      "latency_ms": 71.92112505435944,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 887.46875,
@@ -212,7 +157,7 @@
       "mass_recall": 0.9666583920667509,
       "kv_reads": 99.66796875,
       "state_bytes": 2097152.0,
-      "latency_ms": 63.59362497460097,
+      "latency_ms": 63.958457903936505,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 99.66796875,
@@ -232,7 +177,7 @@
       "mass_recall": 1.0,
       "kv_reads": 449.90625,
       "state_bytes": 2097152.0,
-      "latency_ms": 52.018500049598515,
+      "latency_ms": 56.29633297212422,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 449.90625,
@@ -252,7 +197,7 @@
       "mass_recall": 1.0,
       "kv_reads": 533.5643920898438,
       "state_bytes": 2097152.0,
-      "latency_ms": 73.94875003956258,
+      "latency_ms": 72.52100005280226,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 533.5643920898438,
@@ -272,7 +217,7 @@
       "mass_recall": 0.6485294112400206,
       "kv_reads": 449.5,
       "state_bytes": 2097152.0,
-      "latency_ms": 48.5108750872314,
+      "latency_ms": 50.17704202327877,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 449.5,
@@ -291,7 +236,7 @@
       "mass_recall": null,
       "kv_reads": 768.0,
       "state_bytes": 2097152.0,
-      "latency_ms": 90.28429200407118,
+      "latency_ms": 89.74487497471273,
       "peak_mib": 0.0,
       "extra": {
         "reads_per_query": 768.0,
@@ -310,7 +255,7 @@
       "mass_recall": null,
       "kv_reads": 2048.0,
       "state_bytes": 262144.0,
-      "latency_ms": 46.61466693505645,
+      "latency_ms": 47.38741705659777,
       "peak_mib": 0.0,
       "extra": {},
       "reads_per_query": 2048.0,

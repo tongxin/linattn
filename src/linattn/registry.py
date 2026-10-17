@@ -10,12 +10,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Type
 
 from linattn.core import AttentionVariant, AttnConfig, DenseAttention
-from linattn.variants.eviction import (
-    H2OAttention,
-    PyramidKVAttention,
-    RandomEvictionAttention,
-    SnapKVAttention,
-)
+from linattn.variants.eviction import RandomEvictionBaseline
 from linattn.variants.local import SlidingWindowAttention, StreamingSinkAttention
 from linattn.variants.mla import MLAttention
 from linattn.variants.native_sparse import NSAAttention
@@ -37,11 +32,8 @@ VARIANTS: Dict[str, Type[AttentionVariant]] = {
     # structural / local sparsity
     "sliding_window": SlidingWindowAttention,
     "streaming_sink": StreamingSinkAttention,
-    # KV eviction / compaction
-    "h2o": H2OAttention,
-    "snapkv": SnapKVAttention,
-    "pyramidkv": PyramidKVAttention,
-    "random_eviction": RandomEvictionAttention,
+    # control baseline for the retired eviction family
+    "random_eviction": RandomEvictionBaseline,
     # query-aware selection
     "quest": QuestAttention,
     "minference": MInferenceAttention,

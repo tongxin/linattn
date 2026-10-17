@@ -1,6 +1,6 @@
 {
   "name": "decode_65536_64",
-  "generated_utc": "2026-10-16T12:30:57Z",
+  "generated_utc": "2026-10-17T10:44:31Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
@@ -8,7 +8,9 @@
     "cuda": false,
     "mps": false,
     "triton_installed": false,
-    "flex_attention_importable": true
+    "flex_attention_importable": true,
+    "mlx_installed": false,
+    "mlx_metal": false
   },
   "records": [
     {
@@ -16,104 +18,104 @@
       "budget": 65536,
       "kv_entries": 65536,
       "bytes_read_mib": 32.0,
-      "ms": 0.5112909711897373,
-      "bandwidth_gib_s": 61.11979628211211
+      "ms": 0.5295840092003345,
+      "bandwidth_gib_s": 59.00857929450537
     },
     {
       "policy": "c_naive",
       "budget": 256,
       "kv_entries": 256,
       "bytes_read_mib": 0.125,
-      "ms": 0.009292038157582283,
-      "bandwidth_gib_s": 13.137086872635246
+      "ms": 0.009333016350865364,
+      "bandwidth_gib_s": 13.0794062616939
     },
     {
       "policy": "c_tiled",
       "budget": 256,
       "kv_entries": 256,
       "bytes_read_mib": 0.125,
-      "ms": 0.010041054338216782,
-      "bandwidth_gib_s": 12.157120994295784
+      "ms": 0.010249903425574303,
+      "bandwidth_gib_s": 11.909410989709924
     },
     {
       "policy": "c_naive",
       "budget": 1024,
       "kv_entries": 1024,
       "bytes_read_mib": 0.5,
-      "ms": 0.018125050701200962,
-      "bandwidth_gib_s": 26.93957981412138
+      "ms": 0.019000028260052204,
+      "bandwidth_gib_s": 25.698974933980356
     },
     {
       "policy": "c_tiled",
       "budget": 1024,
       "kv_entries": 1024,
       "bytes_read_mib": 0.5,
-      "ms": 0.023541972041130066,
-      "bandwidth_gib_s": 20.740881398844845
+      "ms": 0.023707980290055275,
+      "bandwidth_gib_s": 20.595649398477782
     },
     {
       "policy": "c_naive",
       "budget": 2048,
       "kv_entries": 2048,
       "bytes_read_mib": 1.0,
-      "ms": 0.030374969355762005,
-      "bandwidth_gib_s": 32.15023819652843
+      "ms": 0.03212492447346449,
+      "bandwidth_gib_s": 30.398904153273588
     },
     {
       "policy": "c_tiled",
       "budget": 2048,
       "kv_entries": 2048,
       "bytes_read_mib": 1.0,
-      "ms": 0.04108308348804712,
-      "bandwidth_gib_s": 23.77042853378143
+      "ms": 0.04191696643829346,
+      "bandwidth_gib_s": 23.29754710273729
     },
     {
       "policy": "c_naive",
       "budget": 8192,
       "kv_entries": 8192,
       "bytes_read_mib": 4.0,
-      "ms": 0.10683306027203798,
-      "bandwidth_gib_s": 36.56405601461933
+      "ms": 0.10579102672636509,
+      "bandwidth_gib_s": 36.924209178002904
     },
     {
       "policy": "c_tiled",
       "budget": 8192,
       "kv_entries": 8192,
       "bytes_read_mib": 4.0,
-      "ms": 0.1509580761194229,
-      "bandwidth_gib_s": 25.876389660065396
+      "ms": 0.14641601592302322,
+      "bandwidth_gib_s": 26.679116866925764
     },
     {
       "policy": "torch_selected",
       "budget": 256,
       "kv_entries": 256,
       "bytes_read_mib": 0.125,
-      "ms": 0.005624955520033836,
-      "bandwidth_gib_s": 21.701560495053602
+      "ms": 0.005790963768959045,
+      "bandwidth_gib_s": 21.07944676744934
     },
     {
       "policy": "torch_selected",
       "budget": 1024,
       "kv_entries": 1024,
       "bytes_read_mib": 0.5,
-      "ms": 0.010624993592500687,
-      "bandwidth_gib_s": 45.955910067055264
+      "ms": 0.01066701952368021,
+      "bandwidth_gib_s": 45.77485293957153
     },
     {
       "policy": "torch_selected",
       "budget": 2048,
       "kv_entries": 2048,
       "bytes_read_mib": 1.0,
-      "ms": 0.016124919056892395,
-      "bandwidth_gib_s": 60.56231951022294
+      "ms": 0.017042038962244987,
+      "bandwidth_gib_s": 57.3031491222078
     },
     {
       "policy": "torch_selected",
       "budget": 8192,
       "kv_entries": 8192,
       "bytes_read_mib": 4.0,
-      "ms": 0.051875016652047634,
-      "bandwidth_gib_s": 75.30118064734752
+      "ms": 0.0522910850122571,
+      "bandwidth_gib_s": 74.70202615004776
     }
   ]
 }

@@ -1,0 +1,103 @@
+{
+  "name": "mlx_decode",
+  "generated_utc": "2026-10-17T10:43:07Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": true,
+    "triton_installed": false,
+    "flex_attention_importable": true
+  },
+  "records": [
+    {
+      "device": "mlx-metal",
+      "variant": "dense",
+      "context": 4096,
+      "reads_per_query": 4096.0,
+      "ms_per_step": 0.43524999637156725,
+      "metal_kernel": 0.0
+    },
+    {
+      "device": "mlx-metal",
+      "variant": "sliding_window",
+      "context": 4096,
+      "reads_per_query": 256.0,
+      "ms_per_step": 0.8857919601723552,
+      "metal_kernel": 0.0
+    },
+    {
+      "device": "mlx-metal",
+      "variant": "quest",
+      "context": 4096,
+      "reads_per_query": 128.0,
+      "ms_per_step": 1.428958959877491,
+      "metal_kernel": 1.0
+    },
+    {
+      "device": "torch-cpu",
+      "variant": "dense",
+      "context": 4096,
+      "reads_per_query": 4096.0,
+      "ms_per_step": 0.42679207399487495,
+      "metal_kernel": 0.0
+    },
+    {
+      "device": "mlx-metal",
+      "variant": "dense",
+      "context": 16384,
+      "reads_per_query": 16384.0,
+      "ms_per_step": 1.5012919902801514,
+      "metal_kernel": 0.0
+    },
+    {
+      "device": "mlx-metal",
+      "variant": "sliding_window",
+      "context": 16384,
+      "reads_per_query": 256.0,
+      "ms_per_step": 1.1646670754998922,
+      "metal_kernel": 0.0
+    },
+    {
+      "device": "mlx-metal",
+      "variant": "quest",
+      "context": 16384,
+      "reads_per_query": 128.0,
+      "ms_per_step": 2.31087498832494,
+      "metal_kernel": 1.0
+    },
+    {
+      "device": "torch-cpu",
+      "variant": "dense",
+      "context": 16384,
+      "reads_per_query": 16384.0,
+      "ms_per_step": 1.8586249789223075,
+      "metal_kernel": 0.0
+    },
+    {
+      "device": "mlx-metal",
+      "variant": "dense",
+      "context": 65536,
+      "reads_per_query": 65536.0,
+      "ms_per_step": 4.223541007377207,
+      "metal_kernel": 0.0
+    },
+    {
+      "device": "mlx-metal",
+      "variant": "sliding_window",
+      "context": 65536,
+      "reads_per_query": 256.0,
+      "ms_per_step": 3.7529580295085907,
+      "metal_kernel": 0.0
+    },
+    {
+      "device": "mlx-metal",
+      "variant": "quest",
+      "context": 65536,
+      "reads_per_query": 128.0,
+      "ms_per_step": 5.178040941245854,
+      "metal_kernel": 1.0
+    }
+  ]
+}

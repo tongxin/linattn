@@ -39,6 +39,11 @@ make experiments                                      # the three studies -> rep
 Everything runs on CPU. The Triton kernels are imported lazily, validated by a
 parity harness, and skipped with an explicit reason when there is no CUDA GPU.
 
+On Apple Silicon there is a **Metal backend** ([docs/mlx.md](docs/mlx.md)):
+MLX-native primitives, a hand-written Metal paged-decode kernel, MLX
+re-implementations of dense/sliding/Quest/CSA, and an adapter that runs them through
+the same harness (`pytest tests/test_mlx.py`, `make bench-mlx`).
+
 ## Running the benchmarks after cloning
 
 The only hard dependency is **PyTorch**; there is nothing to compile and no GPU or
@@ -87,10 +92,19 @@ knobs and troubleshooting: [docs/reproducing.md](docs/reproducing.md).
 | --- | --- | --- |
 | dense (oracle) | `dense` | the reference every other number is measured against |
 | structural / local | `sliding_window`, `streaming_sink` | window + attention sinks, the always-safe configuration |
-| KV eviction | `h2o`, `snapkv`, `pyramidkv`, `random_eviction` | permanently drop tokens; `random_eviction` is the control that keeps the family honest |
+| control baseline | `random_eviction` | uniform eviction keeping prompt + recent window: the baseline that retired the scored-eviction family (arXiv:2609.03430) |
 | query-aware selection | `quest`, `minference`, `flexprefill`, `xattention`, `moba`, `dsa`, `seerattention_r` | keep the cache, choose which blocks/tokens to read |
 | native sparse | `nsa` | compressed + selected + window branches with learned gates |
-| compressed state | `mla`, `ssd`/`gdn`/`kda` layers, `hybrid` | fixed-size state instead of a growing cache |
+| compressed state | `mla`; `ssd` / `gdn` / `kda` / **`gdn2`** layers; `hybrid` | fixed-size state instead of a growing cache |
+
+Scored KV eviction (H2O, SnapKV, PyramidKV) was **retired** rather than shipped: on
+reasoning workloads the selection score contributes almost nothing, and uniform
+random eviction matches the strongest tuned selector while computing no scores
+(arXiv:2609.03430). The control baseline stays so the claim remains reproducible and
+the papers stay in `docs/citations.bib` as the evidence. The compressed-state family
+gained its newest member: **Gated DeltaNet-2** (arXiv:2605.22791), with separate
+channel-wise erase and write gates, implemented next to SSD/GDN/KDA and validated
+against the sequential recurrence to machine precision.
 
 Per-variant pages (mechanism, usage, cost table, caveats, citations) live in
 [`docs/variants/`](docs/variants/index.md) and are generated from the code.

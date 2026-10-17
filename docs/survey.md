@@ -130,7 +130,7 @@ point in this table.
 | family | what is stored | what is read per query | training needed? | representative methods |
 | --- | --- | --- | --- | --- |
 | **A. structural / local** | full KV, windowed reads | `window + sinks` | no | StreamingLLM, sliding-window layers, sink tokens |
-| **B. training-free selection** | full KV (+ small metadata) | top-k pages/blocks/tokens by a proxy score | no | H2O, SnapKV, PyramidKV, Quest, MInference, FlexPrefill, XAttention, MoBA |
+| **B. training-free selection** | full KV (+ small metadata) | top-k pages/blocks/tokens by a proxy score | no | Quest, MInference, FlexPrefill, XAttention, MoBA (score-based *eviction* -- H2O, SnapKV, PyramidKV -- was retired, see §4.2) |
 | **C. learned / native sparse** | full KV, learned selector | top-k by a learned indexer or gate | yes (or a fine-tune) | NSA, DSA (DeepSeek V3.2), CSA/CSA2 (V4.x), SeerAttention-R, SAS |
 | **D. compressed state** | fixed-size state (or latent) | everything, but through a state of size `d_k x d_v` | yes | MLA, Mamba-2/SSD, Gated DeltaNet, KDA/Kimi Linear, hybrids (3:1) |
 
@@ -188,14 +188,17 @@ Implementation: [`variants/local.py`](../src/linattn/variants/local.py).
 
 ### 4.2 Family B -- training-free selection
 
-**Eviction (H2O, SnapKV, PyramidKV, R-KV, Ada-KV).** Score tokens, drop the rest,
-permanently. They reduce *memory first* and speed second, and they pay an
-irreversible cost: once evicted, a token can never be recovered, which is
-catastrophic for exactly the workloads where a later query needs an earlier
-detail. The 2026 critique (Random Attention) also undercuts the scoring signal
-itself. Our implementation includes `random_eviction` as a *control* so that any
-downstream comparison can check whether a scored selector actually beats the
-random baseline: [`variants/eviction.py`](../src/linattn/variants/eviction.py).
+**Eviction (H2O, SnapKV, PyramidKV, R-KV, Ada-KV) -- surveyed but retired.** They
+score tokens, drop the rest, and pay an irreversible cost: once evicted, a token can
+never be recovered, which is catastrophic for exactly the workloads where a later
+query needs an earlier detail. The 2026 critique (Random Attention) undercuts the
+scoring signal itself. This repository no longer ships them: keeping the prompt and
+the recent window is what carries quality, so the only surviving member of the
+family is `random_eviction`, kept as the **control baseline** that the claim rests
+on ([`variants/eviction.py`](../src/linattn/variants/eviction.py)). Scored eviction
+is one of the two lines this survey argues is being abandoned; the other is
+token-level hard selection for reasoning, where the indexer cost and the recall risk
+both argue for compressed (page-level) indexing instead.
 
 **Quest.** Page granularity (16 tokens in the paper), query-aware, with a bound
 rather than an estimate: `score(q, page) = Σ_d max(q_d·m_d, q_d·M_d)` where `m, M`
@@ -301,6 +304,16 @@ special case and simplifies to GDN when the decay collapses. Our chunked
 implementation makes the same asymmetry explicit (`a_i` erase-left, `b_i`
 erase-right, `c_i` write), which is why the derivation in
 `variants/recurrent.py` is worth reading even if you only care about kernels.
+
+**Gated DeltaNet-2** (arXiv:2605.22791) is the newest member implemented here: it
+keeps the channel-wise decay and the delta rule but *decouples* the erase gate from
+the write gate, so the model can remove old content and commit new content at
+different per-channel strengths. Setting both gates equal recovers KDA; collapsing
+the decay as well recovers Gated DeltaNet. That makes it the cleanest single
+parameterisation of the family (`kind="gdn2"` in `variants/recurrent.py`), and it is
+validated against the sequential recurrence to 2.8e-16 -- with a separate chunk
+algorithm, because with distinct erase/write factors the triangular system no longer
+collapses to the symmetric form.
 
 **Hybrids are the deployment answer.** MiniMax-01 (lightning attention), Qwen3-Next
 (Gated DeltaNet + gated attention), Kimi Linear (3:1 KDA:MLA) and Kimi K3

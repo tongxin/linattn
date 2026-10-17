@@ -53,6 +53,12 @@ def has_flex_attention() -> bool:
 
 
 def describe_backends() -> Dict[str, object]:
+    try:
+        from linattn.kernels.mlx import metal_available, mlx_available
+
+        mlx_ok, metal_ok = mlx_available(), metal_available()
+    except Exception:  # pragma: no cover - mlx is optional
+        mlx_ok = metal_ok = False
     return {
         "platform": f"{platform.system()} {platform.machine()}",
         "torch": torch.__version__,
@@ -61,6 +67,8 @@ def describe_backends() -> Dict[str, object]:
         "mps": has_mps(),
         "triton_installed": has_triton(),
         "flex_attention_importable": has_flex_attention(),
+        "mlx_installed": mlx_ok,
+        "mlx_metal": metal_ok,
     }
 
 

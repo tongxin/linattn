@@ -222,7 +222,12 @@ class QuestAttention(BlockSelectionAttention):
         visible = page_start.unsqueeze(0) <= q_pos.unsqueeze(1)
         scores = scores.masked_fill(~visible, float("-inf"))
         own_page = (q_pos // bs).clamp(max=n_pages - 1)
-        scores[..., own_page] = float("inf")     # a query always reads its own page
+        # A query always reads its own page.  Note the shape: `scores[..., own_page]`
+        # would index the last dim with a (T_q,) tensor and produce a (., T_q, T_q)
+        # block, writing `inf` into *every* row for every query's own page -- which
+        # silently collapsed the selection to pages 0..k.  Scatter on the diagonal.
+        own_idx = own_page.view(1, 1, -1, 1).expand(q.shape[0], q.shape[1], t_q, 1)
+        scores = scores.scatter(-1, own_idx, float("inf"))
         sel = topk_blocks(scores, self.cfg.topk_blocks)
         if self.cfg.group_size > 1 and self.cfg.extras.get("gqa_union", True):
             b, h, t, p = sel.shape

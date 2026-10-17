@@ -9,7 +9,7 @@ PYTHON ?= $(shell test -x $(VENV_PY) && echo $(VENV_PY) || echo python3)
 
 export PYTHONPATH := src
 
-.PHONY: help venv install check docs bench experiments all clean
+.PHONY: help venv install check docs bench bench-mlx experiments all clean
 
 help:  ## list targets
 	@grep -hE '^[a-z]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /: /' | column -t -s ':'
@@ -37,6 +37,9 @@ docs:  ## regenerate per-variant documentation from the code
 bench:  ## quality/cost sweep and the decode-IO benchmark -> reports/
 	$(PYTHON) bench/run_suite.py --seq 2048 --budget 256 --topk-blocks 8 --topk-tokens 512
 	$(PYTHON) bench/bench_decode.py --seq 65536 --budgets 256 1024 2048 8192
+
+bench-mlx:  ## Apple Silicon: MLX/Metal decode benchmark (needs `make install` + mlx)
+	$(PYTHON) bench/bench_mlx.py --lengths 4096 16384 65536
 
 experiments:  ## the three studies behind the survey's empirical claims
 	$(PYTHON) experiments/selector_capacity.py

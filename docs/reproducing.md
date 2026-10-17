@@ -12,6 +12,7 @@ the things that actually go wrong on a fresh machine.
 | a C compiler (`clang`/`cc`/`gcc`) | `bench/bench_decode.py` compiles `kernels/c/decode_attn.c` at runtime | optional: without one, that benchmark prints a message and exits; `make check` still passes (the C parity tests skip) |
 | `pytest` | `make check` | pulled in by `make install` (`.[dev]`) |
 | `triton` | only `pytest -m gpu` | CUDA-only; every Triton kernel has a torch fallback, and the GPU tests skip with a reason when no GPU is present |
+| `mlx` | only the Apple-Silicon backend | `uv pip install -e ".[mlx]"`; `pytest tests/test_mlx.py`, `make bench-mlx`. Skips cleanly elsewhere -- see [mlx.md](mlx.md) |
 
 ```bash
 make install                 # uv venv --python 3.13 .venv && uv pip install -e ".[dev]"
@@ -35,6 +36,7 @@ to it.
 ```bash
 make check          # ~5 s   75 validation checks, writes nothing
 make bench          # ~10 s  reports/suite_<T>_<budget>.{json,md}, reports/decode_<T>_<dim>.{json,md}
+make bench-mlx      # Apple Silicon only: reports/mlx_decode.{json,md}
 make experiments    # ~3 min reports/{selector_capacity,state_capacity,hybrid_recall}.{json,md}
 make docs           # regenerate docs/variants/*.md from the class docstrings and cost models
 make all            # docs, check, bench, experiments

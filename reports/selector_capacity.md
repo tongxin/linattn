@@ -1,6 +1,6 @@
 # Learned-selector capacity: before and after fitting
 
-*Generated 2026-10-16T12:31:11Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-10-17T10:44:45Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
 Cross-entropy is between the selector's induced distribution over keys/blocks and the dense attention mass, so `before` is a randomly initialised selector and `after` is one fitted on the same inputs (`steps` gradient steps). The gap between the two is the price of the training stage that DSA, SeerAttention-R and NSA require. For NSA the metric is 1 - relative output error against dense attention, because its gates act on outputs rather than on a distribution.
 

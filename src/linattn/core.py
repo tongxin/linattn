@@ -62,7 +62,7 @@ class AttnConfig:
     topk_blocks: int = 4          # blocks selected by block-sparse variants
     topk_tokens: int = 256        # tokens selected by token-level variants (DSA)
     compress_ratio: int = 16      # pooling stride for compressed branches (NSA/CSA)
-    obs_window: int = 64          # observation window for SnapKV-style selection
+    obs_window: int = 64          # observation window for windowed selection
     sink_size: int = 4            # attention-sink tokens always kept
     stride: int = 8               # partial-stride scoring for XAttention
     threshold: float = 0.9        # block-selection threshold (mass fraction)

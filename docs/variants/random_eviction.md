@@ -1,6 +1,6 @@
 # `random_eviction`
 
-**Family:** `eviction` &nbsp;|&nbsp; **Training required:** no &nbsp;|&nbsp; **Class:** `RandomEvictionAttention`
+**Family:** `baseline` &nbsp;|&nbsp; **Training required:** no &nbsp;|&nbsp; **Class:** `RandomEvictionBaseline`
 
 Wang et al., Random Attention (2026) -- https://arxiv.org/abs/2609.03430
 

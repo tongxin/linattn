@@ -21,6 +21,8 @@ dependencies = ["torch>=2.4"]
 # (`pytest -m gpu`), which are skipped automatically when no GPU is present.
 dev = ["pytest>=7.4"]
 gpu = ["triton>=3.0"]
+# Apple Silicon: the MLX backend (`python bench/bench_mlx.py`, `pytest tests/test_mlx.py`)
+mlx = ["mlx>=0.29"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/linattn"]

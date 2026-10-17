@@ -3,7 +3,7 @@
 Reading order for the codebase follows the taxonomy in ``docs/survey.md``:
 
 ``local``        structural sparsity (sliding window, attention sinks)
-``eviction``     KV-cache eviction and compaction (H2O, SnapKV, PyramidKV)
+``eviction``     the random-eviction control baseline (scored eviction was retired)
 ``selection``    query-aware block/token selection (Quest, MInference, FlexPrefill,
                  XAttention, MoBA, DSA, SeerAttention-R)
 ``native_sparse``trainable native sparse attention (NSA)

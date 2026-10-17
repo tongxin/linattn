@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from linattn.core import dense_attention
+from linattn.core import AttnConfig, dense_attention
 from linattn.metrics import attention_mass, mass_recall, rel_error
 from linattn.registry import build
 from linattn.variants.selection import DSAAttention, SeerAttentionR, block_mask_to_token_mask
@@ -62,6 +62,32 @@ def test_quest_gqa_union_inflates_budget(cfg, structured):
         reads[label] = float(mask.sum(-1).float().mean())
     assert reads["union"] >= reads["shared"], "group union should read at least as many keys"
     assert reads["union"] > 0
+
+
+def test_quest_selects_the_high_scoring_page_not_the_first(monkeypatch):
+    """Regression: the own-page bonus must be applied per row, not as a block.
+
+    A previous version wrote ``scores[..., own_page] = inf``, which indexes the last
+    axis with a (T_q,) tensor and assigns ``inf`` to a (T_q, T_q) block -- every
+    query ended up with the same early pages, and the bug survived the full test
+    suite because those pages still captured most of the mass on the retrieval
+    fixtures.  Here the high-scoring page is deliberately the *last* one.
+    """
+    cfg = AttnConfig(n_heads=2, n_kv_heads=2, head_dim=16, block_size=8, topk_blocks=1)
+    variant = build("quest", cfg.with_(extras={"dense_layers": 0, "layer_idx": 0, "page_size": 8,
+                                               "gqa_union": False}))
+    q = torch.zeros(1, 2, 32, 16, dtype=torch.float64)
+    k = torch.zeros(1, 2, 32, 16, dtype=torch.float64)
+    v = torch.randn(1, 2, 32, 16, dtype=torch.float64)
+    # give the last page a large key norm so its bound dominates for every query
+    k[:, :, 24:, :] = 50.0
+    q[:, :, :, 0] = 1.0
+    state = variant.prepare_state(1, q.device, q.dtype)
+    state = variant.push_kv(state, k, v)
+    mask = variant.select(q, state, 0)
+    row = mask[0, 0, 31]                              # (T_k,) read mask of the last query
+    selected = row.view(-1, 8).any(-1).nonzero().flatten().tolist()
+    assert 3 in selected, f"expected the last page (3) for the final query, got {selected}"
 
 
 def test_minference_pattern_search_picks_a_pattern(cfg, structured):

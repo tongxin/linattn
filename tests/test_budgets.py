@@ -17,7 +17,7 @@ from linattn.variants.selection import BlockSelectionAttention
 
 
 SELECTION = ["quest", "minference", "flexprefill", "xattention", "moba", "dsa", "seerattention_r", "nsa"]
-EVICTION = ["h2o", "snapkv", "pyramidkv", "random_eviction"]
+EVICTION = ["random_eviction"]     # scored eviction (H2O/SnapKV/PyramidKV) was retired
 
 
 @pytest.mark.parametrize("name", SELECTION)

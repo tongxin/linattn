@@ -14,7 +14,7 @@ import torch
 from linattn.variants.recurrent import LinearAttentionConfig, LinearAttentionLayer
 
 
-@pytest.mark.parametrize("kind", ["ssd", "gdn", "kda"])
+@pytest.mark.parametrize("kind", ["ssd", "gdn", "kda", "gdn2"])
 def test_chunked_equals_recurrent(kind):
     torch.manual_seed(0)
     cfg = LinearAttentionConfig(d_model=32, n_heads=2, d_state=16, chunk=16, kind=kind, decay_clamp=2.0)
@@ -27,7 +27,7 @@ def test_chunked_equals_recurrent(kind):
     assert torch.allclose(s_chunk, s_rec, atol=1e-8), f"{kind}: states differ"
 
 
-@pytest.mark.parametrize("kind", ["ssd", "gdn", "kda"])
+@pytest.mark.parametrize("kind", ["ssd", "gdn", "kda", "gdn2"])
 def test_chunk_size_invariance(kind):
     torch.manual_seed(1)
     x = torch.randn(1, 40, 32, dtype=torch.float64)
@@ -35,15 +35,13 @@ def test_chunk_size_invariance(kind):
     for chunk in (8, 20, 40):
         cfg = LinearAttentionConfig(d_model=32, n_heads=2, d_state=16, chunk=chunk, kind=kind, decay_clamp=2.0)
         layer = LinearAttentionLayer(cfg).double()
-        with torch.no_grad():
-            layer.q_proj.weight.zero_(); layer.k_proj.weight.zero_(); layer.v_proj.weight.zero_()
-        # re-randomise deterministically so all chunk sizes see the same weights
+        # re-randomise *every* parameter deterministically (the set differs by kind:
+        # gdn2 has separate erase/write projections), so all chunk sizes see the
+        # same weights and only the chunking changes
         gen = torch.Generator().manual_seed(7)
         with torch.no_grad():
-            for param in (layer.q_proj.weight, layer.k_proj.weight, layer.v_proj.weight,
-                          layer.o_proj.weight, layer.decay_proj.weight, layer.beta_proj.weight):
+            for param in layer.parameters():
                 param.copy_(torch.randn(param.shape, generator=gen, dtype=torch.float64) * 0.3)
-            layer.A_log.copy_(torch.randn(layer.A_log.shape, generator=gen, dtype=torch.float64))
         with torch.no_grad():
             out, _ = layer.forward_chunked(x)
         outs.append(out)
@@ -51,7 +49,7 @@ def test_chunk_size_invariance(kind):
     assert torch.allclose(outs[1], outs[2], atol=1e-8)
 
 
-@pytest.mark.parametrize("kind", ["ssd", "gdn", "kda"])
+@pytest.mark.parametrize("kind", ["ssd", "gdn", "kda", "gdn2"])
 def test_gradients_flow_and_match_between_paths(kind):
     """Chunked and recurrent paths must produce the same gradients too, otherwise
     the "trainable sparse/linear layer" claim would only hold for inference."""

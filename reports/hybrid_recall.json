@@ -1,6 +1,6 @@
 {
   "name": "hybrid_recall",
-  "generated_utc": "2026-10-16T12:33:04Z",
+  "generated_utc": "2026-10-17T10:47:15Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
@@ -8,7 +8,9 @@
     "cuda": false,
     "mps": false,
     "triton_installed": false,
-    "flex_attention_importable": true
+    "flex_attention_importable": true,
+    "mlx_installed": false,
+    "mlx_metal": false
   },
   "records": [
     {
@@ -46,6 +48,15 @@
       "attention_layers": 2,
       "linear_layers": 4,
       "kind": "kda"
+    },
+    {
+      "model": "hybrid_1in4_gdn2",
+      "accuracy": 1.0,
+      "loss": 0.0007108157151378691,
+      "state_bytes_per_seq": 50688.0,
+      "attention_layers": 2,
+      "linear_layers": 4,
+      "kind": "gdn2"
     },
     {
       "model": "hybrid_1in4_ssd",

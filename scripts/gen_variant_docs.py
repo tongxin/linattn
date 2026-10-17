@@ -52,18 +52,6 @@ USAGE: Dict[str, str] = {
     "streaming_sink": """
         attn = build("streaming_sink", AttnConfig(window_size=1024, sink_size=4))
     """,
-    "h2o": """
-        attn = build("h2o", AttnConfig(cache_budget=1024, window_size=128, sink_size=4))
-        out, state = attn.forward(q, k, v)     # state["k"] never exceeds cache_budget
-    """,
-    "snapkv": """
-        attn = build("snapkv", AttnConfig(cache_budget=2048, obs_window=64,
-                                          extras={"pool_kernel": 7}))
-    """,
-    "pyramidkv": """
-        attn = build("pyramidkv", AttnConfig(cache_budget=2048,
-                                             extras={"budget_low": 256, "n_layers": 32, "layer_idx": 12}))
-    """,
     "random_eviction": """
         attn = build("random_eviction", AttnConfig(cache_budget=2048, window_size=128, seed=0))
     """,
@@ -137,26 +125,6 @@ NOTES: Dict[str, str] = {
         stacks for *permanently dropping* evicted tokens, which is subtly different
         from masking reads at attention time. The mask-based variant here has the
         same arithmetic as the sliding window; the difference is the cache contract.
-    """,
-    "h2o": """
-        The heavy-hitter score is accumulated attention mass, which is a *past*
-        statistic used to predict *future* usefulness. It is the canonical example
-        of an eviction heuristic that works on RULER and is fragile on reasoning
-        chains -- see `random_eviction` for the control experiment.
-    """,
-    "snapkv": """
-        Two details drive the results: the observation window (the last tokens before
-        generation starts) and the pooling kernel that averages neighbouring key
-        scores. Both are hyperparameters that change the answer, and both are
-        workload-dependent. SnapKV is a prefill-time compression, so its cost is paid
-        once rather than per decode step -- the opposite trade-off from Quest/DSA.
-    """,
-    "pyramidkv": """
-        PyramidKV is a budget-allocation policy layered on SnapKV: low layers keep
-        more cache, high layers keep less, because the information funnel narrows with
-        depth. The effect is real but modest, and it interacts with hybrid
-        architectures (where the "layer index" spans two different mechanisms), so
-        treat the profile as a tuning knob rather than a law.
     """,
     "random_eviction": """
         This is the most useful page in the eviction family. It keeps the prompt and

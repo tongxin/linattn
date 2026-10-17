@@ -35,7 +35,7 @@ class HybridConfig:
     n_layers: int = 6
     n_heads: int = 4
     d_state: int = 32
-    kind: str = "gdn"                 # linear-layer kind: ssd | gdn | kda
+    kind: str = "gdn"                 # linear-layer kind: ssd | gdn | kda | gdn2
     attn_period: int = 4              # one attention layer every `attn_period` layers (0 = none)
     attn_kind: str = "dense"          # dense | sliding | gdn
     window: int = 64

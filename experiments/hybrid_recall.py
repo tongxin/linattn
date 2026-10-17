@@ -37,6 +37,7 @@ CONFIGS = [
     ("hybrid_1in2_gdn", dict(kind="gdn", attn_period=2)),
     ("hybrid_1in4_gdn", dict(kind="gdn", attn_period=4)),
     ("hybrid_1in4_kda", dict(kind="kda", attn_period=4)),
+    ("hybrid_1in4_gdn2", dict(kind="gdn2", attn_period=4)),
     ("hybrid_1in4_ssd", dict(kind="ssd", attn_period=4)),
     ("linear_only_gdn", dict(kind="gdn", attn_period=0, use_linear_layers=True)),
 ]

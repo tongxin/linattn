@@ -15,6 +15,10 @@ because the three models are three settings of one recurrence:
   https://arxiv.org/abs/2412.06464
 * ``kind="kda"``  -- Kimi Delta Attention: channel-wise decay plus the erase.
   Kimi Team, *Kimi Linear* (2025), https://arxiv.org/abs/2510.26692
+* ``kind="gdn2"`` -- Gated DeltaNet-2: channel-wise decay with *separate*
+  channel-wise erase and write gates.  Generalises KDA (both gates equal) and GDN
+  (gates collapse to a scalar).  Yang et al., *Gated DeltaNet-2: Decoupling Erase
+  and Write in Linear Attention* (2026), https://arxiv.org/abs/2605.22791
 
 Two forward paths are provided and the test-suite asserts they agree:
 
@@ -76,7 +80,7 @@ import torch.nn.functional as F
 
 __all__ = ["LinearAttentionConfig", "LinearAttentionLayer", "STATE_KINDS"]
 
-STATE_KINDS = ("ssd", "gdn", "kda")
+STATE_KINDS = ("ssd", "gdn", "kda", "gdn2")
 
 
 @dataclass
@@ -86,7 +90,7 @@ class LinearAttentionConfig:
     d_state: int = 32          # key dimension of the recurrent state
     expand_v: float = 1.0      # value dimension = head_dim * expand_v
     chunk: int = 32
-    kind: str = "gdn"          # ssd | gdn | kda
+    kind: str = "gdn"          # ssd | gdn | kda | gdn2
     decay_clamp: float = 4.0   # log-decay lower bound (per step, per channel)
     init_gate: float = 0.5     # sigmoid offset for the decay gate
 
@@ -113,9 +117,15 @@ class LinearAttentionLayer(torch.nn.Module):
         self.v_proj = torch.nn.Linear(cfg.d_model, h * dv, bias=False)
         self.o_proj = torch.nn.Linear(h * dv, cfg.d_model, bias=False)
         # decay gate: log(alpha) <= 0 ; per-channel for kda, per-head otherwise
-        decay_out = h * dk if cfg.kind == "kda" else h
+        decay_out = h * dk if cfg.kind in ("kda", "gdn2") else h
         self.decay_proj = torch.nn.Linear(cfg.d_model, decay_out, bias=False)
         self.beta_proj = torch.nn.Linear(cfg.d_model, h, bias=False)
+        # GDN-2 decouples the two roles of the scalar gate: a channel-wise erase gate
+        # ("how much old content to remove on the key side") and a channel-wise write
+        # gate ("how much new content to commit").  KDA is both gates collapsed.
+        if cfg.kind == "gdn2":
+            self.beta_erase_proj = torch.nn.Linear(cfg.d_model, h * dk, bias=False)
+            self.beta_write_proj = torch.nn.Linear(cfg.d_model, h * dk, bias=False)
         # Mamba-2 style per-head scalar A, initialised log-uniformly
         self.A_log = torch.nn.Parameter(torch.log(torch.linspace(1.0, 16.0, h)))
 
@@ -136,31 +146,39 @@ class LinearAttentionLayer(torch.nn.Module):
         k = torch.nn.functional.normalize(k, dim=-1)
         beta = torch.sigmoid(self.beta_proj(x)).transpose(1, 2)              # (B,H,T)
         raw = self.decay_proj(x)
-        if self.cfg.kind == "kda":
+        if self.cfg.kind in ("kda", "gdn2"):
             g = -F.softplus(raw.view(b, t, h, dk)).transpose(1, 2)           # (B,H,T,dk)
         else:
             g = -F.softplus(raw.view(b, t, h)).transpose(1, 2)               # (B,H,T)
             g = g * torch.nn.functional.softplus(self.A_log).view(1, h, 1)
         g = g.clamp(min=-self.cfg.decay_clamp)
-        return q, k, v, beta, g
+        if self.cfg.kind == "gdn2":
+            erase = torch.sigmoid(self.beta_erase_proj(x)).view(b, t, h, dk).transpose(1, 2)
+            write = torch.sigmoid(self.beta_write_proj(x)).view(b, t, h, dk).transpose(1, 2)
+        else:
+            erase = write = beta
+        return q, k, v, erase, write, g
 
     # ------------------------------------------------------------------ reference
     def forward_recurrent(self, x: torch.Tensor, state: Optional[torch.Tensor] = None):
         """Literal per-token recurrence.  Returns ``(y, state)``."""
-        q, k, v, beta, g = self._project(x)
+        q, k, v, erase, write, g = self._project(x)
         b, h, t, dk = k.shape
         dv = v.shape[-1]
         state = torch.zeros(b, h, dk, dv, dtype=x.dtype, device=x.device) if state is None else state
         outs = []
         for i in range(t):
             alpha = torch.exp(g[..., i, :] if g.dim() == 4 else g[..., i].unsqueeze(-1))
-            ki, vi, qi, bi = k[:, :, i], v[:, :, i], q[:, :, i], beta[:, :, i]
+            ki, vi, qi = k[:, :, i], v[:, :, i], q[:, :, i]
+            be, bw = erase[:, :, i], write[:, :, i]
+            if be.dim() == 2:                     # scalar gates -> per-channel view
+                be, bw = be[..., None], bw[..., None]
             state = state * alpha.unsqueeze(-1)
             if self.cfg.kind != "ssd":
-                # erase: S <- S - beta * (k^T S) k  (rank-1 removal along k)
+                # erase: S <- S - (b * k) (k^T S)  (rank-1 removal along k)
                 proj = torch.einsum("bhd,bhde->bhe", ki, state)
-                state = state - bi.unsqueeze(-1).unsqueeze(-1) * torch.einsum("bhd,bhe->bhde", ki, proj)
-            state = state + bi.unsqueeze(-1).unsqueeze(-1) * torch.einsum("bhd,bhe->bhde", ki, vi)
+                state = state - torch.einsum("bhd,bhe->bhde", be * ki, proj)
+            state = state + torch.einsum("bhd,bhe->bhde", bw * ki, vi)
             outs.append(torch.einsum("bhd,bhde->bhe", qi, state))
         y = torch.stack(outs, dim=2)
         return self.o_proj(y.transpose(1, 2).reshape(x.shape[0], t, -1)), state
@@ -168,7 +186,7 @@ class LinearAttentionLayer(torch.nn.Module):
     # ------------------------------------------------------------------ chunked
     def forward_chunked(self, x: torch.Tensor, state: Optional[torch.Tensor] = None):
         """Chunkwise algorithm: matmuls plus one triangular solve per chunk."""
-        q, k, v, beta, g = self._project(x)
+        q, k, v, erase, write, g = self._project(x)
         b, h, t, dk = k.shape
         dv = v.shape[-1]
         c = self.cfg.chunk
@@ -176,17 +194,25 @@ class LinearAttentionLayer(torch.nn.Module):
         outs = []
         for start in range(0, t, c):
             stop = min(start + c, t)
-            qc, kc, vc, bc = q[:, :, start:stop], k[:, :, start:stop], v[:, :, start:stop], beta[:, :, start:stop]
+            qc, kc, vc = q[:, :, start:stop], k[:, :, start:stop], v[:, :, start:stop]
+            ec, wc = erase[:, :, start:stop], write[:, :, start:stop]
             gc = g[:, :, start:stop]
             if gc.dim() == 3:
                 gc = gc.unsqueeze(-1)
             gc = gc.expand(b, h, stop - start, dk).cumsum(dim=2)         # (B,H,C,dk) <= 0
-            out, state = self._chunk(qc, kc, vc, bc, gc, state)
+            out, state = self._chunk(qc, kc, vc, ec, wc, gc, state)
             outs.append(out)
         y = torch.cat(outs, dim=2)
         return self.o_proj(y.transpose(1, 2).reshape(x.shape[0], t, -1)), state
 
-    def _chunk(self, q, k, v, beta, gc, state):
+    def _chunk(self, q, k, v, erase, write, gc, state):
+        """Dispatch to the symmetric (scalar-gate) or asymmetric chunk algorithm."""
+        if self.cfg.kind == "gdn2":
+            return self._chunk_asymmetric(q, k, v, erase, write, gc, state)
+        beta = erase                                  # scalar-gate kinds: erase == write
+        return self._chunk_symmetric(q, k, v, beta, gc, state)
+
+    def _chunk_symmetric(self, q, k, v, beta, gc, state):
         """One chunk of the chunkwise algorithm (see module docstring)."""
         b, h, c, dk = k.shape
         dv = v.shape[-1]
@@ -215,6 +241,51 @@ class LinearAttentionLayer(torch.nn.Module):
         # outputs: o_i = q~_i S~_0 + sum_{j<=i} (q~_i . d_j) y_j
         qd = torch.einsum("bhcd,bhjd->bhcj", qt, d) * tril0
         out = torch.einsum("bhcd,bhde->bhce", qt, state) + torch.einsum("bhcj,bhje->bhce", qd, y)
+        return out, new_state
+
+    def _chunk_asymmetric(self, q, k, v, erase, write, gc, state):
+        """Chunk algorithm with distinct channel-wise erase and write gates (GDN-2).
+
+        With :math:`a_i = b_i k_i / G_i` (erase), :math:`c_i = w_i k_i / G_i`
+        (write) and :math:`e_i = k_i G_i` (read), the normalised recurrence is
+
+        .. math:: \\tilde S_i = \\tilde S_{i-1} - a_i s_i + c_i v_i^{\\top},
+                  \\qquad s_i = e_i^{\\top}\\tilde S_{i-1}
+
+        which gives one triangular system for all ``s_i``,
+        :math:`(I + E_a) S = E\\tilde S_0 + E_c V` with
+        :math:`E_a[i,j] = e_i\\cdot a_j`, :math:`E_c[i,j] = e_i\\cdot c_j`
+        (``j < i``), and then
+        :math:`\\tilde S_C = \\tilde S_0 - A^{\\top}S + C^{\\top}V`,
+        :math:`o_i = \\tilde q_i^{\\top}\\tilde S_0 -
+        \\sum_{j\\le i}(\\tilde q_i\\cdot a_j)s_j + \\sum_{j\\le i}(\\tilde q_i\\cdot c_j)v_j`.
+
+        Setting ``b = w = beta`` collapses this to :meth:`_chunk_symmetric`, which
+        ``tests/test_recurrent.py`` checks numerically so the two paths cannot drift.
+        """
+        b, h, c, dk = k.shape
+        dv = v.shape[-1]
+        G = torch.exp(gc)
+        e = k * G                                                        # erase-right / read
+        a = erase * k / G                                                # erase-left
+        cw = write * k / G                                               # write-left
+        qt = q * G
+        tril = torch.ones(c, c, dtype=torch.bool, device=k.device).tril(-1)
+        tril0 = torch.ones(c, c, dtype=torch.bool, device=k.device).tril(0)
+
+        ea = torch.einsum("bhcd,bhjd->bhcj", e, a) * tril
+        ec = torch.einsum("bhcd,bhjd->bhcj", e, cw) * tril
+        rhs = torch.einsum("bhcd,bhde->bhce", e, state) + torch.einsum("bhcj,bhje->bhce", ec, v)
+        rows = torch.linalg.solve_triangular(torch.eye(c, dtype=k.dtype, device=k.device) + ea, rhs, upper=False)
+
+        normalised = state - torch.einsum("bhcd,bhce->bhde", a, rows) + torch.einsum("bhcd,bhce->bhde", cw, v)
+        new_state = torch.exp(gc[:, :, -1, :]).unsqueeze(-1) * normalised
+
+        qa = torch.einsum("bhcd,bhjd->bhcj", qt, a) * tril0
+        qc = torch.einsum("bhcd,bhjd->bhcj", qt, cw) * tril0
+        out = (torch.einsum("bhcd,bhde->bhce", qt, state)
+               - torch.einsum("bhcj,bhje->bhce", qa, rows)
+               + torch.einsum("bhcj,bhje->bhce", qc, v))
         return out, new_state
 
     def forward(self, x, state=None, mode: str = "chunked"):

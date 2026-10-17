@@ -1,20 +1,17 @@
-"""KV-cache eviction and compaction: H2O, SnapKV and PyramidKV.
+"""What is left of the eviction family: the control baseline.
 
-All three share one mechanism: score the keys that are already in the cache,
-then *permanently* drop the low scorers so that later decode steps read (and pay
-for) less.  They differ in the score:
+Score-based KV eviction (H2O, SnapKV, PyramidKV, R-KV, Ada-KV) was retired from the
+shipped catalogue after the 2026 result that made the family obsolete: on reasoning
+workloads the *score* contributes almost nothing, and uniform random eviction --
+provided the prompt and the recent window are kept -- matches the strongest tuned
+selector at 32-43% higher throughput (Random Attention, arXiv:2609.03430).  The
+argument is in ``docs/survey.md`` §4.2; those papers stay in ``docs/citations.bib``
+because they are the evidence for it.
 
-* **H2O** accumulates the attention mass each token has received so far
-  ("heavy hitters") and always keeps the recent window.
-* **SnapKV** scores keys once, at the end of prefill, using the attention of an
-  *observation window* of the most recent queries, average-pooled into blocks.
-* **PyramidKV** is SnapKV with a budget that shrinks with layer depth.
-
-The recurring lesson in the 2025-2026 literature is that these scores are weak
-signals relative to *keeping the prompt and the recent window* -- see
-``docs/variants/eviction.md`` and the ``random_eviction`` control variant below,
-which reproduces the "Random Attention" finding that the selection signal barely
-matters for many reasoning workloads.
+What survives is that *control*: :class:`RandomEvictionBaseline`.  Keeping it means
+the claim stays reproducible and any future scored selector has something honest to
+beat.  It is deliberately not labelled "eviction" any more -- it is a baseline, not
+a method anyone should ship for quality.
 """
 
 from __future__ import annotations
@@ -26,13 +23,7 @@ import torch.nn.functional as F
 
 from linattn.core import AttentionVariant, causal_mask, dense_attention, repeat_kv
 
-__all__ = [
-    "EvictionAttention",
-    "H2OAttention",
-    "SnapKVAttention",
-    "PyramidKVAttention",
-    "RandomEvictionAttention",
-]
+__all__ = ["EvictionAttention", "RandomEvictionBaseline"]
 
 
 class EvictionAttention(AttentionVariant):
@@ -121,97 +112,7 @@ class EvictionAttention(AttentionVariant):
         return int(2 * 2 * batch * h * d * (quad + lin))
 
 
-class H2OAttention(EvictionAttention):
-    """Heavy-Hitter Oracle: keep the tokens that received the most attention mass.
-
-    Zhang et al., *H2O: Heavy-Hitter Oracle for Efficient Generative Inference of
-    Large Language Models* (NeurIPS 2023), https://arxiv.org/abs/2306.14048
-    """
-
-    name = "h2o"
-    paper = ("Zhang et al., H2O: Heavy-Hitter Oracle (NeurIPS 2023)", "https://arxiv.org/abs/2306.14048")
-
-    def _compaction_keep(self, state, budget: int) -> torch.Tensor:
-        state["score"] = state["score"] + self._group_mass(state)
-        return self._keep_by_score(state["score"], budget, state["k"].shape[-2])
-
-    def _keep_by_score(self, score: torch.Tensor, budget: int, t_k: int) -> torch.Tensor:
-        """Top-scoring tokens plus a protected recent window and sink tokens."""
-        b, h = score.shape[:2]
-        n_recent = min(self.cfg.window_size, budget)
-        n_sink = min(self.cfg.sink_size, budget - n_recent)
-        n_top = max(1, budget - n_recent - n_sink)
-        masked = score.clone()
-        if n_sink:
-            masked[..., :n_sink] = float("inf")
-        masked[..., t_k - n_recent :] = float("inf")
-        order = torch.argsort(masked, dim=-1, descending=True)[..., : n_top + n_recent + n_sink]
-        order, _ = torch.sort(order, dim=-1)
-        return order
-
-
-class SnapKVAttention(EvictionAttention):
-    """SnapKV: score keys once from an observation window of recent queries.
-
-    Li et al., *SnapKV: LLM Knows What You are Looking for Before Generation*
-    (NeurIPS 2024), https://arxiv.org/abs/2404.14469
-
-    Implementation notes: the observation-window attention is average-pooled along
-    the key axis with kernel ``cfg.pool_kernel`` (7 for Llama-3 in the paper), the
-    pooled score decides which *prompt* tokens survive, and the observation window
-    itself is always retained so that generation can continue.
-    """
-
-    name = "snapkv"
-    paper = ("Li et al., SnapKV (NeurIPS 2024)", "https://arxiv.org/abs/2404.14469")
-
-    def _compaction_keep(self, state, budget: int) -> torch.Tensor:
-        obs = state["obs"]                                   # (B, H, obs_len, T_k)
-        b, h, o, t_k = obs.shape
-        # mean attention the observation window pays to each key
-        score = obs.mean(dim=-2)                             # (B, H, T_k)
-        pool = self.cfg.extras.get("pool_kernel", 7)
-        if pool > 1:
-            score = F.avg_pool1d(score, kernel_size=pool, stride=1, padding=pool // 2, count_include_pad=False)[..., :t_k]
-        score = score.view(b, self.cfg.n_kv_heads, self.cfg.group_size, t_k).mean(2)
-        n_window = min(self.cfg.obs_window, budget)
-        n_sink = min(self.cfg.sink_size, budget - n_window)
-        n_top = max(1, budget - n_window - n_sink)
-        masked = score.clone()
-        if n_sink:
-            masked[..., :n_sink] = float("inf")
-        masked[..., max(0, t_k - n_window) :] = float("inf")
-        order = torch.argsort(masked, dim=-1, descending=True)[..., : n_top + n_window + n_sink]
-        order, _ = torch.sort(order, dim=-1)
-        return order
-
-
-class PyramidKVAttention(SnapKVAttention):
-    """SnapKV with a depth-dependent budget: more cache in low layers, less in high ones.
-
-    Cai et al., *PyramidKV: Dynamic KV Cache Compression based on Pyramidal
-    Information Funnel* (2024), https://arxiv.org/abs/2406.02069
-    """
-
-    name = "pyramidkv"
-    paper = ("Cai et al., PyramidKV (2024)", "https://arxiv.org/abs/2406.02069")
-
-    def __init__(self, cfg=None, **kw):
-        super().__init__(cfg, **kw)
-        low = self.cfg.extras.get("budget_low", max(1, self.cfg.cache_budget // 4))
-        high = self.cfg.extras.get("budget_high", self.cfg.cache_budget)
-        n_layers = max(1, int(self.cfg.extras.get("n_layers", 32)))
-        layer = int(self.cfg.extras.get("layer_idx", 0))
-        self.budget = int(round(high - (high - low) * layer / max(1, n_layers - 1)))
-
-    def finalize(self, state):
-        return super().finalize(state)
-
-    def cache_budget(self) -> int:
-        return int(self.budget)
-
-
-class RandomEvictionAttention(EvictionAttention):
+class RandomEvictionBaseline(EvictionAttention):
     """Control: evict uniformly at random among the unprotected tokens.
 
     Implements the "no selection signal" baseline from
@@ -223,6 +124,7 @@ class RandomEvictionAttention(EvictionAttention):
     """
 
     name = "random_eviction"
+    family = "baseline"
     paper = ("Wang et al., Random Attention (2026)", "https://arxiv.org/abs/2609.03430")
 
     def __init__(self, cfg=None, **kw):
