@@ -1,6 +1,6 @@
 # CSA2 end to end: footprint, sharing cost and the attention term it leaves alone
 
-*Generated 2026-10-17T13:17:08Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-10-17T13:27:47Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
 Footprint: reported 890 B/token (V4.1-Flash) vs a composition of a 576-value MLA latent at FP4 with 4-layer sharing, and the sharing group needed to approach the report. Sharing: output divergence between a stack with cross-layer reuse and the same stack without it, as the per-layer KV correlation (sigma) varies -- sigma=0 means layers agree exactly. It is an architectural property, not something reuse can create post hoc. Cost: `divergence` column holds attention ms for the cost rows; the point is that the storage win does not move the attention term.
 

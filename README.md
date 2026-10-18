@@ -10,8 +10,9 @@ inconsistent in its measurements. This repository does three things about that:
    variants that exploit KV sparsity, compressed state and hardware-software
    co-design, with the evidence organised by workload (coding, long-horizon
    agents, reasoning, deep research) rather than by paper.
-2. **Implementations of 16 registered variants** under one interface -- plus the
-   three compressed-state mixers (SSD / Gated DeltaNet / KDA) and a hybrid stack --
+2. **Implementations of 34 registered attention variants** under one interface --
+   plus seven compressed-state mixers (SSD / GDN / KDA / GDN-2 / Q-Delta / KDN /
+   SwiLA) and a hybrid stack --
    so that a selector, an eviction policy, a native sparse architecture and a
    linear-attention layer can be compared on the same inputs, at the same budget,
    with the same metrics.
@@ -31,8 +32,9 @@ python -m linattn.cli variants                       # the catalogue, with citat
 python -m linattn.cli cost --seq 131072              # analytic cost model
 python -m linattn.cli select --variant quest --seq 4096 --structured
 
-make check                                            # correctness gates (75 tests, seconds)
+make check                                            # correctness gates, seconds
 make bench                                            # quality/cost + decode-IO -> reports/
+make bench-frontier                                   # 2025–2026 variants -> reports/frontier_2026.*
 make experiments                                      # the three studies -> reports/
 ```
 
@@ -75,6 +77,26 @@ KDA state removes the quadratic term entirely. Details: [docs/kv-layer.md](docs/
 Deferred work (ragged batching, batch invariance as a contract) is in
 [docs/roadmap.md](docs/roadmap.md).
 
+### The academic line
+
+The catalogue is not only what ships. Twenty academic/analysis attention variants and
+seven state mixers are implemented alongside the production designs. The selection is
+now **2025–2026-first**: SAGA, PISA, JSSA, MASA, OVAL, SFA, DropKV, ReST-KV and
+BeaconKV sit next to recent linear-attention work (Q-Delta, KDN, SwiLA, GDN-2), with
+the 2019–2021 canon retained as lineage. Every page states what is faithful, what is
+approximated, and which kernel is not reproduced. See
+[docs/academic-attention.md](docs/academic-attention.md), which also records the
+tests -- including one classic that turned out to be numerically unusable. The
+focused comparison is in
+[reports/frontier_2026.md](reports/frontier_2026.md); its deliberately
+unflattering small-scale result is part of the evidence, not a leaderboard.
+
+The most important correction in this pass: the earlier survey said token eviction
+was "retired". That was too strong. Attention-mass eviction is a weak default, but
+output-aware eviction (DropKV, ReST-KV, BeaconKV) is an active 2026 line. The repo now
+carries both the old lineage and the new scores, plus the random-eviction control, so
+the claim can be measured rather than asserted.
+
 ## Running the benchmarks after cloning
 
 The only hard dependency is **PyTorch**; there is nothing to compile and no GPU or
@@ -111,6 +133,7 @@ What you get, and what to read first:
 | `make experiments` | `reports/selector_capacity.md` | can a learned indexer/gate rank keys like softmax, before vs. after fitting? |
 | | `reports/state_capacity.md` | deterministic capacity curve of a fixed-size delta-rule state |
 | | `reports/hybrid_recall.md` | how much exact attention a hybrid needs (and an honest note on where MQAR stops discriminating) |
+| `make bench-frontier` | `reports/frontier_2026.md` | the 2025–2026 variants at one budget, including the unflattering small-scale result |
 
 If something does not run, `python -m linattn.cli backends` prints exactly what your
 machine can do (CUDA / MPS / Triton / FlexAttention / thread count), and every
@@ -123,10 +146,12 @@ knobs and troubleshooting: [docs/reproducing.md](docs/reproducing.md).
 | --- | --- | --- |
 | dense (oracle) | `dense` | the reference every other number is measured against |
 | structural / local | `sliding_window`, `streaming_sink` | window + attention sinks, the always-safe configuration |
-| control baseline | `random_eviction` | uniform eviction keeping prompt + recent window: the baseline that retired the scored-eviction family (arXiv:2609.03430) |
-| query-aware selection | `quest`, `minference`, `flexprefill`, `xattention`, `moba`, `dsa`, `seerattention_r` | keep the cache, choose which blocks/tokens to read |
+| control baseline | `random_eviction` | uniform eviction keeping prompt + recent window: the critique of attention-mass scores (arXiv:2609.03430) |
+| query-aware selection | `quest`, `minference`, `flexprefill`, `xattention`, `moba`, `dsa`, `seerattention_r`, `saga`, `pisa`, `jssa`, `masa`, `oval` | keep the cache, choose which blocks/tokens/pages to read |
+| feature-axis sparsity | `sfa` | keep every token, sparsify the query/key feature code |
 | native sparse | `nsa` | compressed + selected + window branches with learned gates |
-| compressed state | `mla`; `ssd` / `gdn` / `kda` / **`gdn2`** layers; `hybrid` | fixed-size state instead of a growing cache |
+| eviction | `h2o`, `snapkv`, `tova`, `dropkv`, `restkv`, `beaconkv` | budgeted cache; the old mass scores and the new output/query-aware scores |
+| compressed state | `mla`; `ssd` / `gdn` / `kda` / `gdn2` / `qdelta` / `kdn` / `swila` layers; `hybrid` | fixed-size state instead of a growing cache |
 | compressed + quantised (CSA2-style) | **`csa2`** | pooled key groups + FP4/FP8 cache + top-k group selection, with cross-layer sharing modelled by `CSA2Stack` |
 
 `python -m linattn.cli variants` lists both families (attention variants **and**
@@ -135,26 +160,28 @@ gates, state size and per-token cost. The mixers have their own page,
 [docs/variants/state_mixers.md](docs/variants/state_mixers.md), because they take
 `x` rather than pre-projected `(q, k, v)`.
 
-Scored KV eviction (H2O, SnapKV, PyramidKV) was **retired** rather than shipped: on
-reasoning workloads the selection score contributes almost nothing, and uniform
-random eviction matches the strongest tuned selector while computing no scores
-(arXiv:2609.03430). The control baseline stays so the claim remains reproducible and
-the papers stay in `docs/citations.bib` as the evidence. The compressed-state family
-gained its newest member: **Gated DeltaNet-2** (arXiv:2605.22791), with separate
-channel-wise erase and write gates, implemented next to SSD/GDN/KDA and validated
-against the sequential recurrence to machine precision.
+The eviction family needs a more careful statement than the one in the first
+release. H2O/SnapKV/TOVA used attention-mass scores and are kept as lineage and
+controls. The 2026 result that random selection matches them on reasoning traces is
+real, but it motivated a new family rather than ending the field: **DropKV** ranks by
+output perturbation, **ReST-KV** uses reconstruction and smoothing, and **BeaconKV**
+keeps query-cluster representatives for later revisits. The compressed-state family
+also gained **Q-Delta**, **KDN** and **SwiLA**; the first four mixers retain the
+verified chunkwise path, while the three new ones expose exact reference recurrences
+and cite the papers' specialised kernels.
 
 Per-variant pages (mechanism, usage, cost table, caveats, citations) live in
 [`docs/variants/`](docs/variants/index.md) and are generated from the code.
 
 ## What the survey concludes, in six lines
 
-1. **Eviction scores barely matter.** Keeping the prompt and the recent window is
-   what carries quality; on reasoning workloads uniform random eviction matches
-   tuned selectors (arXiv:2609.03430).
-2. **Block/page selection won because kernels can execute it**, and query-aware
-   bounds (Quest), antidiagonal sums (XAttention) and pooled gates (MoBA) are all
-   approximations of one quantity: block attention mass (arXiv:2607.09052).
+1. **Attention-mass eviction is a weak default; output-aware eviction is live.**
+   Random selection matches tuned mass scores on reasoning traces, but DropKV,
+   ReST-KV and BeaconKV change the objective and report gains.
+2. **Block/page selection won because kernels can execute it**, and the 2026
+   question is the routing objective and its cost: PISA makes routing log-linear,
+   JSSA learns a low-rank token subspace, and MASA scores output-error reduction
+   rather than attention mass.
 3. **Production converged on a learned indexer in front of a sparse core**
    (DeepSeek DSA/CSA), and the 2026 bottleneck is the *indexer's* O(T²) scoring,
    not the attention it gates.

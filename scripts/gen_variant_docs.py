@@ -52,6 +52,44 @@ USAGE: Dict[str, str] = {
     "streaming_sink": """
         attn = build("streaming_sink", AttnConfig(window_size=1024, sink_size=4))
     """,
+    "linformer": """
+        attn = build("linformer", AttnConfig(extras={"linformer_k": 64}))
+        # non-causal by design (the projection mixes positions)
+    """,
+    "performer": """
+        attn = build("performer", AttnConfig(extras={"features": 64}))   # causal, linear time
+    """,
+    "bigbird": """
+        attn = build("bigbird", AttnConfig(window_size=256,
+                                           extras={"window": 256, "n_random": 3, "n_global": 2}))
+    """,
+    "reformer_lsh": """
+        attn = build("reformer_lsh", AttnConfig(extras={"buckets": 16}))
+    """,
+    "free_solo": """
+        attn = build("free_solo", AttnConfig(window_size=128,
+                                             extras={"cell": 64, "topk_cells": 4, "window": 128}))
+    """,
+    "namoh": """
+        attn = build("namoh", AttnConfig(window_size=64))   # heads own token subsets
+    """,
+    "hla_mixing": """
+        attn = build("hla_mixing", AttnConfig(extras={"gate_tau": 1.0}))
+    """,
+    "mass_oracle": """
+        # analysis instrument (peeks at attention mass); not deployable
+        attn = build("mass_oracle", AttnConfig(extras={"topk_blocks": 8, "sinks": 2}))
+    """,
+    "h2o": """
+        attn = build("h2o", AttnConfig(cache_budget=512, window_size=64))
+    """,
+    "snapkv": """
+        attn = build("snapkv", AttnConfig(cache_budget=512, obs_window=32,
+                                          extras={"pool_kernel": 7}))
+    """,
+    "tova": """
+        attn = build("tova", AttnConfig(cache_budget=512, window_size=64))
+    """,
     "random_eviction": """
         attn = build("random_eviction", AttnConfig(cache_budget=2048, window_size=128, seed=0))
     """,
@@ -106,6 +144,42 @@ USAGE: Dict[str, str] = {
                                        extras={"latent_dim": 512}))
         print(attn.compression_ratio())     # ~9x for DeepSeek-V2-style shapes
     """,
+    "saga": """
+        attn = build("saga", AttnConfig(n_kv_heads=8, topk_tokens=2048,
+                                        extras={"key_heads": 2}))
+    """,
+    "pisa": """
+        attn = build("pisa", AttnConfig(topk_tokens=1024,
+                                        extras={"branch": 2, "topk_tokens": 1024}))
+    """,
+    "jssa": """
+        attn = build("jssa", AttnConfig(topk_tokens=2048, extras={"rank": 16}))
+    """,
+    "masa": """
+        # analysis oracle: uses the exact profile attention map
+        attn = build("masa", AttnConfig(block_size=64, topk_blocks=16,
+                                        extras={"block": 64, "topk_blocks": 16}))
+    """,
+    "oval": """
+        attn = build("oval", AttnConfig(block_size=16, topk_blocks=8,
+                                        extras={"page_size": 16, "rank": 8, "eta": 0.5}))
+    """,
+    "sfa": """
+        attn = build("sfa", AttnConfig(head_dim=128,
+                                       extras={"feature_keep": 32}))   # every token is kept
+    """,
+    "dropkv": """
+        attn = build("dropkv", AttnConfig(cache_budget=512, obs_window=8,
+                                          extras={"pool_kernel": 11}))
+    """,
+    "restkv": """
+        attn = build("restkv", AttnConfig(cache_budget=512, obs_window=8,
+                                          extras={"pool_kernel": 7}))
+    """,
+    "beaconkv": """
+        attn = build("beaconkv", AttnConfig(cache_budget=512, window_size=64,
+                                             extras={"n_beacons": 4}))
+    """,
 }
 
 NOTES: Dict[str, str] = {
@@ -125,6 +199,75 @@ NOTES: Dict[str, str] = {
         stacks for *permanently dropping* evicted tokens, which is subtly different
         from masking reads at attention time. The mask-based variant here has the
         same arithmetic as the sliding window; the difference is the cache contract.
+    """,
+    "linformer": """
+        The low-rank hypothesis in one line: attention is approximately rank-``E``,
+        so project K/V to ``E`` dimensions and the cost stops growing with context.
+        Non-causal, as published; it is the ancestor of every feature-axis compression
+        (MLA included), which is why it stays in the catalogue despite never shipping.
+    """,
+    "performer": """
+        The random-feature estimator is unbiased but high-variance: on random inputs we
+        measured ~0.5 relative error at 16 features improving to ~0.46 at 1024. That is
+        the honest picture of kernel approximations -- they converge slowly, and their
+        advantage is asymptotic, which is why production chose *exact* sparse
+        selection over approximation. Implemented with positive features to avoid the
+        ``exp(+||x||^2/2)`` blow-up.
+    """,
+    "bigbird": """
+        Window + random + global is the sparsity pattern with a universality proof. It
+        is also the pattern most production systems rejected: random blocks are
+        hardware-hostile and, unlike a learned selector, cannot adapt to content. The
+        example of an academic result that is *right* and still not adopted.
+    """,
+    "reformer_lsh": """
+        Hashing is the cheapest way to get sub-quadratic attention, and the least
+        accurate on i.i.d. data (we measured relative error growing from 0 at one
+        bucket to ~1.9 at 32). Its lasting contribution is the insight that *bucketing*
+        can be a routing mechanism, which is what later learned indexers (DSA) do
+        better.
+    """,
+    "free_solo": """
+        2026 line: a window plus *keypoint cells* selected by score, with length
+        extrapolation as the goal rather than raw benchmark parity. The cell-level
+        selection is what makes it linear; the paper's learned prefix pruning and
+        balanced-tree search are not reproduced here.
+    """,
+    "namoh": """
+        2026 line: sparsity along the *head* axis rather than the token axis -- each
+        head owns a token subset and attends causally inside it. With one head it is
+        exact (tested), so the mechanism is a strict generalisation; what it argues
+        against is the assumption that all heads must see the same tokens.
+    """,
+    "hla_mixing": """
+        2026 line: a *data-dependent, per-chunk* gate between exact chunk-local
+        attention and a linear state read. Same family as Infini-attention, but the
+        gate is dynamic rather than a learned scalar -- the paper's claim is that the
+        mixing policy, not the state, is what limits expressivity.
+    """,
+    "mass_oracle": """
+        Not a method: the COBS oracle. It selects blocks by their exact attention mass
+        (computed by running dense attention first), so it bounds what *any* selector
+        could achieve at the same budget. Use it to calibrate a real selector -- if a
+        deployable method is far below the oracle at equal reads, the gap is in the
+        selector, not in the idea of sparsity.
+    """,
+    "h2o": """
+        Re-introduced as academic lineage, not as a recommendation. Accumulated
+        attention mass is a past statistic used to predict future usefulness; Random
+        Attention (2026) showed the score barely beats random once the prompt and
+        recent window are protected. Kept because new selectors need a baseline.
+    """,
+    "snapkv": """
+        The prefill-time variant: score once from an observation window, pool the
+        scores, keep the top keys plus the window. Its cost is paid once rather than
+        per decode step -- the opposite trade-off from Quest/DSA -- which is why it is
+        still a reasonable baseline for compression-at-prefill.
+    """,
+    "tova": """
+        The direct rebuttal to H2O: the query that matters is the *current* one, so
+        score with the last query only. Cheap, and a useful control for whether
+        accumulated mass is buying anything.
     """,
     "random_eviction": """
         This is the most useful page in the eviction family. It keeps the prompt and
@@ -228,6 +371,75 @@ NOTES: Dict[str, str] = {
         B/token is not what one-copy-per-four-layers yields) and the divergence that
         sharing introduces as neighbouring layers disagree.
     """,
+    "saga": """
+        2026 correction to the "just read fewer tokens" story: once the selected
+        probability-value product is small, QK scoring and key metadata dominate, so
+        allocating fewer heads to keys and more to values can be the right trade.
+        This reference uses exact top-N for the inference semantics; the paper trains
+        Atop-N and reports a conversion fine-tune for pretrained GQA models. The
+        memory table is therefore the point: the key-side heads are configurable
+        independently of the value-side heads.
+    """,
+    "pisa": """
+        PISA's contribution is not another block score; it is removing the
+        ``T x T`` *routing* term. The hierarchy is narrow at the top and only expands
+        selected children, giving log-linear selection under a fixed token budget.
+        This implementation uses mean-pooled node keys and exact attention over the
+        final leaves. The paper's LogSumExp node score and fused Triton kernel are
+        the next step; do not compare its wall clock to this Python reference.
+    """,
+    "jssa": """
+        2026 line: token-level selection is finer than pages, but a low-dimensional
+        ranking score can lose the structure that made the dense inner product useful.
+        The reference takes the leading key-covariance subspace; the paper learns a
+        shared subspace with a score-preservation objective and adds a gather-free
+        kernel. At full rank and full token budget this reduces to dense attention,
+        which is the correctness check.
+    """,
+    "masa": """
+        The important negative result is conceptual: selecting the largest attention
+        entries is the identity-Gram special case of preserving ``A V``, not the
+        general objective. MASA's score is exact but expensive here -- it deliberately
+        peeks at the profile attention map. Use it as an upper-bound/calibration
+        instrument for a cheap selector, not as a deployable kernel.
+    """,
+    "oval": """
+        2026 line in the KV-retrieval layer: page summaries should preserve the
+        directions that matter to the *output*, not only key energy. The ``eta=0``
+        endpoint is key-PCA; ``eta=1`` is the output-sensitive basis. The reference
+        sets ``G=I`` and builds summaries from K/V alone; a production conversion
+        would use the head's output projector and a calibrated ``eta``.
+    """,
+    "sfa": """
+        This is the complementary axis to every mask in the repository: all tokens
+        remain readable, but each query/key carries a sparse feature code. At
+        ``feature_keep == head_dim`` the implementation is exactly dense attention.
+        The learned codebook and FlashSFA overlap kernel are not reproduced; the
+        top-magnitude code is a transparent inference-time stand-in.
+    """,
+    "dropkv": """
+        This is the 2026 answer to the claim that eviction scores are exhausted: rank
+        by the *output perturbation* of removing a token, not by attention mass.
+        The score uses the observation window and values, which is why it can beat
+        attention-only baselines on RULER. The paper's Triton scorer is the deployment
+        path; this page keeps the reference score and the protected prompt/window
+        invariant, so the comparison to `random_eviction` remains apples-to-apples.
+    """,
+    "restkv": """
+        ReST-KV is the reconstruction/smoothing branch of the same 2026 revival.
+        Its score is a single-token output-discrepancy proxy, then an EMA and a local
+        max-pool make it robust to layer- and position-specific noise. The layer-wise
+        reconstruction solve is simplified here; treat this as a reproducible baseline
+        for the smoother, not as the authors' full system.
+    """,
+    "beaconkv": """
+        BeaconKV targets the failure mode that made "recency is enough" look false on
+        long reasoning traces: a later thought can revisit an early plan. Keeping
+        representatives of past query clusters makes that revisit visible without
+        retaining the full query history. The reference uses farthest-point
+        representatives and attention mass; the paper learns the clusters and tunes
+        them on long generation traces.
+    """,
 }
 
 
@@ -247,7 +459,7 @@ def cost_table(name: str) -> str:
 
 
 def mixers_page() -> str:
-    """One page for the fixed-size-state mixers (SSD / GDN / KDA / GDN-2).
+    """One page for the fixed-size-state mixers (SSD through Q-Delta/KDN/SwiLA).
 
     They are documented separately from the attention variants because their
     interface differs: they take ``x`` of shape ``(B, T, d_model)`` and own their
@@ -264,7 +476,7 @@ def mixers_page() -> str:
         "variants, and `python -m linattn.cli mixers` prints their state size and",
         "per-token cost.",
         "",
-        "All four are one recurrence with different gates:",
+        "The first four are one recurrence with different gates:",
         "",
         "```",
         "S_t = (I - diag(b_t) k_t k_t^T) diag(a_t) S_{t-1} + diag(w_t) k_t v_t^T",
@@ -274,7 +486,8 @@ def mixers_page() -> str:
         "with the decay `a_t` scalar or channel-wise and the gates `b_t`/`w_t`",
         "collapsed or separate. That is why one chunkwise kernel with a flag covers",
         "the whole family -- and why GDN-2 is the general case rather than a new",
-        "mechanism.",
+        "mechanism. Q-Delta adds query feedback, KDN makes the write gain come from",
+        "tracked uncertainty, and SwiLA routes a mixture of delta-rule states.",
         "",
         "| kind | decay | gates | recurrence | citation |",
         "| --- | --- | --- | --- | --- |",
@@ -296,9 +509,13 @@ def mixers_page() -> str:
         "y_exact, state2 = layer.forward_recurrent(x)    # the literal per-token recurrence",
         "```",
         "",
-        "`forward_chunked` and `forward_recurrent` are asserted equal in float64 (and in",
-        "gradients) by `tests/test_recurrent.py`, so the chunked path is a verified",
-        "re-association of the recurrence rather than an approximation.",
+        "For SSD/GDN/KDA/GDN-2, `forward_chunked` and `forward_recurrent` are asserted",
+        "equal in float64 (and in gradients) by `tests/test_recurrent.py`, so the",
+        "chunked path is a verified re-association of the recurrence. Q-Delta, KDN and",
+        "SwiLA currently expose the exact reference recurrence; their papers' WY /",
+        "covariance-scan kernels are cited but not reproduced. `forward_chunked` is an",
+        "explicit alias for those three rather than a claim of a serial-to-parallel",
+        "transformation.",
         "",
         "## State and cost",
         "",
@@ -308,16 +525,18 @@ def mixers_page() -> str:
     for kind in MIXERS:
         small = build_mixer(kind, d_model=256, n_heads=4, d_state=16, expand_v=4.0)
         large = build_mixer(kind, d_model=2048, n_heads=16, d_state=128)
-        s_small = small.cfg.n_heads * small.cfg.d_state * small.cfg.d_value
-        s_large = large.cfg.n_heads * large.cfg.d_state * large.cfg.d_value
+        # Use the layer's own accounting: KDN has an auxiliary uncertainty channel
+        # and SwiLA stores one matrix per mixture expert.
+        s_small = small.state_bytes(1) // 4
+        s_large = large.state_bytes(1) // 4
         lines.append(f"| `{kind}` | {s_small:,} | {s_large:,} |")
 
     lines += [
         "",
-        "The state size and the per-token FLOPs are **identical across kinds** -- only",
-        "the update rule (and therefore quality) differs. What changes is capacity and",
-        "expressivity: `reports/state_capacity.md` measures how many associations a",
-        "state of a given size can hold before recall collapses.",
+        "SSD/GDN/KDA/GDN-2 and Q-Delta use the same matrix state. Diagonal KDN adds one",
+        "uncertainty value per key channel; SwiLA multiplies the state by its number of",
+        "mixture experts. The state table reports those auxiliary costs rather than",
+        "hiding them in a fixed-size claim.",
         "",
         "## Layer interleaving",
         "",
@@ -403,7 +622,7 @@ def main() -> int:
         "",
         "The fixed-size-state models are documented separately, because they take "
         "`x` instead of `(q, k, v)`: **[state mixers](state_mixers.md)** "
-        "(SSD / Gated DeltaNet / KDA / Gated DeltaNet-2).",
+        "(SSD / GDN / KDA / GDN-2 / Q-Delta / KDN / SwiLA).",
         "",
     ]
     (OUT / "index.md").write_text("\n".join(header + index_rows + [""]), encoding="utf-8")

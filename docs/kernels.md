@@ -78,7 +78,30 @@ of scoring (SPIN: predict important blocks from history and verify cheaply).
 Both change the kernel interface from "score everything" to "propose a small
 candidate set, verify it".
 
-### 2.3 Chunked delta-rule scan (`kernels/triton/delta_chunk.py`)
+### 2.3 The 2026 kernel frontier
+
+Three newer designs are worth separating from the generic block-sparse path:
+
+* **FFD** (ICML 2026) fuses the selector and the decode kernel, using low-bit
+  content-aware scans and a top-delta filter so block metadata never round-trips
+  through HBM. This is the clearest hardware-software co-design result in the
+  current selection line; it is cited but not implemented here because the
+  contribution is the fused CUDA path.
+* **PISA** (2026) makes the *routing* `O(N log N)` with a pyramid Top-K over
+  pooled keys. The reference in `variants/frontier.py` implements the hierarchy;
+  a real kernel needs to fuse hierarchical selection with the attention loop,
+  which the repository does not claim.
+* **SAGA** (NeurIPS 2026) observes that sparse decoding can shift the bottleneck
+  from value reads to QK scoring and changes the key/value head allocation. Its
+  kernel consequence is asymmetric GQA metadata and a selector whose head
+  allocation is not the usual `n_heads / n_kv_heads` partition.
+
+The lesson common to all three: selection is now a **memory-layout** problem as
+much as a modelling problem. A selector that produces a beautiful block list but
+forces a synchronisation or a metadata read per layer can lose to a simpler one
+that stays fused.
+
+### 2.4 Chunked delta-rule scan (`kernels/triton/delta_chunk.py`)
 
 The compressed-state family needs one kernel that turns the sequential recurrence
 `S_t = Diag(α_t)(I - β_t k_t k_tᵀ)S_{t-1} + β_t k_t v_tᵀ` into something

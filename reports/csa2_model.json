@@ -1,17 +1,17 @@
 {
   "name": "csa2_model",
-  "generated_utc": "2026-10-17T13:17:08Z",
+  "generated_utc": "2026-10-17T13:27:47Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
     "threads": 4,
     "cuda": false,
-    "mps": false,
+    "mps": true,
     "triton_installed": false,
     "triton_msl": false,
     "flex_attention_importable": true,
-    "mlx_installed": false,
-    "mlx_metal": false
+    "mlx_installed": true,
+    "mlx_metal": true
   },
   "records": [
     {

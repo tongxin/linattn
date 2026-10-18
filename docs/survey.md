@@ -14,16 +14,18 @@ measurements come from `reports/`; everything else is cited.*
 months have been about making them *trainable* and *kernel-shaped* rather than
 about inventing new sparsity patterns.**
 
-1. **Token-level eviction is being abandoned as a quality lever.** Every
-   score-based eviction method (H2O, SnapKV, PyramidKV, R-KV, Ada-KV) shares one
-   paradigm: estimate how much each cached token will matter, keep the top ones.
-   The 2026 result that matters here is uncomfortable and reproducible: on
-   reasoning workloads, replacing the score with *uniform random selection* while
-   keeping the prompt and the recent window matches the strongest tuned baseline
-   across four models and six reasoning benchmarks, and is 32-43% faster in vLLM
-   because it computes no scores at all (Random Attention, arXiv:2609.03430).
-   The corollary: what those methods protect -- prompt tokens and recent tokens --
-   is what carries the quality, not the scoring heuristic.
+1. **Attention-mass eviction was retired; output-aware eviction was not.** Every
+   old score-based eviction method (H2O, SnapKV, PyramidKV, R-KV, Ada-KV) shared
+   one paradigm: estimate past attention mass and keep the top tokens. The 2026
+   Random Attention result is a sharp critique of that score: keeping the prompt
+   and recent window while randomising the rest matches the strongest tuned
+   baseline across four models and six reasoning benchmarks, and is 32–43% faster
+   in vLLM because it computes no scores (arXiv:2609.03430). But the field did not
+   stop there. DropKV (NeurIPS 2026), ReST-KV (ICLR 2026) and BeaconKV (ICML 2026)
+   replace the score with output perturbation, reconstruction error or future-query
+   representatives, and report gains on RULER/LongBench. The defensible conclusion
+   is narrower: **raw attention mass is a weak default; the scoring objective is
+   still an active design surface.**
 
 2. **Block/page selection won because it is kernel-friendly and query-aware.**
    Quest (page min/max bounds), MInference (A-shape / vertical-slash /
@@ -31,7 +33,10 @@ about inventing new sparsity patterns.**
    (cumulative-attention budgets) and MoBA (top-k block routing) all keep the KV
    cache intact and choose which *blocks* to read. They are the family that
    survives contact with production kernels, because selection can be expressed as
-   a block mask and executed by one generic block-sparse kernel.
+   a block mask and executed by one generic block-sparse kernel. The 2026
+   correction is that the *routing* term is now the bottleneck: PISA makes it
+   hierarchical and log-linear, JSSA learns a shared low-rank token subspace, and
+   SAGA shows that sparse decoding can favour fewer key heads and more value heads.
 
 3. **The production design has converged on a learned indexer sitting in front of
    a sparse core.** DeepSeek's DSA (*lightning indexer*: `I(t,s) = Σ_j w_{t,j} ·
@@ -138,7 +143,7 @@ point in this table.
 | family | what is stored | what is read per query | training needed? | representative methods |
 | --- | --- | --- | --- | --- |
 | **A. structural / local** | full KV, windowed reads | `window + sinks` | no | StreamingLLM, sliding-window layers, sink tokens |
-| **B. training-free selection** | full KV (+ small metadata) | top-k pages/blocks/tokens by a proxy score | no | Quest, MInference, FlexPrefill, XAttention, MoBA (score-based *eviction* -- H2O, SnapKV, PyramidKV -- was retired, see §4.2) |
+| **B. training-free selection** | full KV (+ small metadata) or a budgeted cache | top-k pages/blocks/tokens by a proxy or output-aware score | no | Quest, MInference, FlexPrefill, XAttention, MoBA, PISA, JSSA, MASA, OVAL, SAGA; output-aware eviction: DropKV, ReST-KV, BeaconKV |
 | **C. learned / native sparse** | full KV, learned selector | top-k by a learned indexer or gate | yes (or a fine-tune) | NSA, DSA (DeepSeek V3.2), CSA/CSA2 (V4.x), SeerAttention-R, SAS |
 | **D. compressed state** | fixed-size state (or latent) | everything, but through a state of size `d_k x d_v` | yes | MLA, Mamba-2/SSD, Gated DeltaNet, KDA/Kimi Linear, hybrids (3:1) |
 
@@ -182,6 +187,13 @@ why the C kernel in this repo is worth running).
 
 ## 4. The mechanisms in detail
 
+The 2025–2026 academic selection is mapped separately in
+[academic-attention.md](academic-attention.md): SAGA, PISA, JSSA, MASA, OVAL,
+SFA, DropKV, ReST-KV, BeaconKV, Q-Delta, KDN and SwiLA are the current line;
+the 2019–2021 approximation canon is retained as lineage and control. The
+remainder of this section explains the mechanisms that already have production
+traction.
+
 ### 4.1 Family A -- structural sparsity
 
 The cheapest and most deployed: every layer reads the last `W` tokens plus a few
@@ -196,17 +208,30 @@ Implementation: [`variants/local.py`](../src/linattn/variants/local.py).
 
 ### 4.2 Family B -- training-free selection
 
-**Eviction (H2O, SnapKV, PyramidKV, R-KV, Ada-KV) -- surveyed but retired.** They
-score tokens, drop the rest, and pay an irreversible cost: once evicted, a token can
-never be recovered, which is catastrophic for exactly the workloads where a later
-query needs an earlier detail. The 2026 critique (Random Attention) undercuts the
-scoring signal itself. This repository no longer ships them: keeping the prompt and
-the recent window is what carries quality, so the only surviving member of the
-family is `random_eviction`, kept as the **control baseline** that the claim rests
-on ([`variants/eviction.py`](../src/linattn/variants/eviction.py)). Scored eviction
-is one of the two lines this survey argues is being abandoned; the other is
-token-level hard selection for reasoning, where the indexer cost and the recall risk
-both argue for compressed (page-level) indexing instead.
+**Attention-mass eviction (H2O, SnapKV, PyramidKV, R-KV, Ada-KV) is now a
+baseline, not the frontier.** These methods score tokens by past attention and drop
+the rest. The irreversible loss is real, and the 2026 Random Attention critique
+shows that on reasoning traces the score can be replaced by uniform selection once
+the prompt and recent window are protected. That result was widely over-read as
+"eviction is dead". It is more accurately a result about *which score* is weak.
+
+The 2026 line changes the objective. **DropKV** ranks by the residual-output
+perturbation of removing a token, `p_j/(1-p_j) · ||a - v_j||`, and selects the
+smallest perturbations; **ReST-KV** uses a reconstruction objective with temporal
+smoothing; **BeaconKV** keeps representatives of past query clusters so a later
+thought can revisit an earlier plan. All three report gains on long-context and
+reasoning benchmarks in their own comparisons. They are implemented here as
+`dropkv`, `restkv` and `beaconkv`, alongside the original H2O/SnapKV/TOVA lineage
+and the `random_eviction` control. The comparison is the point: the score, not the
+word "eviction", is the variable.
+
+**Routing cost is the other 2026 correction.** PISA replaces query-block scoring
+with a pyramid Top-K over hierarchical key summaries; JSSA learns a shared
+low-rank QK subspace and performs gather-free token selection; SAGA argues that when
+the probability-value term becomes negligible, fewer key heads and more value heads
+is the better decode allocation. These are implemented as `pisa`, `jssa` and
+`saga`. Their common lesson is that the selector must be costed as part of the
+algorithm, not treated as a free preprocessing step.
 
 **Quest.** Page granularity (16 tokens in the paper), query-aware, with a bound
 rather than an estimate: `score(q, page) = Σ_d max(q_d·m_d, q_d·M_d)` where `m, M`
@@ -251,6 +276,26 @@ routing to the current block with a causal mask. Its conceptual value is the
 of the gate, so a learned gate can express them and more. Our implementation uses
 the released inference-time semantics (mean-pooled gate, top-k), which is what
 most deployments of MoBA actually use.
+
+**MASA.** The 2026 conceptual correction: sparse attention should approximate the
+matrix product `A V`, not the scalar entries of `A`. For a block contribution
+`C_u`, the reduction in squared output error is `2⟨O, C_u⟩ - ||C_u||²`. This is the
+identity-Gram special case only when `V V^T` behaves like an identity, which it
+does not at long context. The repository ships the exact profile-map version as
+`masa`, an analysis oracle for measuring how much of a selector's loss is the score
+versus the sparse kernel.
+
+**OVAL.** Builds page-local bases from centred key–value coupling instead of key
+energy alone. The page score combines the mean key logit with a LogSumExp over the
+projected residual logits; the basis is chosen by a convex combination of key-PCA
+and output-sensitivity risk. It uses values only when constructing the summary, so
+decode scoring keeps the same format as a key-only spectral summary. Implemented as
+`oval` with `G=I`.
+
+**SFA.** Sparsifies the *feature* axis while keeping every token: queries and keys
+become `k`-sparse codes, so attention cost scales with `k²/d` rather than `d`. This
+is orthogonal to eviction and block selection and composes with both. Implemented as
+`sfa` with a top-magnitude code; `feature_keep == head_dim` is the dense limit.
 
 ### 4.3 Family C -- native / learned sparse
 
@@ -374,6 +419,21 @@ composition does not reproduce the reported 890 B/token with one copy per four l
 or a smaller latent. Sharing divergence grows with how much neighbouring layers
 disagree (0 at identical layers, 0.27 at sigma=0.2, ~1.0 at independent layers), which
 is why cross-layer reuse has to be trained in rather than applied post hoc.
+
+### 4.6 The academic line: approximation, structure, limits, systems
+
+The industry-facing sections above answer "what ships". The academic literature asks
+different questions -- what objective should selection optimise (MASA, OVAL,
+DropKV), how should routing cost scale (PISA, JSSA, FFD), how expressive is a
+fixed-size or higher-order state (Q-Delta, KDN, SwiLA, DLA, GSA2, Triadic,
+RunningTensor), what efficient attention *cannot* do (copying and associative-recall
+limits), and how KV should be managed as a memory hierarchy (PagedAttention, Orca,
+DistServe, Strata, vAttention). Twenty academic/analysis attention variants and
+seven state mixers are implemented here, with honest notes on what is faithful and
+what was approximated. [academic-attention.md](academic-attention.md) is now
+2025–2026-first, with the older canon retained as lineage; it also records what the
+reproductions measured -- including one classic (Nystromformer) that proved
+numerically unusable and is therefore not shipped.
 
 ## 5. What the evidence says about the workloads that matter
 

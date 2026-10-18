@@ -49,6 +49,7 @@ Individual scripts take their own knobs:
 
 ```bash
 python bench/run_suite.py --seq 8192 --budget 512 --topk-blocks 16 --topk-tokens 1024
+python bench/run_frontier_2026.py          # focused 2025–2026 comparison
 python bench/bench_decode.py --seq 262144 --budgets 256 2048 16384
 python experiments/state_capacity.py --counts 4 64 512 --states 8 64 256
 python experiments/hybrid_recall.py --steps 400 --seq 256 --d-state 16
@@ -116,6 +117,7 @@ Three cautions that matter more than the numbers:
 ```bash
 python bench/run_suite.py --seq 2048 --batch 4 --budget 256     # batched quality/cost sweep
 python -m pytest tests/test_batching.py -q                      # the batch guard
+python -m pytest tests/test_academic.py -q                     # academic variants (exactness at degenerate configs)
 ```
 
 ## 5. Continuous integration

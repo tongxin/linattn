@@ -1,0 +1,289 @@
+{
+  "name": "frontier_2026",
+  "generated_utc": "2026-10-18T09:16:03Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": false,
+    "triton_installed": false,
+    "triton_msl": false,
+    "flex_attention_importable": true,
+    "mlx_installed": false,
+    "mlx_metal": false
+  },
+  "records": [
+    {
+      "variant": "dense",
+      "family": "dense",
+      "seq": 512,
+      "rel_err": 0.0,
+      "max_abs_err": 0.0,
+      "mass_recall": null,
+      "kv_reads": 512.0,
+      "state_bytes": 524288.0,
+      "latency_ms": 4.742750083096325,
+      "peak_mib": 0.0,
+      "extra": {},
+      "reads_per_query": 512.0,
+      "state_kib": 512.0,
+      "error": ""
+    },
+    {
+      "variant": "saga",
+      "family": "frontier",
+      "seq": 512,
+      "rel_err": 0.840584281930687,
+      "max_abs_err": 5.943779328726398,
+      "mass_recall": 1.0,
+      "kv_reads": 113.86474609375,
+      "state_bytes": 393216.0,
+      "latency_ms": 10.6680829776451,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 113.86474609375,
+        "key_heads": 2.0,
+        "value_heads": 4.0,
+        "mass_recall": 1.0
+      },
+      "reads_per_query": 113.86474609375,
+      "state_kib": 384.0,
+      "error": ""
+    },
+    {
+      "variant": "pisa",
+      "family": "frontier",
+      "seq": 512,
+      "rel_err": 0.03756314939590151,
+      "max_abs_err": 0.24094771500706336,
+      "mass_recall": 1.0,
+      "kv_reads": 113.875244140625,
+      "state_bytes": 524288.0,
+      "latency_ms": 88.90412503387779,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 113.875244140625,
+        "pyramid_levels": 2.25,
+        "mass_recall": 1.0
+      },
+      "reads_per_query": 113.875244140625,
+      "state_kib": 512.0,
+      "error": ""
+    },
+    {
+      "variant": "jssa",
+      "family": "frontier",
+      "seq": 512,
+      "rel_err": 0.12330743228102001,
+      "max_abs_err": 2.231285285529724,
+      "mass_recall": 1.0,
+      "kv_reads": 113.90625,
+      "state_bytes": 524288.0,
+      "latency_ms": 17.39612501114607,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 113.90625,
+        "subspace_rank": 16.0,
+        "mass_recall": 1.0
+      },
+      "reads_per_query": 113.90625,
+      "state_kib": 512.0,
+      "error": ""
+    },
+    {
+      "variant": "masa",
+      "family": "frontier",
+      "seq": 512,
+      "rel_err": 0.18100621486985932,
+      "max_abs_err": 1.542719520598363,
+      "mass_recall": 0.9980063392356766,
+      "kv_reads": 112.20703125,
+      "state_bytes": 524288.0,
+      "latency_ms": 15.525333932600915,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 112.20703125,
+        "blocks": 8.0,
+        "masa_oracle": 1.0,
+        "mass_recall": 0.9980063392356766
+      },
+      "reads_per_query": 112.20703125,
+      "state_kib": 512.0,
+      "error": ""
+    },
+    {
+      "variant": "oval",
+      "family": "frontier",
+      "seq": 512,
+      "rel_err": 0.10782190976848181,
+      "max_abs_err": 1.8858454980870771,
+      "mass_recall": 0.9847564399824564,
+      "kv_reads": 111.142333984375,
+      "state_bytes": 524288.0,
+      "latency_ms": 28.333834023214877,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 111.142333984375,
+        "page_rank": 8.0,
+        "oval_eta": 0.5,
+        "mass_recall": 0.9847564399824564
+      },
+      "reads_per_query": 111.142333984375,
+      "state_kib": 512.0,
+      "error": ""
+    },
+    {
+      "variant": "sfa",
+      "family": "frontier",
+      "seq": 512,
+      "rel_err": 0.9083328303350706,
+      "max_abs_err": 5.442040403431466,
+      "mass_recall": null,
+      "kv_reads": 320.0,
+      "state_bytes": 335872.0,
+      "latency_ms": 6.426000036299229,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 320.0,
+        "feature_keep": 16.0
+      },
+      "reads_per_query": 320.0,
+      "state_kib": 328.0,
+      "error": ""
+    },
+    {
+      "variant": "random_eviction",
+      "family": "baseline",
+      "seq": 512,
+      "rel_err": 0.6753816427957259,
+      "max_abs_err": 4.663357015511963,
+      "mass_recall": null,
+      "kv_reads": 224.5,
+      "state_bytes": 524288.0,
+      "latency_ms": 2.9127500019967556,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 224.5,
+        "evicted_tokens": 192.75
+      },
+      "reads_per_query": 224.5,
+      "state_kib": 512.0,
+      "error": ""
+    },
+    {
+      "variant": "h2o",
+      "family": "eviction",
+      "seq": 512,
+      "rel_err": 0.6536328022356482,
+      "max_abs_err": 4.223764208106864,
+      "mass_recall": null,
+      "kv_reads": 224.5,
+      "state_bytes": 524288.0,
+      "latency_ms": 2.7019999688491225,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 224.5,
+        "evicted_tokens": 192.75
+      },
+      "reads_per_query": 224.5,
+      "state_kib": 512.0,
+      "error": ""
+    },
+    {
+      "variant": "snapkv",
+      "family": "eviction",
+      "seq": 512,
+      "rel_err": 0.5759760842702305,
+      "max_abs_err": 3.8498030867339113,
+      "mass_recall": null,
+      "kv_reads": 224.0,
+      "state_bytes": 524288.0,
+      "latency_ms": 2.6856668991968036,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 224.0,
+        "evicted_tokens": 192.0
+      },
+      "reads_per_query": 224.0,
+      "state_kib": 512.0,
+      "error": ""
+    },
+    {
+      "variant": "tova",
+      "family": "eviction",
+      "seq": 512,
+      "rel_err": 0.6533435552482764,
+      "max_abs_err": 4.223764208106864,
+      "mass_recall": null,
+      "kv_reads": 224.5,
+      "state_bytes": 524288.0,
+      "latency_ms": 2.641333034262061,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 224.5,
+        "evicted_tokens": 192.75
+      },
+      "reads_per_query": 224.5,
+      "state_kib": 512.0,
+      "error": ""
+    },
+    {
+      "variant": "dropkv",
+      "family": "eviction",
+      "seq": 512,
+      "rel_err": 0.6754156272379462,
+      "max_abs_err": 4.663330238771341,
+      "mass_recall": null,
+      "kv_reads": 224.5,
+      "state_bytes": 524288.0,
+      "latency_ms": 3.213707939721644,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 224.5,
+        "evicted_tokens": 192.75
+      },
+      "reads_per_query": 224.5,
+      "state_kib": 512.0,
+      "error": ""
+    },
+    {
+      "variant": "restkv",
+      "family": "eviction",
+      "seq": 512,
+      "rel_err": 0.6754078298010193,
+      "max_abs_err": 4.663358538343761,
+      "mass_recall": null,
+      "kv_reads": 224.5,
+      "state_bytes": 524288.0,
+      "latency_ms": 3.1081249471753836,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 224.5,
+        "evicted_tokens": 192.75
+      },
+      "reads_per_query": 224.5,
+      "state_kib": 512.0,
+      "error": ""
+    },
+    {
+      "variant": "beaconkv",
+      "family": "eviction",
+      "seq": 512,
+      "rel_err": 0.6534491989024103,
+      "max_abs_err": 4.223764208106864,
+      "mass_recall": null,
+      "kv_reads": 224.5,
+      "state_bytes": 524288.0,
+      "latency_ms": 3.1252079643309116,
+      "peak_mib": 0.0,
+      "extra": {
+        "reads_per_query": 224.5,
+        "evicted_tokens": 192.75
+      },
+      "reads_per_query": 224.5,
+      "state_kib": 512.0,
+      "error": ""
+    }
+  ]
+}

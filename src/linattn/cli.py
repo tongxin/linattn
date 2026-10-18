@@ -58,12 +58,13 @@ def cmd_mixers(args) -> int:
     for kind in MIXERS:
         layer = build_mixer(kind, d_model=args.d_model, n_heads=args.heads, d_state=args.d_state)
         meta = describe_mixer(kind)
-        floats = layer.cfg.n_heads * layer.cfg.d_state * layer.cfg.d_value
+        floats = layer.state_bytes(1) // 4
         print(f"{kind:<8} {meta['decay']:<34} {floats:>13} {layer.decode_flops_per_token():>12}")
     print()
-    print("state size and per-token cost are identical across kinds; only the update")
-    print("rule (and therefore quality) differs. See reports/state_capacity.md for what")
-    print("a state of a given size can actually remember.")
+    print("SSD/GDN/KDA/GDN-2 and Q-Delta use the same matrix state; KDN adds an")
+    print("uncertainty channel and SwiLA multiplies the state by its expert count.")
+    print("The update rule, not just the state size, is the quality variable. See")
+    print("reports/state_capacity.md for what a state of a given size can remember.")
     print()
     for kind in MIXERS:
         meta = describe_mixer(kind)
@@ -82,7 +83,7 @@ def cmd_cost(args) -> int:
     mixer_rows = []
     for kind in MIXERS:
         layer = build_mixer(kind, d_model=args.d_model, n_heads=args.mixer_heads, d_state=args.d_state)
-        floats = layer.cfg.n_heads * layer.cfg.d_state * layer.cfg.d_value
+        floats = layer.state_bytes(1) // 4
         state_mib = layer.state_bytes(args.batch) / 2**20
         flops_m = layer.decode_flops_per_token(args.batch) / 1e6
         mixer_rows.append([kind, f"{floats:,}", f"{state_mib:.2f}", f"{flops_m:.1f}"])

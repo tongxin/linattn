@@ -7,8 +7,8 @@ Three catalogues, because the families have different interfaces:
     ``AttentionVariant`` prefill/decode contract, so the harness, CLI, benchmarks
     and tests can drive any of them identically.
 ``MIXERS``
-    fixed-size-state sequence mixers (SSD / Gated DeltaNet / KDA / Gated
-    DeltaNet-2).  They take a token embedding ``x`` of shape ``(B, T, d_model)`` and
+    fixed-size-state sequence mixers (SSD / GDN / KDA / GDN-2 / Q-Delta / KDN /
+    SwiLA).  They take a token embedding ``x`` of shape ``(B, T, d_model)`` and
     own their projections, so they cannot implement the ``(q, k, v)`` contract --
     registering them in ``VARIANTS`` would make ``build()`` and ``compare()`` lie.
 ``KERNEL_VARIANTS``
@@ -32,6 +32,30 @@ from typing import Any, Dict, List, Tuple, Type
 
 from linattn.core import AttentionVariant, AttnConfig, DenseAttention
 from linattn.variants.eviction import RandomEvictionBaseline
+from linattn.variants.eviction import H2OAttention, SnapKVAttention, TOVAAttention
+from linattn.variants.academic import (
+    BigBirdAttention,
+    LinformerAttention,
+    PerformerAttention,
+    ReformerLSHAttention,
+)
+from linattn.variants.modern import (
+    FreeSoloAttention,
+    HLAMixingAttention,
+    MassOracleAttention,
+    NAMOHAttention,
+)
+from linattn.variants.frontier import (
+    BeaconKVAttention,
+    DropKVAttention,
+    JSSAAttention,
+    MASAAttention,
+    OVALAttention,
+    PISAAttention,
+    ReSTKVAttention,
+    SAGAAttention,
+    SFAAttention,
+)
 from linattn.variants.csa2 import CSA2Attention
 from linattn.variants.local import SlidingWindowAttention, StreamingSinkAttention
 from linattn.variants.mla import MLAttention
@@ -69,7 +93,7 @@ VARIANTS: Dict[str, Type[AttentionVariant]] = {
     # structural / local sparsity
     "sliding_window": SlidingWindowAttention,
     "streaming_sink": StreamingSinkAttention,
-    # control baseline for the retired eviction family
+    # control baseline for attention-mass eviction
     "random_eviction": RandomEvictionBaseline,
     # query-aware selection
     "quest": QuestAttention,
@@ -84,6 +108,31 @@ VARIANTS: Dict[str, Type[AttentionVariant]] = {
     "csa2": CSA2Attention,
     # compressed latent state
     "mla": MLAttention,
+    # canonical academic milestones (2020-2021)
+    "linformer": LinformerAttention,
+    "performer": PerformerAttention,
+    "bigbird": BigBirdAttention,
+    "reformer_lsh": ReformerLSHAttention,
+    # current academic lines (2025-2026)
+    "free_solo": FreeSoloAttention,
+    "namoh": NAMOHAttention,
+    "hla_mixing": HLAMixingAttention,
+    "mass_oracle": MassOracleAttention,
+    # 2025-2026 frontier: routing, output-aware selection, feature sparsity
+    "saga": SAGAAttention,
+    "pisa": PISAAttention,
+    "jssa": JSSAAttention,
+    "masa": MASAAttention,
+    "oval": OVALAttention,
+    "sfa": SFAAttention,
+    # output-aware and long-horizon KV eviction
+    "dropkv": DropKVAttention,
+    "restkv": ReSTKVAttention,
+    "beaconkv": BeaconKVAttention,
+    # academic eviction lineage, kept as baselines for the random-eviction result
+    "h2o": H2OAttention,
+    "snapkv": SnapKVAttention,
+    "tova": TOVAAttention,
 }
 
 
@@ -142,6 +191,30 @@ MIXERS: Dict[str, MixerSpec] = {
         decay="channel-wise",
         gates="separate channel-wise erase (b) and write (w) gates",
         citation=("Yang et al., Gated DeltaNet-2 (2026)", "https://arxiv.org/abs/2605.22791"),
+    ),
+    "qdelta": MixerSpec(
+        kind="qdelta",
+        summary="Q-Delta: the query's own state prediction corrects the delta update",
+        recurrence="S_t = (I - b_t(k_t + λ_t q_t)k_t^T) diag(a_t) S_{t-1} + b_t k_t v_t^T",
+        decay="scalar per head",
+        gates="key-write strength plus a learned query-feedback coefficient",
+        citation=("Park et al., Q-Delta (ICML 2026)", "https://arxiv.org/abs/2606.08804"),
+    ),
+    "kdn": MixerSpec(
+        kind="kdn",
+        summary="Diagonal Kalman DeltaNet: uncertainty-aware associative memory",
+        recurrence="S_t = (I - κ_t k_t^T) diag(a_t) S_{t-1} + κ_t v_t^T, κ_t = p_t ⊙ k_t / (r_t + k_t^T p_t k_t)",
+        decay="channel-wise",
+        gates="uncertainty-derived Kalman gain; diagonal covariance state",
+        citation=("Bui et al., Kalman Delta Networks (2026)", "https://arxiv.org/abs/2609.07816"),
+    ),
+    "swila": MixerSpec(
+        kind="swila",
+        summary="Switching Linear Attention: a routed mixture of delta-rule memories",
+        recurrence="S_t^(j) = a_tj S_{t-1}^(j) + b_tj π_tj (v_t - a_tj k_t^T S_{t-1}^(j)) k_t",
+        decay="per expert, per head",
+        gates="soft posterior responsibilities over J memory experts",
+        citation=("Lee et al., Switching Linear Attention (COLM 2026)", "https://arxiv.org/abs/2609.39034"),
     ),
 }
 

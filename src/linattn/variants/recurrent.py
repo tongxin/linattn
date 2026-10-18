@@ -1,7 +1,7 @@
-"""Fixed-size-state sequence mixers: Mamba-2/SSD, Gated DeltaNet and KDA.
+"""Fixed-size-state sequence mixers, from SSD to the 2026 DeltaNet frontier.
 
 This module implements the compressed-state branch of the taxonomy in one place,
-because the three models are three settings of one recurrence:
+because the first four models are settings of one recurrence:
 
 .. math::
     S_t = \\mathrm{Diag}(\\alpha_t)\\,(I - \\beta_t k_t k_t^{\\top})\\,S_{t-1}
@@ -19,6 +19,15 @@ because the three models are three settings of one recurrence:
   channel-wise erase and write gates.  Generalises KDA (both gates equal) and GDN
   (gates collapse to a scalar).  Yang et al., *Gated DeltaNet-2: Decoupling Erase
   and Write in Linear Attention* (2026), https://arxiv.org/abs/2605.22791
+* ``kind="qdelta"`` -- Q-Delta feeds the query's own value prediction back into
+  the delta rule.  Park et al., *Q-Delta* (ICML 2026),
+  https://arxiv.org/abs/2606.08804
+* ``kind="kdn"`` -- Diagonal Kalman DeltaNet tracks a per-channel uncertainty and
+  uses the Kalman gain as the write strength.  The reference recurrence is
+  reproduced; the covariance scan is not.  https://arxiv.org/abs/2609.07816
+* ``kind="swila"`` -- Switching Linear Attention keeps a mixture of delta-rule
+  states and routes each token with posterior responsibilities.
+  https://arxiv.org/abs/2609.39034
 
 Two forward paths are provided and the test-suite asserts they agree:
 
@@ -80,7 +89,7 @@ import torch.nn.functional as F
 
 __all__ = ["LinearAttentionConfig", "LinearAttentionLayer", "STATE_KINDS"]
 
-STATE_KINDS = ("ssd", "gdn", "kda", "gdn2")
+STATE_KINDS = ("ssd", "gdn", "kda", "gdn2", "qdelta", "kdn", "swila")
 
 
 @dataclass
@@ -93,6 +102,8 @@ class LinearAttentionConfig:
     kind: str = "gdn"          # ssd | gdn | kda | gdn2
     decay_clamp: float = 4.0   # log-decay lower bound (per step, per channel)
     init_gate: float = 0.5     # sigmoid offset for the decay gate
+    n_experts: int = 4         # mixture size for SwiLA
+    kdn_information_scale: float = 1.0
 
     @property
     def head_dim(self) -> int:
@@ -117,7 +128,7 @@ class LinearAttentionLayer(torch.nn.Module):
         self.v_proj = torch.nn.Linear(cfg.d_model, h * dv, bias=False)
         self.o_proj = torch.nn.Linear(h * dv, cfg.d_model, bias=False)
         # decay gate: log(alpha) <= 0 ; per-channel for kda, per-head otherwise
-        decay_out = h * dk if cfg.kind in ("kda", "gdn2") else h
+        decay_out = h * dk if cfg.kind in ("kda", "gdn2", "kdn") else h
         self.decay_proj = torch.nn.Linear(cfg.d_model, decay_out, bias=False)
         self.beta_proj = torch.nn.Linear(cfg.d_model, h, bias=False)
         # GDN-2 decouples the two roles of the scalar gate: a channel-wise erase gate
@@ -126,6 +137,16 @@ class LinearAttentionLayer(torch.nn.Module):
         if cfg.kind == "gdn2":
             self.beta_erase_proj = torch.nn.Linear(cfg.d_model, h * dk, bias=False)
             self.beta_write_proj = torch.nn.Linear(cfg.d_model, h * dk, bias=False)
+        if cfg.kind == "qdelta":
+            self.query_feedback_proj = torch.nn.Linear(cfg.d_model, h, bias=False)
+        if cfg.kind == "kdn":
+            self.omega_proj = torch.nn.Linear(cfg.d_model, h * dk, bias=False)
+            self.noise_proj = torch.nn.Linear(cfg.d_model, h, bias=False)
+        if cfg.kind == "swila":
+            j = cfg.n_experts
+            self.router_proj = torch.nn.Linear(cfg.d_model, h * j, bias=False)
+            self.swila_beta_proj = torch.nn.Linear(cfg.d_model, h * j, bias=False)
+            self.swila_decay_proj = torch.nn.Linear(cfg.d_model, h * j, bias=False)
         # Mamba-2 style per-head scalar A, initialised log-uniformly
         self.A_log = torch.nn.Parameter(torch.log(torch.linspace(1.0, 16.0, h)))
 
@@ -146,7 +167,7 @@ class LinearAttentionLayer(torch.nn.Module):
         k = torch.nn.functional.normalize(k, dim=-1)
         beta = torch.sigmoid(self.beta_proj(x)).transpose(1, 2)              # (B,H,T)
         raw = self.decay_proj(x)
-        if self.cfg.kind in ("kda", "gdn2"):
+        if self.cfg.kind in ("kda", "gdn2", "kdn"):
             g = -F.softplus(raw.view(b, t, h, dk)).transpose(1, 2)           # (B,H,T,dk)
         else:
             g = -F.softplus(raw.view(b, t, h)).transpose(1, 2)               # (B,H,T)
@@ -162,10 +183,17 @@ class LinearAttentionLayer(torch.nn.Module):
     # ------------------------------------------------------------------ reference
     def forward_recurrent(self, x: torch.Tensor, state: Optional[torch.Tensor] = None):
         """Literal per-token recurrence.  Returns ``(y, state)``."""
+        if self.cfg.kind == "swila":
+            return self._swila_recurrent(x, state)
+        if self.cfg.kind == "kdn":
+            return self._kdn_recurrent(x, state)
         q, k, v, erase, write, g = self._project(x)
         b, h, t, dk = k.shape
         dv = v.shape[-1]
         state = torch.zeros(b, h, dk, dv, dtype=x.dtype, device=x.device) if state is None else state
+        qfeedback = None
+        if self.cfg.kind == "qdelta":
+            qfeedback = torch.sigmoid(self.query_feedback_proj(x)).transpose(1, 2)
         outs = []
         for i in range(t):
             alpha = torch.exp(g[..., i, :] if g.dim() == 4 else g[..., i].unsqueeze(-1))
@@ -174,18 +202,97 @@ class LinearAttentionLayer(torch.nn.Module):
             if be.dim() == 2:                     # scalar gates -> per-channel view
                 be, bw = be[..., None], bw[..., None]
             state = state * alpha.unsqueeze(-1)
-            if self.cfg.kind != "ssd":
+            if self.cfg.kind == "qdelta":
+                pred_k = torch.einsum("bhd,bhde->bhe", ki, state)
+                pred_q = torch.einsum("bhd,bhde->bhe", qi, state)
+                lam = qfeedback[:, :, i].unsqueeze(-1)
+                residual = vi - pred_k - lam * pred_q
+                state = state + (be * ki).unsqueeze(-1) * residual.unsqueeze(-2)
+            elif self.cfg.kind != "ssd":
                 # erase: S <- S - (b * k) (k^T S)  (rank-1 removal along k)
                 proj = torch.einsum("bhd,bhde->bhe", ki, state)
                 state = state - torch.einsum("bhd,bhe->bhde", be * ki, proj)
-            state = state + torch.einsum("bhd,bhe->bhde", bw * ki, vi)
+            if self.cfg.kind != "qdelta":
+                state = state + torch.einsum("bhd,bhe->bhde", bw * ki, vi)
             outs.append(torch.einsum("bhd,bhde->bhe", qi, state))
         y = torch.stack(outs, dim=2)
         return self.o_proj(y.transpose(1, 2).reshape(x.shape[0], t, -1)), state
 
+    def _kdn_recurrent(self, x: torch.Tensor, state: Optional[torch.Tensor] = None):
+        """Diagonal Kalman DeltaNet reference recurrence.
+
+        The covariance is packed into the final value channel of the returned state
+        so the public state remains a four-dimensional tensor.  This path is a
+        reference definition, not the paper's Möbius-scan kernel.
+        """
+        q, k, v, _, _, g = self._project(x)
+        b, h, t, dk = k.shape
+        dv = v.shape[-1]
+        if state is None:
+            packed = torch.zeros(b, h, dk, dv + 1, dtype=x.dtype, device=x.device)
+            packed[..., -1] = 1.0
+        else:
+            packed = state
+        S, p = packed[..., :dv], packed[..., -1]
+        omega = F.softplus(self.omega_proj(x)).view(b, t, h, dk).transpose(1, 2)
+        r = 0.05 + F.softplus(self.noise_proj(x)).transpose(1, 2)
+        outs = []
+        for i in range(t):
+            alpha = torch.exp(g[:, :, i])
+            p_pred = alpha.square() * p + omega[:, :, i]
+            ki, vi, qi = k[:, :, i], v[:, :, i], q[:, :, i]
+            denom = r[:, :, i] + (p_pred * ki.square()).sum(-1)
+            kappa = p_pred * ki / denom.unsqueeze(-1).clamp_min(1e-9)
+            decayed = alpha.unsqueeze(-1) * S
+            residual = vi - torch.einsum("bhd,bhde->bhe", ki, decayed)
+            S = decayed + kappa.unsqueeze(-1) * residual.unsqueeze(-2)
+            increment = self.cfg.kdn_information_scale * ki.square() / r[:, :, i].unsqueeze(-1)
+            p = p_pred / (1.0 + increment * p_pred)
+            outs.append(torch.einsum("bhd,bhde->bhe", qi, S))
+        y = torch.stack(outs, dim=2)
+        packed = torch.cat([S, p.unsqueeze(-1)], dim=-1)
+        return self.o_proj(y.transpose(1, 2).reshape(x.shape[0], t, -1)), packed
+
+    def _swila_recurrent(self, x: torch.Tensor, state: Optional[torch.Tensor] = None):
+        """Mixture-of-delta-states reference recurrence for SwiLA.
+
+        The paper routes each *output dimension* independently.  This reference
+        routes a shared responsibility vector per head, which keeps the state
+        compact and makes the recurrence auditable; it is an approximation of the
+        full per-dimension gate.
+        """
+        b, t, _ = x.shape
+        h, dk, dv, j = self.cfg.n_heads, self.cfg.d_state, self.cfg.d_value, self.cfg.n_experts
+        q = self.q_proj(x).view(b, t, h, dk).transpose(1, 2)
+        k = F.normalize(self.k_proj(x).view(b, t, h, dk).transpose(1, 2), dim=-1)
+        v = self.v_proj(x).view(b, t, h, dv).transpose(1, 2)
+        router = torch.softmax(self.router_proj(x).view(b, t, h, j).transpose(1, 2), dim=-1)
+        beta = torch.sigmoid(self.swila_beta_proj(x).view(b, t, h, j).transpose(1, 2))
+        alpha = torch.sigmoid(self.swila_decay_proj(x).view(b, t, h, j).transpose(1, 2))
+        if state is None:
+            S = torch.zeros(b, h, j, dk, dv, dtype=x.dtype, device=x.device)
+        else:
+            S = state.view(b, h, j, dk, dv)
+        outs = []
+        for i in range(t):
+            pred = torch.einsum("bhd,bhjde->bhje", k[:, :, i], S)
+            delta = v[:, :, i].unsqueeze(2) - alpha[:, :, i].unsqueeze(-1) * pred
+            S = (alpha[:, :, i].unsqueeze(-1).unsqueeze(-1) * S +
+                 (beta[:, :, i] * router[:, :, i]).unsqueeze(-1).unsqueeze(-1) *
+                 k[:, :, i].unsqueeze(2).unsqueeze(-1) * delta.unsqueeze(-2))
+            read = torch.einsum("bhd,bhjde->bhje", q[:, :, i], S)
+            outs.append((router[:, :, i].unsqueeze(-1) * read).sum(2))
+        y = torch.stack(outs, dim=2)
+        return self.o_proj(y.transpose(1, 2).reshape(b, t, -1)), S.reshape(b, h, j * dk, dv)
+
     # ------------------------------------------------------------------ chunked
     def forward_chunked(self, x: torch.Tensor, state: Optional[torch.Tensor] = None):
         """Chunkwise algorithm: matmuls plus one triangular solve per chunk."""
+        if self.cfg.kind in ("qdelta", "kdn", "swila"):
+            # The papers derive specialised WY/covariance scans.  We ship the exact
+            # reference recurrence for these three rather than presenting a serial
+            # loop as a chunkwise kernel.
+            return self.forward_recurrent(x, state)
         q, k, v, erase, write, g = self._project(x)
         b, h, t, dk = k.shape
         dv = v.shape[-1]
@@ -297,8 +404,11 @@ class LinearAttentionLayer(torch.nn.Module):
 
     # ------------------------------------------------------------------ accounting
     def state_bytes(self, batch: int = 1) -> int:
-        return 4 * batch * self.cfg.n_heads * self.cfg.d_state * self.cfg.d_value
+        extra = 1 if self.cfg.kind == "kdn" else 0
+        experts = self.cfg.n_experts if self.cfg.kind == "swila" else 1
+        return 4 * batch * self.cfg.n_heads * self.cfg.d_state * (self.cfg.d_value + extra) * experts
 
     def decode_flops_per_token(self, batch: int = 1) -> int:
         h, dk, dv = self.cfg.n_heads, self.cfg.d_state, self.cfg.d_value
-        return int(2 * batch * (h * dk * dv * 3 + 3 * self.cfg.d_model * h * dk))
+        experts = self.cfg.n_experts if self.cfg.kind == "swila" else 1
+        return int(2 * batch * (h * dk * dv * 3 * experts + 3 * self.cfg.d_model * h * dk))

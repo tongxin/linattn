@@ -1,6 +1,6 @@
 # KV layer economics: format, context and the value of a cache hit
 
-*Generated 2026-10-17T13:17:04Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-10-17T13:27:42Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
 Roofline cost model: attention = max(FLOPs, KV reads / HBM bandwidth), plus KV writes, tier promotion, recompute-on-miss and prefix-cache lookups. 61 layers, 32 KV heads x 128, fp16 tensor cores, H100-class bandwidths. The state format is charged linear-time FLOPs (it is a different algorithm, not just a smaller cache). `dominant` names the largest component -- that is the point of the table. Trace: 294 requests, 37 sessions over 19271 s, mean 78 blocks/request (1242 tokens); capacities [256, 1024, 4096] blocks x 16 tokens, ttl_lru TTL 300 s. Belady is a block-level upper bound, optimistic for prefix reuse.
 
