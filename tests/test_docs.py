@@ -29,6 +29,7 @@ def test_variant_has_citation_in_code(name):
 def test_top_level_docs_exist():
     for name in ("survey.md", "evaluation-evidence.md", "frontier-gap.md", "kernels.md",
                  "kv-layer.md", "academic-attention.md", "analytic-flops.md",
+                 "csa2-approximation.md",
                  "triton-on-apple.md", "mlx.md", "roadmap.md", "citations.bib"):
         assert (DOCS / name).exists(), f"missing docs/{name}"
 

@@ -320,6 +320,11 @@ global KV cache, roughly 1/4 of DeepSeek-V4-Flash", with a causal
 encoder-decoder that activates 16B parameters during decode and only 8B during
 prefill.
 
+The footprint and FLOPs numbers are cost-side evidence, not an approximation
+guarantee. [csa2-approximation.md](csa2-approximation.md) separates pooling,
+top-k selection and FP4/FP8 error, and distinguishes the repository's synthetic
+reference from the report's whole-model benchmark evidence.
+
 **SeerAttention-R.** Makes the block gate *learned* (pool q/k inside blocks, then
 a small projection and sigmoid) and adapts it for long reasoning decodes. It is
 the clearest example that the learned-selector family needs a training stage: a

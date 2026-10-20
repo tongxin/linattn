@@ -72,6 +72,25 @@ and KV storage/reuse, in that order.
 | LongCat LSA (arXiv:2608.01662) | streaming-aware + cross-layer + hierarchical indexing scales from 69B-A3B to 560B-A27B "on par with full attention" |
 | Agentic KV-cache study (public analysis, 393 real Claude Code sessions) | requests arriving after a gap longer than the provider TTL account for **17.5%** of recompute; three "smarter than LRU" policies all lost to plain radix-leaf LRU. Relevant because it bounds what any attention optimisation can buy if cache *reuse* is what dominates |
 
+The V4.1-Flash report also gives whole-model evidence that the compressed design
+did not simply collapse capability. Selected V4.1-Flash vs V4-Flash values from
+the report are:
+
+| benchmark | V4.1-Flash | V4-Flash |
+| --- | ---: | ---: |
+| Codeforces rating | 3471 | 3289 |
+| MathArena Apex pass@1 | 65.6 | 58.6 |
+| Terminal-Bench 2.1 | 90.6 | 82.7 |
+| Terminal-Bench 3.0 | 30.0 | 7.6 |
+| DeepSWE v1.1 resolved | 74.2 | 54.4 |
+| HLE pass@1 | 36.8 | 37.8 |
+
+These are **model-level, not CSA2-isolated** results: the release also changes
+CED, data, post-training, parameter count and deployment. The report says FP4
+main KV caused “only marginal performance degradation” and retains FP8 for the
+sensitive SWA cache, but it does not publish a layerwise dense-vs-CSA2 attention
+ablation. See [csa2-approximation.md](csa2-approximation.md).
+
 **Verdict for long-horizon agents:** the interesting wins in 2026 are in
 selection overhead (IndexCache, SPIN) and KV footprint (FP4, cross-layer reuse),
 not in attention FLOPs. A 10x attention-kernel speedup barely moves an agent

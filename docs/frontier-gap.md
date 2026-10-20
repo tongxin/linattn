@@ -25,6 +25,11 @@ training integration, not algorithm availability.
 | **Llama-4 / GLM / Yi lineage** | dense attention (+ RoPE scaling, chunked iRoPE-style patterns) | no | partial (chunked/alternating patterns in Llama-4's iRoPE) | model cards |
 | **OpenAI / Anthropic / Google** | undisclosed | undisclosed | undisclosed | see section 3 |
 
+The V4.1-Flash entry proves that CSA2 ships at frontier scale; it does not prove
+that the surrogate attention is close to dense softmax layer by layer. See
+[csa2-approximation.md](csa2-approximation.md) for the decomposition and the
+official model-level evidence.
+
 ### The pattern
 
 1. **Everyone at the open-weight frontier compresses state.** Not one of the 2026

@@ -67,6 +67,29 @@ difference between two cache-admission policies. The 2026 systems papers in this
 space (SparseEngine, SSD-backed sparse KV storage, HySparse2) are all attempts to
 co-design the cache policy *with* the sparse attention rather than separately.
 
+## DeepSeek-V4.1-Flash / CSA2 release threads (Sep–Oct 2026)
+`https://news.ycombinator.com/item?id=49639090` (1,016 points, 574 comments)
+
+`https://news.ycombinator.com/item?id=50129045` (957 points, 718 comments)
+
+`https://news.ycombinator.com/item?id=49735410` (architecture explainer)
+
+The discussion is evidence about deployment economics and trust, not about
+layerwise softmax fidelity:
+
+* commenters immediately focused on the jump from 284B to 552B backbone
+  parameters, the 890 B/token KV claim, and whether “Flash” remains a useful
+  name for local deployment;
+* cache-hit pricing and the cache-read share of agent bills were treated as a
+  first-order product constraint, consistent with the survey's KV-layer thesis;
+* multiple commenters separated strong benchmark tables from claimed real-world
+  capability, and one noted that no simple task distinguishes leading models at
+  short context. This is the same benchmark-vs-practice warning that motivates
+  [csa2-approximation.md](../csa2-approximation.md);
+* no thread provides an independent dense-versus-CSA2 layerwise attention
+  ablation. The official report's “marginal” FP4 degradation and stronger
+  whole-model scores are not substitutes for that missing experiment.
+
 ## Hacker News sweeps used for coverage
 
 The corpus was assembled by sweeping Hacker News (Algolia API) for

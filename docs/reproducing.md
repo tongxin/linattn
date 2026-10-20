@@ -50,6 +50,7 @@ Individual scripts take their own knobs:
 ```bash
 python bench/run_suite.py --seq 8192 --budget 512 --topk-blocks 16 --topk-tokens 1024
 python bench/run_frontier_2026.py          # focused 2025–2026 comparison
+python experiments/csa2_approximation.py --seq 512  # CSA2 error decomposition
 python bench/bench_decode.py --seq 262144 --budgets 256 2048 16384
 python experiments/state_capacity.py --counts 4 64 512 --states 8 64 256
 python experiments/hybrid_recall.py --steps 400 --seq 256 --d-state 16
@@ -61,6 +62,10 @@ python -m linattn.cli select --variant xattention --seq 4096 --structured
 The `cost` command's FLOPs and memory columns are analytic estimates. The
 definition of `@T`, the matmul convention, the causal-triangle caveat and every
 variant override are documented in [analytic-flops.md](analytic-flops.md).
+
+For the quality side of CSA2, [csa2-approximation.md](csa2-approximation.md)
+separates pooling, top-k selection and FP4/FP8 error, and distinguishes the
+synthetic reference from the official whole-model benchmark evidence.
 
 Runtime scales with `--seq` quadratically in the reference (mask-based) path, which
 is deliberate: `bench/run_suite.py --seq 32768` will take minutes and hundreds of MB

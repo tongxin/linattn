@@ -37,6 +37,10 @@ dequantisation). Cross-layer reuse lives outside the variant, in
 `reports/csa2_model.md` shows the footprint decomposition (the reported 890
 B/token is not what one-copy-per-four-layers yields) and the divergence that
 sharing introduces as neighbouring layers disagree.
+The FLOPs table is a cost budget, not a quality result. The separate
+[CSA2 approximation analysis](../csa2-approximation.md) decomposes pooling,
+top-k selection and FP4/FP8 error, and distinguishes the synthetic reference
+from the official whole-model benchmark evidence.
 
 ## Validation
 

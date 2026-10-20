@@ -79,6 +79,21 @@ def test_csa2_reduces_to_dense_when_nothing_is_compressed_away():
     assert rel_error(out, dense_attention(q, k, v)) < 1e-12
 
 
+def test_csa2_reduces_to_dense_with_token_groups_and_full_selection():
+    """compress=1 plus every token-level group is exact, even with FP16 storage."""
+    cfg = _attn()
+    q, k, v = (torch.randn(1, n, 256, cfg.head_dim, dtype=torch.float64)
+               for n in (cfg.n_heads, cfg.n_kv_heads, cfg.n_kv_heads))
+    layer = build("csa2", cfg.with_(extras={
+        "compress_ratio": 1,
+        "bits": 16,
+        "window": 1,
+        "topk_groups": 257,
+    }))
+    out, _, _ = layer.forward(q, k, v, chunk=256, collect_stats=True)
+    assert rel_error(out, dense_attention(q, k, v)) < 1e-12
+
+
 def test_csa2_reads_within_budget_and_is_causal():
     cfg = _attn()
     q, k, v = (torch.randn(2, n, 512, cfg.head_dim, dtype=torch.float64) for n in (cfg.n_heads, cfg.n_kv_heads, cfg.n_kv_heads))

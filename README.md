@@ -35,6 +35,7 @@ python -m linattn.cli select --variant quest --seq 4096 --structured
 make check                                            # correctness gates, seconds
 make bench                                            # quality/cost + decode-IO -> reports/
 make bench-frontier                                   # 2025–2026 variants -> reports/frontier_2026.*
+make csa2-analysis                                    # CSA2 error decomposition -> reports/csa2_approximation.*
 make experiments                                      # the three studies -> reports/
 ```
 
@@ -76,6 +77,10 @@ which tier and what a miss costs**. That layer is modelled and measured here:
 - `experiments/csa2_model.py` -> `reports/csa2_model.md`: CSA2 end to end --
   footprint (reported 890 B/token vs the composed pieces), the divergence cross-layer
   sharing introduces as layers disagree, and the attention term it leaves untouched.
+- `experiments/csa2_approximation.py` -> `reports/csa2_approximation.md`: controlled
+  dense-softmax error decomposition for selection, pooling and FP4/FP8 quantisation.
+  See [docs/csa2-approximation.md](docs/csa2-approximation.md) for the theory,
+  official model-level evidence and public-discussion limits.
 
 The headline: compression (MLA, CSA2) cuts footprint by orders of magnitude and leaves
 attention time unchanged; sparsity cuts attention until the MLP becomes the wall; a
@@ -140,6 +145,7 @@ What you get, and what to read first:
 | | `reports/state_capacity.md` | deterministic capacity curve of a fixed-size delta-rule state |
 | | `reports/hybrid_recall.md` | how much exact attention a hybrid needs (and an honest note on where MQAR stops discriminating) |
 | `make bench-frontier` | `reports/frontier_2026.md` | the 2025–2026 variants at one budget, including the unflattering small-scale result |
+| `make csa2-analysis` | `reports/csa2_approximation.md` | separates selection, pooling and KV-precision error against dense softmax |
 
 If something does not run, `python -m linattn.cli backends` prints exactly what your
 machine can do (CUDA / MPS / Triton / FlexAttention / thread count), and every
