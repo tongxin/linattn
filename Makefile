@@ -9,7 +9,7 @@ PYTHON ?= $(shell test -x $(VENV_PY) && echo $(VENV_PY) || echo python3)
 
 export PYTHONPATH := src
 
-.PHONY: help venv install check docs bench bench-frontier csa2-analysis bench-mlx kv experiments all clean
+.PHONY: help venv install check docs bench bench-frontier csa2-analysis csa2-official-check bench-mlx kv experiments all clean
 
 help:  ## list targets
 	@grep -hE '^[a-z]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /: /' | column -t -s ':'
@@ -44,6 +44,9 @@ bench-frontier:  ## focused 2025–2026 variant comparison -> reports/frontier_2
 csa2-analysis:  ## CSA2 pooling/selection/precision error decomposition
 	$(PYTHON) experiments/csa2_approximation.py --seq 512
 
+csa2-official-check:  ## compare the repo surrogate with published V4.1-Flash config
+	$(PYTHON) experiments/csa2_official_check.py
+
 bench-mlx:  ## Apple Silicon: MLX/Metal decode benchmark (needs `make install` + mlx)
 	$(PYTHON) bench/bench_mlx.py --lengths 4096 16384 65536
 
@@ -56,7 +59,7 @@ experiments:  ## the three studies behind the survey's empirical claims
 	$(PYTHON) experiments/state_capacity.py
 	$(PYTHON) experiments/hybrid_recall.py --steps 250
 
-all: docs check bench bench-frontier csa2-analysis kv experiments  ## everything above, in order
+all: docs check bench bench-frontier csa2-analysis csa2-official-check kv experiments  ## everything above, in order
 
 clean:  ## remove generated reports and caches (keeps .venv)
 	rm -f reports/suite_*.json reports/suite_*.md reports/decode_*.json reports/decode_*.md

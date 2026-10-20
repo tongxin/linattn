@@ -13,6 +13,9 @@ DeepSeek-V4.1-Flash report provides model-level benchmark evidence, but does not
 publish a dense-versus-CSA2 layerwise attention-error ablation. Those two levels
 of evidence must not be conflated.
 
+The disclosed layer schedule, dimensions and precision formats are compared with
+the repository's surrogate in [csa2-official-config.md](csa2-official-config.md).
+
 ## 1. The exact and approximate computations
 
 For one query and one head, dense causal attention is

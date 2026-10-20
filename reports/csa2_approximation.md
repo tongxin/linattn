@@ -1,6 +1,6 @@
 # CSA2 versus dense softmax: pooling, selection and precision error
 
-*Generated 2026-10-20T15:16:44Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-10-20T15:29:16Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
 This is a controlled synthetic decomposition, not a pretrained-model benchmark. `mass_capture` uses the exact dense attention weights and counts the selected raw window plus selected compressed groups. `pooling` uses all groups and no quantisation; `selection` uses compress=1 so it has no pooling; `quantization` also uses compress=1 and selects every group. `combined` uses the default-like top-8 groups and a 128-token raw window. The random CSA2 indexer is untrained, so selection rows should be read as plumbing/controls, not as the authors' trained model.
 

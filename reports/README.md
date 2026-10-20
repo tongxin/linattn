@@ -16,6 +16,7 @@ python experiments/hybrid_recall.py --steps 300
 python experiments/selector_capacity.py
 python experiments/state_capacity.py
 python experiments/csa2_approximation.py --seq 512
+python experiments/csa2_official_check.py
 make kv            # or: python experiments/kv_economics.py
 ```
 
@@ -29,6 +30,7 @@ Reports currently checked in:
 | `kv_economics.md` | KV formats x context x hit rate, algorithm leverage (dense/sparse/recurrent), and cache-policy comparison on an agentic trace |
 | `csa2_model.md` | CSA2 end to end: footprint (reported vs composed vs reach), sharing divergence vs layer disagreement, and the unchanged attention term |
 | `csa2_approximation.md` | dense-vs-CSA2 error decomposition: pooling, top-k selection, FP4/FP8 precision, mass capture and cost |
+| `csa2_official_config.md` | published V4.1-Flash hyperparameters vs the repository's CSA2 surrogate |
 | `state_capacity.md` | exact associative-recall fidelity of a fixed-size delta-rule state vs. number of associations |
 | `selector_capacity.md` | learned-selector cross-entropy and attention-mass recall before and after fitting |
 

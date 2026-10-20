@@ -1,0 +1,207 @@
+{
+  "name": "csa2_official_config",
+  "generated_utc": "2026-10-20T15:37:16Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": false,
+    "triton_installed": false,
+    "triton_msl": false,
+    "flex_attention_importable": true,
+    "mlx_installed": false,
+    "mlx_metal": false
+  },
+  "records": [
+    {
+      "check": "official",
+      "item": "official layers",
+      "value": 40,
+      "unit": "layers",
+      "note": "20 encoder + 20 decoder CED"
+    },
+    {
+      "check": "official",
+      "item": "official attention heads",
+      "value": 64,
+      "unit": "heads",
+      "note": "query heads"
+    },
+    {
+      "check": "official",
+      "item": "official head dim",
+      "value": 512,
+      "unit": "dims",
+      "note": "main attention"
+    },
+    {
+      "check": "official",
+      "item": "official indexer",
+      "value": "32 x 128",
+      "unit": "heads x dim",
+      "note": "indexer Q/K width"
+    },
+    {
+      "check": "official",
+      "item": "official sparse top-k",
+      "value": 512,
+      "unit": "entries/query",
+      "note": "main KV entries"
+    },
+    {
+      "check": "official",
+      "item": "official SWA window",
+      "value": 128,
+      "unit": "tokens",
+      "note": "FP8 SWA"
+    },
+    {
+      "check": "official",
+      "item": "official main KV precision",
+      "value": "FP4 E2M1 + E4M3 scale/16",
+      "unit": "format",
+      "note": "QAT"
+    },
+    {
+      "check": "official",
+      "item": "official reported global KV",
+      "value": 890.0,
+      "unit": "B/token",
+      "note": "whole model target"
+    },
+    {
+      "check": "wrapper_default",
+      "item": "compression ratio",
+      "value": 16,
+      "unit": "m",
+      "note": "official is m=2 encoder / m=1 decoder"
+    },
+    {
+      "check": "wrapper_default",
+      "item": "attention heads",
+      "value": 4,
+      "unit": "heads",
+      "note": "official is 64"
+    },
+    {
+      "check": "wrapper_default",
+      "item": "head dim",
+      "value": 64,
+      "unit": "dims",
+      "note": "official is 512"
+    },
+    {
+      "check": "wrapper_default",
+      "item": "KV heads",
+      "value": 4,
+      "unit": "heads",
+      "note": "official config is 1"
+    },
+    {
+      "check": "wrapper_default",
+      "item": "indexer",
+      "value": "4 x 16",
+      "unit": "heads x dim",
+      "note": "official is 32 x 128"
+    },
+    {
+      "check": "wrapper_default",
+      "item": "top-k groups",
+      "value": 4,
+      "unit": "groups",
+      "note": "official is 512 KV entries"
+    },
+    {
+      "check": "wrapper_default",
+      "item": "window",
+      "value": 256,
+      "unit": "tokens",
+      "note": "official is 128; wrapper defaults to raw FP16 window"
+    },
+    {
+      "check": "analytic",
+      "item": "core FLOPs @T=32768",
+      "value": 2748779069440.0,
+      "unit": "FLOPs/layer",
+      "note": "4\u00b7H\u00b7T\u00b7(512+128)\u00b7d before indexer/CED/projection"
+    },
+    {
+      "check": "wrapper_official_dims",
+      "item": "wrapper FLOPs @T=32768, m=2",
+      "value": 11544872091648,
+      "unit": "FLOPs/layer",
+      "note": "includes current surrogate indexer estimate"
+    },
+    {
+      "check": "wrapper_official_dims",
+      "item": "wrapper FLOPs @T=32768, m=1",
+      "value": 20340965113856,
+      "unit": "FLOPs/layer",
+      "note": "includes current surrogate indexer estimate"
+    },
+    {
+      "check": "analytic",
+      "item": "core FLOPs @T=131072",
+      "value": 10995116277760.0,
+      "unit": "FLOPs/layer",
+      "note": "4\u00b7H\u00b7T\u00b7(512+128)\u00b7d before indexer/CED/projection"
+    },
+    {
+      "check": "wrapper_official_dims",
+      "item": "wrapper FLOPs @T=131072, m=2",
+      "value": 151732604633088,
+      "unit": "FLOPs/layer",
+      "note": "includes current surrogate indexer estimate"
+    },
+    {
+      "check": "wrapper_official_dims",
+      "item": "wrapper FLOPs @T=131072, m=1",
+      "value": 292470092988416,
+      "unit": "FLOPs/layer",
+      "note": "includes current surrogate indexer estimate"
+    },
+    {
+      "check": "analytic",
+      "item": "core FLOPs @T=1048576",
+      "value": 87960930222080.0,
+      "unit": "FLOPs/layer",
+      "note": "4\u00b7H\u00b7T\u00b7(512+128)\u00b7d before indexer/CED/projection"
+    },
+    {
+      "check": "wrapper_official_dims",
+      "item": "wrapper FLOPs @T=1048576, m=2",
+      "value": 9095160184963072,
+      "unit": "FLOPs/layer",
+      "note": "includes current surrogate indexer estimate"
+    },
+    {
+      "check": "wrapper_official_dims",
+      "item": "wrapper FLOPs @T=1048576, m=1",
+      "value": 18102359439704064,
+      "unit": "FLOPs/layer",
+      "note": "includes current surrogate indexer estimate"
+    },
+    {
+      "check": "kv_preset",
+      "item": "csa2_reported @61-layer preset convention",
+      "value": 890.0,
+      "unit": "B/token",
+      "note": "DeepSeek-V4.1-Flash reported global KV: 890 B/token across ~61 layers; not a recomputation of the official 40-layer packing"
+    },
+    {
+      "check": "kv_preset",
+      "item": "csa2 @61-layer preset convention",
+      "value": 5183.999999999999,
+      "unit": "B/token",
+      "note": "576 values/token, fp4, shared over 4 layers; not a recomputation of the official 40-layer packing"
+    },
+    {
+      "check": "kv_preset",
+      "item": "csa2_reach890 @61-layer preset convention",
+      "value": 972.0,
+      "unit": "B/token",
+      "note": "576 values/token, fp4, shared over 21 layers; not a recomputation of the official 40-layer packing"
+    }
+  ]
+}
