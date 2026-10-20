@@ -58,6 +58,10 @@ python -m linattn.cli cost --seq 131072 --block-size 64 --budget 4096
 python -m linattn.cli select --variant xattention --seq 4096 --structured
 ```
 
+The `cost` command's FLOPs and memory columns are analytic estimates. The
+definition of `@T`, the matmul convention, the causal-triangle caveat and every
+variant override are documented in [analytic-flops.md](analytic-flops.md).
+
 Runtime scales with `--seq` quadratically in the reference (mask-based) path, which
 is deliberate: `bench/run_suite.py --seq 32768` will take minutes and hundreds of MB
 because it materialises explicit boolean masks. That is the price of making the

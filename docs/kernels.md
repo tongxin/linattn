@@ -37,6 +37,10 @@ That single inequality explains:
 * why the C kernel in `kernels/c/decode_attn.c` shows the same ordering as a GPU:
   the bytes dominate on a laptop CPU too, which is why running it is instructive.
 
+The analytic table's FLOPs formula and its matmul-only exclusions are documented in
+[analytic-flops.md](analytic-flops.md). In particular, the current dense base
+estimate counts the full `T × T` matrix; causal-triangle estimates are about half.
+
 ## 2. What the kernels actually do
 
 ### 2.1 Block-sparse execution (`kernels/triton/block_sparse.py`)

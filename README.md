@@ -41,6 +41,12 @@ make experiments                                      # the three studies -> rep
 Everything runs on CPU. The Triton kernels are imported lazily, validated by a
 parity harness, and skipped with an explicit reason when there is no CUDA GPU.
 
+The cost command's `prefill attn FLOPs @T` column is a matmul-only analytic
+estimate: one multiply-add is counted as two FLOPs, and the current dense base
+formula counts the full `T × T` matrix while some variants use the causal triangle.
+The exact formulas, exclusions and worked example are in
+[docs/analytic-flops.md](docs/analytic-flops.md).
+
 On Apple Silicon there is a **Metal backend** ([docs/mlx.md](docs/mlx.md)):
 MLX-native primitives, a hand-written Metal paged-decode kernel, MLX
 re-implementations of dense/sliding/Quest/CSA, and an adapter that runs them through
