@@ -27,7 +27,7 @@ attn = build("sfa", AttnConfig(head_dim=128,
 
 Analytic, fp16 storage convention, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
 
-| T | state (MiB) | attn FLOPs (G) | KV reads/query |
+| T | state (MiB) | prefill attention FLOPs (G) | KV reads/query |
 | --- | --- | --- | --- |
 | 32,768 | 129.0 | 17,592 | 32,768 |
 | 131,072 | 516.0 | 281,475 | 131,072 |

@@ -26,7 +26,7 @@ attn = build("performer", AttnConfig(extras={"features": 64}))   # causal, linea
 
 Analytic, fp16 storage convention, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
 
-| T | state (MiB) | attn FLOPs (G) | KV reads/query |
+| T | state (MiB) | prefill attention FLOPs (G) | KV reads/query |
 | --- | --- | --- | --- |
 | 32,768 | 128.0 | 17,592 | 32 |
 | 131,072 | 512.0 | 281,475 | 32 |

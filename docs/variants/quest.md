@@ -37,7 +37,7 @@ attn = build("quest", AttnConfig(block_size=16, topk_blocks=8,
 
 Analytic, fp16 storage convention, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
 
-| T | state (MiB) | attn FLOPs (G) | KV reads/query |
+| T | state (MiB) | prefill attention FLOPs (G) | KV reads/query |
 | --- | --- | --- | --- |
 | 32,768 | 128.0 | 962 | 1,536 |
 | 131,072 | 512.0 | 5,498 | 1,536 |

@@ -30,7 +30,7 @@ attn = build("masa", AttnConfig(block_size=64, topk_blocks=16,
 
 Analytic, fp16 storage convention, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
 
-| T | state (MiB) | attn FLOPs (G) | KV reads/query |
+| T | state (MiB) | prefill attention FLOPs (G) | KV reads/query |
 | --- | --- | --- | --- |
 | 32,768 | 128.0 | 18,282 | 1,028 |
 | 131,072 | 512.0 | 285,882 | 1,028 |

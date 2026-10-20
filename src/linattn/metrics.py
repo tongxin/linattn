@@ -157,7 +157,7 @@ def efficiency_table(
     The default is an aligned plain-text table for the CLI; pass
     ``markdown=True`` when embedding the table in documentation.
     """
-    headers = ["variant", "family", "state @T (MiB)", "attn FLOPs @T (G)", "KV reads/query"]
+    headers = ["variant", "family", "state @T (MiB)", "prefill attn FLOPs @T (G)", "KV reads/query"]
     rows = []
     for v in variants:
         mem = v.memory_bytes(seq_len, batch) / 2**20

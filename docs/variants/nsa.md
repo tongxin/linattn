@@ -21,7 +21,7 @@ attn.fit_gates(q_calib, k_calib, v_calib, steps=200)
 
 Analytic, fp16 storage convention, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
 
-| T | state (MiB) | attn FLOPs (G) | KV reads/query |
+| T | state (MiB) | prefill attention FLOPs (G) | KV reads/query |
 | --- | --- | --- | --- |
 | 32,768 | 128.0 | 1,924 | 3,584 |
 | 131,072 | 512.0 | 20,891 | 9,728 |

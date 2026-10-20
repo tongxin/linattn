@@ -451,7 +451,8 @@ def cost_table(name: str) -> str:
     cfg = AttnConfig(n_heads=32, n_kv_heads=8, head_dim=128, block_size=64, window_size=512,
                      cache_budget=4096, topk_blocks=16, topk_tokens=2048, compress_ratio=16)
     variant = build(name, cfg)
-    rows = ["| T | state (MiB) | attn FLOPs (G) | KV reads/query |", "| --- | --- | --- | --- |"]
+    rows = ["| T | state (MiB) | prefill attention FLOPs (G) | KV reads/query |",
+            "| --- | --- | --- | --- |"]
     for t in (32768, 131072, 1048576):
         rows.append(f"| {t:,} | {variant.memory_bytes(t) / 2**20:.1f} | {variant.flops(t) / 1e9:,.0f} "
                     f"| {variant.read_budget(t):,.0f} |")
