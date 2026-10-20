@@ -27,13 +27,13 @@ attn = build("saga", AttnConfig(n_kv_heads=8, topk_tokens=2048,
 
 ## Cost model
 
-Analytic, fp16 storage convention, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
+Analytic; storage precision is shown per row, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
 
-| T | state (MiB) | prefill attention FLOPs (G) | KV reads/query |
-| --- | --- | --- | --- |
-| 32,768 | 80.0 | 18,694 | 2,052 |
-| 131,072 | 320.0 | 285,882 | 2,052 |
-| 1,048,576 | 2560.0 | 18,049,652 | 2,052 |
+| T | state (MiB) | storage precision | prefill attention FLOPs (G) | KV reads/query |
+| --- | --- | --- | --- | --- |
+| 32,768 | 80.0 | fp16 KV | 18,694 | 2,052 |
+| 131,072 | 320.0 | fp16 KV | 285,882 | 2,052 |
+| 1,048,576 | 2560.0 | fp16 KV | 18,049,652 | 2,052 |
 
 ## What to watch out for
 

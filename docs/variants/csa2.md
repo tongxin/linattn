@@ -17,13 +17,13 @@ attn = build("csa2")
 
 ## Cost model
 
-Analytic, fp16 storage convention, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
+Analytic; storage precision is shown per row, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
 
-| T | state (MiB) | prefill attention FLOPs (G) | KV reads/query |
-| --- | --- | --- | --- |
-| 32,768 | 4.2 | 352 | 528 |
-| 131,072 | 11.0 | 2,233 | 528 |
-| 1,048,576 | 74.0 | 79,440 | 528 |
+| T | state (MiB) | storage precision | prefill attention FLOPs (G) | KV reads/query |
+| --- | --- | --- | --- | --- |
+| 32,768 | 4.2 | fp4 compressed + fp16 window | 352 | 528 |
+| 131,072 | 11.0 | fp4 compressed + fp16 window | 2,233 | 528 |
+| 1,048,576 | 74.0 | fp4 compressed + fp16 window | 79,440 | 528 |
 
 ## What to watch out for
 

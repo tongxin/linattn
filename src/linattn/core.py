@@ -196,6 +196,7 @@ class AttentionVariant:
     family: str = "dense"          # dense | local | eviction | selection | native | recurrent
     trained: bool = False          # whether the variant normally needs training
     paper: tuple = ()              # (title, url) citations, surfaced in --help style output
+    storage_precision: str = "fp16 KV"  # persistent cache precision used by memory_bytes
 
     def __init__(self, cfg: Optional[AttnConfig] = None, **kwargs: Any) -> None:
         self.cfg = cfg or AttnConfig()

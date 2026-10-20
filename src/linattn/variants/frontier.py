@@ -464,6 +464,7 @@ class SFAAttention(AttentionVariant):
     name = "sfa"
     family = "frontier"
     trained = True
+    storage_precision = "sparse fp16 KV"
     paper = ("Xie et al., Sparse Feature Attention (ICLR 2026)",
              "https://arxiv.org/abs/2603.22300")
 

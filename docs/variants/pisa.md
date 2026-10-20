@@ -27,13 +27,13 @@ attn = build("pisa", AttnConfig(topk_tokens=1024,
 
 ## Cost model
 
-Analytic, fp16 storage convention, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
+Analytic; storage precision is shown per row, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
 
-| T | state (MiB) | prefill attention FLOPs (G) | KV reads/query |
-| --- | --- | --- | --- |
-| 32,768 | 128.0 | 9,348 | 2,052 |
-| 131,072 | 512.0 | 142,945 | 2,052 |
-| 1,048,576 | 4096.0 | 9,024,860 | 2,052 |
+| T | state (MiB) | storage precision | prefill attention FLOPs (G) | KV reads/query |
+| --- | --- | --- | --- | --- |
+| 32,768 | 128.0 | fp16 KV | 9,348 | 2,052 |
+| 131,072 | 512.0 | fp16 KV | 142,945 | 2,052 |
+| 1,048,576 | 4096.0 | fp16 KV | 9,024,860 | 2,052 |
 
 ## What to watch out for
 

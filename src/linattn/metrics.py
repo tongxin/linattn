@@ -157,21 +157,23 @@ def efficiency_table(
     The default is an aligned plain-text table for the CLI; pass
     ``markdown=True`` when embedding the table in documentation.
     """
-    headers = ["variant", "family", "state @T (MiB)", "prefill attn FLOPs @T (G)", "KV reads/query"]
+    headers = ["variant", "family", "KV/state @T (MiB)", "storage precision",
+               "prefill attn FLOPs @T (G)", "KV reads/query"]
     rows = []
     for v in variants:
         mem = v.memory_bytes(seq_len, batch) / 2**20
         fl = v.flops(seq_len, batch) / 1e9
         reads = v.read_budget(seq_len, batch)
-        rows.append([v.name, v.family, f"{mem:.1f}", f"{fl:.1f}", f"{reads:,.0f}"])
+        precision = getattr(v, "storage_precision", "fp16 KV")
+        rows.append([v.name, v.family, f"{mem:.1f}", precision, f"{fl:.1f}", f"{reads:,.0f}"])
 
     if not markdown:
-        return text_table(headers, rows, align="llrrr")
+        return text_table(headers, rows, align="llrlrr")
 
     lines = ["| " + " | ".join(headers) + " |"]
     lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
-    for name, family, mem, fl, reads in rows:
-        lines.append(f"| `{name}` | {family} | {mem} | {fl} | {reads} |")
+    for name, family, mem, precision, fl, reads in rows:
+        lines.append(f"| `{name}` | {family} | {mem} | {precision} | {fl} | {reads} |")
     return "\n".join(lines)
 
 

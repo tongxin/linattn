@@ -31,6 +31,7 @@ class MLAttention(AttentionVariant):
 
     name = "mla"
     family = "compressed"
+    storage_precision = "fp16 latent"
     paper = ("DeepSeek-AI, DeepSeek-V2 (2024)", "https://arxiv.org/abs/2405.04434")
 
     def __init__(self, cfg: Optional[AttnConfig] = None, **kw):

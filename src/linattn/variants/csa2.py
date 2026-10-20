@@ -65,6 +65,10 @@ class CSA2Attention(BlockSelectionAttention):
         self.head_weights = torch.nn.Parameter(torch.full((self.n_indexer_heads,), 1.0 / self.n_indexer_heads))
         self._extra: Dict[str, float] = {}
 
+    @property
+    def storage_precision(self) -> str:
+        return f"fp{self.bits} compressed + fp16 window"
+
     # -- storage ------------------------------------------------------------------
     def compressed_kv(self, k: torch.Tensor, v: torch.Tensor):
         """Pool to groups, then quantise the *stored* copy (dequantised for compute)."""

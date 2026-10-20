@@ -25,13 +25,13 @@ attn = build("hla_mixing", AttnConfig(extras={"gate_tau": 1.0}))
 
 ## Cost model
 
-Analytic, fp16 storage convention, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
+Analytic; storage precision is shown per row, 32 heads / 8 KV heads / head dim 128, block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:
 
-| T | state (MiB) | prefill attention FLOPs (G) | KV reads/query |
-| --- | --- | --- | --- |
-| 32,768 | 2.0 | 17,592 | 32,896 |
-| 131,072 | 2.0 | 281,475 | 131,200 |
-| 1,048,576 | 2.0 | 18,014,399 | 1,048,704 |
+| T | state (MiB) | storage precision | prefill attention FLOPs (G) | KV reads/query |
+| --- | --- | --- | --- | --- |
+| 32,768 | 2.0 | fp16 KV | 17,592 | 32,896 |
+| 131,072 | 2.0 | fp16 KV | 281,475 | 131,200 |
+| 1,048,576 | 2.0 | fp16 KV | 18,014,399 | 1,048,704 |
 
 ## What to watch out for
 

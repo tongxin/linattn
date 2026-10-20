@@ -451,10 +451,12 @@ def cost_table(name: str) -> str:
     cfg = AttnConfig(n_heads=32, n_kv_heads=8, head_dim=128, block_size=64, window_size=512,
                      cache_budget=4096, topk_blocks=16, topk_tokens=2048, compress_ratio=16)
     variant = build(name, cfg)
-    rows = ["| T | state (MiB) | prefill attention FLOPs (G) | KV reads/query |",
-            "| --- | --- | --- | --- |"]
+    precision = getattr(variant, "storage_precision", "fp16 KV")
+    rows = [f"| T | state (MiB) | storage precision | prefill attention FLOPs (G) | KV reads/query |",
+            "| --- | --- | --- | --- | --- |"]
     for t in (32768, 131072, 1048576):
-        rows.append(f"| {t:,} | {variant.memory_bytes(t) / 2**20:.1f} | {variant.flops(t) / 1e9:,.0f} "
+        rows.append(f"| {t:,} | {variant.memory_bytes(t) / 2**20:.1f} | {precision} "
+                    f"| {variant.flops(t) / 1e9:,.0f} "
                     f"| {variant.read_budget(t):,.0f} |")
     return "\n".join(rows)
 
@@ -584,7 +586,7 @@ def main() -> int:
             "",
             "## Cost model",
             "",
-            "Analytic, fp16 storage convention, 32 heads / 8 KV heads / head dim 128, "
+            "Analytic; storage precision is shown per row, 32 heads / 8 KV heads / head dim 128, "
             "block 64, window 512, budget 4096, top-16 blocks, top-2048 tokens:",
             "",
             cost_table(name),

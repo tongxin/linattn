@@ -72,10 +72,10 @@ def test_cost_table_is_aligned_plain_text(capsys):
     out = capsys.readouterr().out
     assert "|" not in out and "`" not in out
     assert out.splitlines()[:4] == [
-        "variant  family      state @T (MiB)  prefill attn FLOPs @T (G)  KV reads/query",
-        "-------  ----------  --------------  -------------------------  --------------",
-        "dense    dense                  2.0                        2.1           1,024",
-        "mla      compressed             0.0                        1.1           1,024",
+        "variant  family      KV/state @T (MiB)  storage precision  prefill attn FLOPs @T (G)  KV reads/query",
+        "-------  ----------  -----------------  -----------------  -------------------------  --------------",
+        "dense    dense                     2.0  fp16 KV                                  2.1           1,024",
+        "mla      compressed                0.0  fp16 latent                              1.1           1,024",
     ]
 
 
@@ -111,7 +111,10 @@ def test_efficiency_table_can_still_render_markdown():
     from linattn.metrics import efficiency_table
 
     table = efficiency_table([build("dense")], 1024, markdown=True)
-    assert table.splitlines()[0] == "| variant | family | state @T (MiB) | prefill attn FLOPs @T (G) | KV reads/query |"
+    assert table.splitlines()[0] == (
+        "| variant | family | KV/state @T (MiB) | storage precision | "
+        "prefill attn FLOPs @T (G) | KV reads/query |"
+    )
     assert table.splitlines()[2].startswith("| `dense` | dense |")
 
 
