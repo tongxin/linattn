@@ -36,7 +36,15 @@ def test_top_level_docs_exist():
 
 
 def test_approximation_research_docs_exist():
-    for name in ("approximation-research-plan.md", "approximation-metrics.md"):
+    for name in (
+        "approximation-research-plan.md",
+        "approximation-metrics.md",
+        "approximation-theory-map.md",
+        "approximation-findings.md",
+        "attention-evaluation-protocol.md",
+        "csa2-revisit-gate.md",
+        "error-propagation.md",
+    ):
         assert (DOCS / "research" / name).exists(), f"missing docs/research/{name}"
 
 

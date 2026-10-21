@@ -37,6 +37,8 @@ make bench                                            # quality/cost + decode-IO
 make bench-frontier                                   # 2025–2026 variants -> reports/frontier_2026.*
 make csa2-analysis                                    # CSA2 error decomposition -> reports/csa2_approximation.*
 make csa2-official-check                              # published config comparison -> reports/csa2_official_config.*
+make approx-validation                                # metric hierarchy across variants -> reports/approximation_validation.*
+make error-propagation                                # local vs downstream error -> reports/error_propagation.*
 make experiments                                      # the three studies -> reports/
 ```
 
@@ -111,7 +113,11 @@ the claim can be measured rather than asserted.
 
 A separate theory track now defines the objects and metrics for comparing efficient
 attention with full softmax: [the research plan](docs/research/approximation-research-plan.md)
-and [metric hierarchy](docs/research/approximation-metrics.md). CSA2 sensitivity remains
+and [metric hierarchy](docs/research/approximation-metrics.md), with a
+[theory map](docs/research/approximation-theory-map.md),
+[workload protocol](docs/research/attention-evaluation-protocol.md), and
+[CSA2 revisit gate](docs/research/csa2-revisit-gate.md). The cycle's synthesis is
+[approximation-findings.md](docs/research/approximation-findings.md). CSA2 sensitivity remains
 an explicit open problem until that framework reaches checkpoint-level evaluation.
 
 ## Running the benchmarks after cloning
@@ -153,6 +159,8 @@ What you get, and what to read first:
 | `make bench-frontier` | `reports/frontier_2026.md` | the 2025–2026 variants at one budget, including the unflattering small-scale result |
 | `make csa2-analysis` | `reports/csa2_approximation.md` | separates selection, pooling and KV-precision error against dense softmax |
 | `make csa2-official-check` | `reports/csa2_official_config.md` | compares the surrogate defaults with the disclosed V4.1-Flash CSA2 schedule |
+| `make approx-validation` | `reports/approximation_validation.md` | metric hierarchy across sparse, kernel and low-rank variants |
+| `make error-propagation` | `reports/error_propagation.md` | local attention error versus downstream residual drift |
 
 If something does not run, `python -m linattn.cli backends` prints exactly what your
 machine can do (CUDA / MPS / Triton / FlexAttention / thread count), and every

@@ -133,8 +133,8 @@ required checkpoint-level evidence exists.
 | subproblem | state |
 | --- | --- |
 | 1. Objects and metric hierarchy | implementation checkpoint complete; advisor review pending |
-| 2. Theory map | not started; requires advisor approval |
-| 3. Controlled metric validation | not started |
-| 4. Propagation study | not started |
-| 5. Workload protocol | not started |
-| 6. CSA2 revisit gate | not started |
+| 2. Theory map | complete; see `approximation-theory-map.md` |
+| 3. Controlled metric validation | complete; see `reports/approximation_validation.md` |
+| 4. Propagation study | complete; see `reports/error_propagation.md` |
+| 5. Workload protocol | complete; see `attention-evaluation-protocol.md` |
+| 6. CSA2 revisit gate | complete; see `csa2-revisit-gate.md` |

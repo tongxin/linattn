@@ -1,0 +1,120 @@
+"""Validate the approximation metric hierarchy on representative variants.
+
+This is the bridge between theory and measurement: every variant is evaluated on
+the same inputs and budget, but mask-based selectors expose a distribution while
+Performer/Linformer expose only an output. Missing cells are intentional.
+"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+from typing import Dict
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+import torch  # noqa: E402
+
+from approximation_metrics import (  # noqa: E402
+    attention_operator_metrics,
+    cosine_distance,
+    relative_l2,
+)
+from linattn.core import AttnConfig, dense_attention  # noqa: E402
+from linattn.harness import make_inputs, structured_inputs  # noqa: E402
+from linattn.registry import build  # noqa: E402
+from linattn.reporting import save_report  # noqa: E402
+
+
+def _masked_distribution(weights: torch.Tensor, support: torch.Tensor) -> torch.Tensor:
+    selected = weights * support
+    return selected / selected.sum(-1, keepdim=True).clamp_min(1e-12)
+
+
+def _evaluate(name: str, variant, q, k, v, p_ref, o_ref, input_kind: str) -> Dict:
+    out, _, stats = variant.forward(q, k, v, chunk=q.shape[-2], collect_stats=True)
+    row: Dict = {
+        "variant": name,
+        "input": input_kind,
+        "output_rel_l2": relative_l2(o_ref, out),
+        "output_cosine_distance": cosine_distance(o_ref, out),
+        "max_abs_error": float((o_ref - out).abs().max()),
+        "reads_per_query": float(stats[-1].get("reads_per_query", 0.0)),
+    }
+    masks = getattr(variant, "_masks", [])
+    if masks:
+        support = masks[-1].to(q.device)
+        p_hat = _masked_distribution(p_ref, support)
+        dist = attention_operator_metrics(p_ref, p_hat, o_ref, out, k=8)
+        row.update({f"distribution_{key}": value for key, value in dist.items()})
+        row["support_fraction"] = float(support.float().mean())
+    return row
+
+
+def run(input_kind: str, cfg: AttnConfig, seed: int = 11) -> list[Dict]:
+    t = 128
+    q, k, v = (
+        structured_inputs(1, cfg.n_heads, t, cfg.head_dim, kv_heads=cfg.n_kv_heads, seed=seed)
+        if input_kind == "structured"
+        else make_inputs(1, cfg.n_heads, t, cfg.head_dim, kv_heads=cfg.n_kv_heads, seed=seed)
+    )
+    q, k, v = q.double(), k.double(), v.double()
+    o_ref, p_ref = dense_attention(q, k, v, causal=True, return_weights=True)
+    configs = {
+        "quest": cfg,
+        "xattention": cfg,
+        "moba": cfg,
+        "minference": cfg.with_(extras={"pattern": "block_sparse"}),
+        "performer": cfg.with_(extras={"features": 32}),
+        "linformer": cfg.with_(extras={"linformer_k": 32}),
+    }
+    rows = []
+    for name, local_cfg in configs.items():
+        rows.append(_evaluate(name, build(name, local_cfg), q, k, v, p_ref, o_ref, input_kind))
+    return rows
+
+
+def main() -> int:
+    cfg = AttnConfig(
+        n_heads=4,
+        n_kv_heads=2,
+        head_dim=32,
+        block_size=16,
+        window_size=32,
+        topk_blocks=4,
+        topk_tokens=32,
+        cache_budget=64,
+        sink_size=2,
+    )
+    rows = []
+    for kind in ("random", "structured"):
+        rows.extend(run(kind, cfg))
+    path = save_report(
+        "approximation_validation",
+        rows,
+        title="Metric hierarchy validation on representative attention variants",
+        columns=[
+            "variant", "input", "output_rel_l2", "output_cosine_distance", "max_abs_error",
+            "reads_per_query", "support_fraction", "distribution_operator_rel_l2",
+            "distribution_operator_cosine_distance", "distribution_attention_tv",
+            "distribution_attention_js", "distribution_attention_hellinger",
+            "distribution_topk_agreement",
+        ],
+        notes=(
+            "T=128, H=4, H_kv=2, d=32, four 16-token blocks, 32-token token budget. "
+            "Mask-based selectors expose both support and a renormalized attention "
+            "distribution; Performer/Linformer expose only an output, so distribution "
+            "cells are blank. This is a metric-validation experiment, not a quality "
+            "leaderboard. `structured` plants retrieval spikes; `random` is the control."
+        ),
+    )
+    print(f"wrote {path}")
+    for r in rows:
+        print(f"{r['input']:<10} {r['variant']:<12} out={r['output_rel_l2']:.4f} "
+              f"support={r.get('support_fraction', float('nan')):.3f} "
+              f"JS={r.get('distribution_attention_js', float('nan')):.4f}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
