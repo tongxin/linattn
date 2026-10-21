@@ -9,7 +9,7 @@ PYTHON ?= $(shell test -x $(VENV_PY) && echo $(VENV_PY) || echo python3)
 
 export PYTHONPATH := src
 
-.PHONY: help venv install check docs bench bench-frontier csa2-analysis csa2-official-check bench-mlx kv experiments all clean
+.PHONY: help venv install check docs bench bench-frontier csa2-analysis csa2-official-check approx-metrics bench-mlx kv experiments all clean
 
 help:  ## list targets
 	@grep -hE '^[a-z]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /: /' | column -t -s ':'
@@ -46,6 +46,9 @@ csa2-analysis:  ## CSA2 pooling/selection/precision error decomposition
 
 csa2-official-check:  ## compare the repo surrogate with published V4.1-Flash config
 	$(PYTHON) experiments/csa2_official_check.py
+
+approx-metrics:  ## run the attention-approximation metric prototype
+	$(PYTHON) experiments/approximation_metrics.py
 
 bench-mlx:  ## Apple Silicon: MLX/Metal decode benchmark (needs `make install` + mlx)
 	$(PYTHON) bench/bench_mlx.py --lengths 4096 16384 65536

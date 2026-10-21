@@ -35,6 +35,11 @@ def test_top_level_docs_exist():
         assert (DOCS / name).exists(), f"missing docs/{name}"
 
 
+def test_approximation_research_docs_exist():
+    for name in ("approximation-research-plan.md", "approximation-metrics.md"):
+        assert (DOCS / "research" / name).exists(), f"missing docs/research/{name}"
+
+
 @pytest.mark.parametrize("kind", ["ssd", "gdn", "kda", "gdn2"])
 def test_state_mixers_page_documents_each_kind(kind):
     """The mixers are not ``AttentionVariant``s, so they get their own page."""

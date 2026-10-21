@@ -1,6 +1,6 @@
 # CSA2 official V4.1-Flash configuration vs the repository surrogate
 
-*Generated 2026-10-20T15:37:16Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-10-21T14:17:10Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
 The 1107 tag was not found in the official public metadata as of 2026-10-20; the public release is V4.1-Flash and its 1017 minor update. Official values come from the technical report and public config.json. The wrapper is a single-layer surrogate: it does not model the Full/Reindex/Reuse schedule, CED half-depth prefill, FP8 SWA, or the exact 890 B/token packing. The 890 preset is a target, not a derivation. The official schedule performs indexing in only 8 of 38 CSA2 layers (3 encoder Full, 1 decoder Full, 4 decoder Reindex); the other 30 are Reuse and run no indexer. The wrapper charges an indexer on every call and searches the full compressed prefix, so its cost is a loose upper bound rather than the official model cost.
 

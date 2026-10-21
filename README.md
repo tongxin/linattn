@@ -109,6 +109,11 @@ output-aware eviction (DropKV, ReST-KV, BeaconKV) is an active 2026 line. The re
 carries both the old lineage and the new scores, plus the random-eviction control, so
 the claim can be measured rather than asserted.
 
+A separate theory track now defines the objects and metrics for comparing efficient
+attention with full softmax: [the research plan](docs/research/approximation-research-plan.md)
+and [metric hierarchy](docs/research/approximation-metrics.md). CSA2 sensitivity remains
+an explicit open problem until that framework reaches checkpoint-level evaluation.
+
 ## Running the benchmarks after cloning
 
 The only hard dependency is **PyTorch**; there is nothing to compile and no GPU or
