@@ -1,6 +1,6 @@
 {
   "name": "error_propagation",
-  "generated_utc": "2026-10-22T01:22:40Z",
+  "generated_utc": "2026-10-22T01:34:12Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",

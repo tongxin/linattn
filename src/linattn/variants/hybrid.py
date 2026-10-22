@@ -142,13 +142,24 @@ class HybridLM(torch.nn.Module):
         self.head = torch.nn.Linear(cfg.d_model, cfg.vocab_size, bias=False)
 
     def forward(self, tokens, states=None, offset: int = 0):
+        logits, new_states, _ = self.forward_with_hidden(tokens, states, offset)
+        return logits, new_states
+
+    def forward_with_hidden(self, tokens, states=None, offset: int = 0):
+        """Return logits, states and the hidden trace after every block.
+
+        The trace makes it possible to measure where an approximation error enters
+        and how it propagates through a trained residual stack.
+        """
         x = self.embed(tokens)
         states = states or [None] * len(self.blocks)
         new_states = []
+        hidden = [x]
         for block, state in zip(self.blocks, states):
             x, state = block(x, state, offset)
             new_states.append(state)
-        return self.head(self.norm(x)), new_states
+            hidden.append(x)
+        return self.head(self.norm(x)), new_states, hidden
 
     def state_bytes(self, seq_len: int = 1, batch: int = 1) -> int:
         """Persistent state for a sequence of ``seq_len`` tokens.

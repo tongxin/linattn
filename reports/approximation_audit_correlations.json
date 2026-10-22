@@ -1,0 +1,34 @@
+{
+  "name": "approximation_audit_correlations",
+  "generated_utc": "2026-10-22T01:38:38Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": false,
+    "triton_installed": false,
+    "triton_msl": false,
+    "flex_attention_importable": true,
+    "mlx_installed": false,
+    "mlx_metal": false
+  },
+  "records": [
+    {
+      "task": "retrieval",
+      "n": 60,
+      "local_vs_loss_spearman": 0.8780216726868573,
+      "hidden_vs_loss_spearman": 0.9662128368991385,
+      "projected_vs_loss_spearman": 0.6859127535426506,
+      "local_vs_projected_spearman": 0.6041122534037231
+    },
+    {
+      "task": "dispersed",
+      "n": 60,
+      "local_vs_loss_spearman": 0.8481244790219503,
+      "hidden_vs_loss_spearman": 0.944540150041678,
+      "projected_vs_loss_spearman": 0.8994720755765488,
+      "local_vs_projected_spearman": 0.7222561822728534
+    }
+  ]
+}

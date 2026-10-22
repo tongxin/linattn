@@ -80,7 +80,7 @@ amplify through the residual stream and subsequent layers?
 **Concepts.** Lipschitz/Jacobian amplification, residual-stream norms, hidden-state
 drift, output-sensitivity probes, and composition bounds.
 
-**Deliverable.** A propagation experiment on a small trainable transformer or a
+**Deliverable.** A propagation experiment on a small trainable transformer plus a
 controlled residual stack, with local and downstream errors on the same checkpoint.
 
 **Acceptance test.** The propagation model predicts the sign/order of hidden-state
@@ -136,7 +136,7 @@ as CSA2 remain separate roadmap applications, not part of this research cycle.
 | 1. Objects and metric hierarchy | complete; implemented and tested |
 | 2. Theory map | complete; see `approximation-theory-map.md` |
 | 3. Controlled metric validation | complete; see `reports/approximation_validation.md` |
-| 4. Propagation study | complete; see `reports/error_propagation.md` |
+| 4. Propagation study | complete; see `reports/error_propagation.md` and `trained-checkpoint-audit.md` |
 | 5. Workload protocol | complete; see `attention-evaluation-protocol.md` |
 | 6. General decision rules | complete; see `attention-approximation-report.md` §6 |
 

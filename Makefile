@@ -9,7 +9,7 @@ PYTHON ?= $(shell test -x $(VENV_PY) && echo $(VENV_PY) || echo python3)
 
 export PYTHONPATH := src
 
-.PHONY: help venv install check docs bench bench-frontier csa2-analysis csa2-official-check approx-metrics approx-validation theory-checks error-propagation bench-mlx kv experiments all clean
+.PHONY: help venv install check docs bench bench-frontier csa2-analysis csa2-official-check approx-metrics approx-validation theory-checks error-propagation trained-audit bench-mlx kv experiments all clean
 
 help:  ## list targets
 	@grep -hE '^[a-z]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /: /' | column -t -s ':'
@@ -58,6 +58,9 @@ theory-checks:  ## validate sparse bounds, feature convergence and precision
 
 error-propagation:  ## local attention error vs residual-stack drift
 	$(PYTHON) experiments/error_propagation.py
+
+trained-audit:  ## matched tiny-checkpoint local-to-task audit
+	$(PYTHON) experiments/approximation_audit.py --steps 900 --seeds 2 --eval-examples 128
 
 bench-mlx:  ## Apple Silicon: MLX/Metal decode benchmark (needs `make install` + mlx)
 	$(PYTHON) bench/bench_mlx.py --lengths 4096 16384 65536

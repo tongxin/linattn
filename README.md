@@ -40,6 +40,7 @@ make csa2-official-check                              # published config compari
 make approx-validation                                # metric hierarchy across variants -> reports/approximation_validation.*
 make theory-checks                                    # bound and trend validation -> reports/theory_checks.*
 make error-propagation                                # local vs downstream error -> reports/error_propagation.*
+make trained-audit                                    # matched tiny-checkpoint audit -> reports/approximation_audit.*
 make experiments                                      # the three studies -> reports/
 ```
 
@@ -119,6 +120,8 @@ and [metric hierarchy](docs/research/approximation-metrics.md), with a
 [workload protocol](docs/research/attention-evaluation-protocol.md), and
 the complete research report
 [attention-approximation-report.md](docs/research/attention-approximation-report.md).
+The report is explicitly a first validation cycle, with the trained-model round
+specified in [next-round-plan.md](docs/research/next-round-plan.md).
 CSA2 sensitivity remains a separate deferred application, not part of this
 general framework.
 
@@ -163,6 +166,7 @@ What you get, and what to read first:
 | `make csa2-official-check` | `reports/csa2_official_config.md` | compares the surrogate defaults with the disclosed V4.1-Flash CSA2 schedule |
 | `make approx-validation` | `reports/approximation_validation.md` | metric hierarchy across sparse, kernel and low-rank variants |
 | `make error-propagation` | `reports/error_propagation.md` | local attention error versus downstream residual drift |
+| `make trained-audit` | `reports/approximation_audit.md` | matched tiny-checkpoint local-to-task intervention audit |
 
 If something does not run, `python -m linattn.cli backends` prints exactly what your
 machine can do (CUDA / MPS / Triton / FlexAttention / thread count), and every

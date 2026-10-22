@@ -99,3 +99,22 @@ The executable definitions are in
 [`../../experiments/approximation_metrics.py`](../../experiments/approximation_metrics.py)
 and the invariants are tested in
 [`../../tests/test_approximation_metrics.py`](../../tests/test_approximation_metrics.py).
+
+## 5. Exact local certificates
+
+[`../../experiments/approximation_certificates.py`](../../experiments/approximation_certificates.py)
+adds three auditable checks that are stronger than aggregate metrics:
+
+- For hard sparse support, the omitted contribution is decomposed exactly as
+  `(1-a)(μ_omitted-μ_selected)`, where `a` is retained mass. The conservative
+  norm bound `2(1-a)V_max` is tested separately.
+- For KV quantisation, key-induced and value-induced output errors are reported
+  separately, with a softmax logit-perturbation bound `TV ≤ tanh(η)`.
+- For distribution/value non-identifiability, two attention distributions with
+  identical total variation are paired with equal and orthogonal values. The
+  equal-value case has zero output error; the orthogonal-value case has positive
+  output error.
+
+These certificates validate the conceptual separation between distribution
+error and value-weighted error. They do not compose automatically through a
+trained transformer; that requires the propagation study.

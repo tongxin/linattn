@@ -1,8 +1,8 @@
 # Local attention error versus downstream residual-stream drift
 
-*Generated 2026-10-22T01:22:40Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-10-22T01:34:12Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
-Six-layer fixed random residual stack; a Quest attention output replaces dense attention at one layer, then dense dynamics continue. This isolates propagation, not trained-model quality. Amplification is final/local relative L2 error. Random and planted-retrieval inputs are controls.
+Six-layer fixed random residual stack; a Performer attention output replaces dense attention at one layer, then dense dynamics continue. This isolates propagation, not trained-model quality. Amplification is final/local relative L2 error. Random and planted-retrieval inputs are controls.
 
 | input | inject_layer | n_seeds | local_rel_l2 | local_rel_l2_std | final_rel_l2 | final_rel_l2_std | amplification | amplification_std |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |

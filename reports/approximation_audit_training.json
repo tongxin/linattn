@@ -1,0 +1,60 @@
+{
+  "name": "approximation_audit_training",
+  "generated_utc": "2026-10-22T01:38:38Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": false,
+    "triton_installed": false,
+    "triton_msl": false,
+    "flex_attention_importable": true,
+    "mlx_installed": false,
+    "mlx_metal": false
+  },
+  "records": [
+    {
+      "task": "retrieval",
+      "seed": 0,
+      "final_train_loss": 0.07963744550943375,
+      "train_accuracy": 0.98828125,
+      "eval_accuracy": 0.990234375
+    },
+    {
+      "task": "retrieval",
+      "seed": 1,
+      "final_train_loss": 0.6983553767204285,
+      "train_accuracy": 0.79296875,
+      "eval_accuracy": 0.8203125
+    },
+    {
+      "task": "retrieval",
+      "seed": 2,
+      "final_train_loss": 0.6646488904953003,
+      "train_accuracy": 0.81640625,
+      "eval_accuracy": 0.81640625
+    },
+    {
+      "task": "dispersed",
+      "seed": 0,
+      "final_train_loss": 0.0013783971080556512,
+      "train_accuracy": 1.0,
+      "eval_accuracy": 1.0
+    },
+    {
+      "task": "dispersed",
+      "seed": 1,
+      "final_train_loss": 0.022135555744171143,
+      "train_accuracy": 0.998046875,
+      "eval_accuracy": 0.994140625
+    },
+    {
+      "task": "dispersed",
+      "seed": 2,
+      "final_train_loss": 0.002676645526662469,
+      "train_accuracy": 1.0,
+      "eval_accuracy": 1.0
+    }
+  ]
+}

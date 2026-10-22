@@ -1,5 +1,11 @@
 # Approximating full softmax attention: a measurement framework and first validation cycle
 
+**Status: first validation cycle with matched tiny-checkpoint evidence, not a
+frontier-model final report.** The framework, synthetic invariants and a matched
+two-layer trained intervention are complete. A larger natural-language checkpoint
+and broader independent evidence are still required before a final model-level
+claim.
+
 ## Abstract
 
 Efficient attention methods are usually compared through benchmark scores, yet
@@ -10,7 +16,7 @@ values. This report asks what it means to say that one of these methods is close
 to full softmax attention. We propose a four-level measurement hierarchy:
 attention support/distribution, value-weighted output, propagated hidden state,
 and model/task behavior. We map recent theoretical results to those levels,
-separate impossibility results from structured guarantees, and run three
+separate impossibility results from structured guarantees, and run four
 controlled validation studies on the repository's variants. The results support
 four conclusions: (1) no universal cheap-attention guarantee is possible for
 arbitrary inputs; (2) support mass alone does not determine output error; (3)
@@ -148,6 +154,9 @@ instruments, not frontier-model quality.
   families; Performer feature counts 4–256; group-wise KV precision FP16/FP8/FP4.
 - **Propagation:** six-layer random residual stack; one Performer layer replaces
   dense attention at a controlled injection layer; three seeds.
+- **Trained intervention:** two-layer causal transformers on single-key retrieval
+  and dispersed four-evidence summation; one layer replaced at a time with fixed
+  weights.
 
 Reproduce:
 
@@ -226,6 +235,21 @@ ranking.
 
 See [`reports/error_propagation.md`](../../reports/error_propagation.md).
 
+### 5.5 Matched trained checkpoint
+
+The residual-stack result is a controlled mechanism probe. We also trained two
+small two-layer causal transformers, one on retrieval and one on dispersed
+evidence, and replaced one attention layer at a time with the exact same weights.
+Across 40 interventions per task, final hidden-state drift had Spearman
+correlation 0.948/0.973 with task loss, versus 0.900/0.766 for local attention
+error. The task-projected first-order effect was weaker (0.829/0.670).
+
+This is the strongest evidence in the report: the hierarchy's hidden-state level
+adds predictive information beyond the local attention error. It remains a
+small synthetic checkpoint, not a frontier LLM. Details are in
+[trained-checkpoint-audit.md](trained-checkpoint-audit.md) and
+[`reports/approximation_audit.md`](../../reports/approximation_audit.md).
+
 ## 6. What this changes
 
 ### For research claims
@@ -254,6 +278,8 @@ part of the general framework.
 
 - Synthetic inputs are not natural-language distributions.
 - The residual stack is untrained and is not a transformer checkpoint.
+- The matched checkpoint is a tiny model trained on synthetic tasks, not a
+  natural-language pretrained model.
 - The sparse variants are selected at small budgets and do not include native
   sparse training.
 - The metric matrix uses one layer; it does not establish model-level behavior.

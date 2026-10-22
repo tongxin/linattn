@@ -1,6 +1,6 @@
 # Checks of sparse-support bounds, feature convergence and KV precision
 
-*Generated 2026-10-22T01:24:00Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-10-22T01:34:12Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
 Synthetic CPU validation across multiple seeds. Selection-bound rows test ||O_ref-O_selected|| <= 2·dropped_mass·Vmax. Feature rows test the expected variance reduction of positive random features; a non-monotone single seed is reported rather than hidden. Precision rows apply a group-wise KV codec before the exact dense attention operator.
 
