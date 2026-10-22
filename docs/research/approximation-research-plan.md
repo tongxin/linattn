@@ -132,9 +132,12 @@ required checkpoint-level evidence exists.
 
 | subproblem | state |
 | --- | --- |
-| 1. Objects and metric hierarchy | implementation checkpoint complete; advisor review pending |
+| 1. Objects and metric hierarchy | complete; implemented and tested |
 | 2. Theory map | complete; see `approximation-theory-map.md` |
 | 3. Controlled metric validation | complete; see `reports/approximation_validation.md` |
 | 4. Propagation study | complete; see `reports/error_propagation.md` |
 | 5. Workload protocol | complete; see `attention-evaluation-protocol.md` |
 | 6. CSA2 revisit gate | complete; see `csa2-revisit-gate.md` |
+
+The consolidated argument, evidence and limitations are in
+[`attention-approximation-report.md`](attention-approximation-report.md).

@@ -93,3 +93,10 @@ No single metric is sufficient. Uniform worst-case approximation is impossible
 under standard assumptions; structured-input and probabilistic guarantees are
 possible. The next subproblem must therefore test whether the metrics distinguish
 the mechanisms on controlled inputs rather than assuming they do.
+
+The corresponding empirical checks are in
+[`reports/theory_checks.md`](../../reports/theory_checks.md):
+the sparse-support bound was never violated, Performer error declined with
+feature count across the tested seeds, and FP16/FP8/FP4 preserved the expected
+precision ordering. Those checks validate the instrument under synthetic
+conditions; they do not turn the preprints above into frontier-model guarantees.

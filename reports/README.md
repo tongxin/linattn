@@ -18,6 +18,7 @@ python experiments/state_capacity.py
 python experiments/csa2_approximation.py --seq 512
 python experiments/csa2_official_check.py
 python experiments/approximation_validation.py
+python experiments/theory_checks.py
 python experiments/error_propagation.py
 make kv            # or: python experiments/kv_economics.py
 ```
@@ -34,6 +35,7 @@ Reports currently checked in:
 | `csa2_approximation.md` | dense-vs-CSA2 error decomposition: pooling, top-k selection, FP4/FP8 precision, mass capture and cost |
 | `csa2_official_config.md` | published V4.1-Flash hyperparameters vs the repository's CSA2 surrogate |
 | `approximation_validation.md` | metric hierarchy across mask, kernel and low-rank attention variants |
+| `theory_checks.md` | sparse-support bound, Performer feature convergence and KV precision ordering |
 | `error_propagation.md` | local attention error vs downstream residual-stack drift |
 | `state_capacity.md` | exact associative-recall fidelity of a fixed-size delta-rule state vs. number of associations |
 | `selector_capacity.md` | learned-selector cross-entropy and attention-mass recall before and after fitting |

@@ -8,6 +8,7 @@ Performer/Linformer expose only an output. Missing cells are intentional.
 from __future__ import annotations
 
 import sys
+import statistics
 from pathlib import Path
 from typing import Dict
 
@@ -86,20 +87,44 @@ def main() -> int:
         cache_budget=64,
         sink_size=2,
     )
-    rows = []
+    raw = []
     for kind in ("random", "structured"):
-        rows.extend(run(kind, cfg))
+        for seed in range(3):
+            raw.extend(run(kind, cfg, seed=seed))
+    rows = []
+    for variant in sorted({r["variant"] for r in raw}):
+        for input_kind in ("random", "structured"):
+            subset = [r for r in raw if r["variant"] == variant and r["input"] == input_kind]
+            rows.append({
+                "variant": variant,
+                "input": input_kind,
+                "n_seeds": len(subset),
+                "output_rel_l2_mean": statistics.mean(r["output_rel_l2"] for r in subset),
+                "output_rel_l2_std": statistics.pstdev(r["output_rel_l2"] for r in subset),
+                "output_cosine_distance_mean": statistics.mean(r["output_cosine_distance"] for r in subset),
+                "max_abs_error_mean": statistics.mean(r["max_abs_error"] for r in subset),
+                "reads_per_query_mean": statistics.mean(r["reads_per_query"] for r in subset),
+                "support_fraction_mean": (
+                    statistics.mean(r["support_fraction"] for r in subset)
+                    if "support_fraction" in subset[0] else None
+                ),
+                "attention_js_mean": (
+                    statistics.mean(r["distribution_attention_js"] for r in subset)
+                    if "distribution_attention_js" in subset[0] else None
+                ),
+                "topk_agreement_mean": (
+                    statistics.mean(r["distribution_topk_agreement"] for r in subset)
+                    if "distribution_topk_agreement" in subset[0] else None
+                ),
+            })
     path = save_report(
         "approximation_validation",
         rows,
         title="Metric hierarchy validation on representative attention variants",
-        columns=[
-            "variant", "input", "output_rel_l2", "output_cosine_distance", "max_abs_error",
-            "reads_per_query", "support_fraction", "distribution_operator_rel_l2",
-            "distribution_operator_cosine_distance", "distribution_attention_tv",
-            "distribution_attention_js", "distribution_attention_hellinger",
-            "distribution_topk_agreement",
-        ],
+        columns=["variant", "input", "n_seeds", "output_rel_l2_mean",
+                 "output_rel_l2_std", "output_cosine_distance_mean", "max_abs_error_mean",
+                 "reads_per_query_mean", "support_fraction_mean", "attention_js_mean",
+                 "topk_agreement_mean"],
         notes=(
             "T=128, H=4, H_kv=2, d=32, four 16-token blocks, 32-token token budget. "
             "Mask-based selectors expose both support and a renormalized attention "
@@ -110,9 +135,10 @@ def main() -> int:
     )
     print(f"wrote {path}")
     for r in rows:
-        print(f"{r['input']:<10} {r['variant']:<12} out={r['output_rel_l2']:.4f} "
-              f"support={r.get('support_fraction', float('nan')):.3f} "
-              f"JS={r.get('distribution_attention_js', float('nan')):.4f}")
+        print(f"{r['input']:<10} {r['variant']:<12} "
+              f"out={r['output_rel_l2_mean']:.4f}±{r['output_rel_l2_std']:.4f} "
+              f"support={r['support_fraction_mean'] if r['support_fraction_mean'] is not None else float('nan'):.3f} "
+              f"JS={r['attention_js_mean'] if r['attention_js_mean'] is not None else float('nan'):.4f}")
     return 0
 
 

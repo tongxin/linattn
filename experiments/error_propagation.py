@@ -8,6 +8,7 @@ decay, or amplify through the residual stream?
 from __future__ import annotations
 
 import sys
+import statistics
 from pathlib import Path
 from typing import Dict
 
@@ -95,17 +96,33 @@ def _run(input_kind: str, inject_at: int, seed: int = 0) -> Dict:
 
 def main() -> int:
     rows = []
+    raw = []
+    for input_kind in ("random", "structured"):
+        for seed in range(3):
+            for inject_at in range(6):
+                raw.append(_run(input_kind, inject_at, seed=seed))
     for input_kind in ("random", "structured"):
         for inject_at in range(6):
-            rows.append(_run(input_kind, inject_at))
+            subset = [r for r in raw if r["input"] == input_kind and r["inject_layer"] == inject_at]
+            rows.append({
+                "input": input_kind,
+                "inject_layer": inject_at,
+                "n_seeds": len(subset),
+                "local_rel_l2": statistics.mean(r["local_rel_l2"] for r in subset),
+                "local_rel_l2_std": statistics.pstdev(r["local_rel_l2"] for r in subset),
+                "final_rel_l2": statistics.mean(r["final_rel_l2"] for r in subset),
+                "final_rel_l2_std": statistics.pstdev(r["final_rel_l2"] for r in subset),
+                "amplification": statistics.mean(r["amplification"] for r in subset),
+                "amplification_std": statistics.pstdev(r["amplification"] for r in subset),
+            })
     path = save_report(
         "error_propagation",
         rows,
         title="Local attention error versus downstream residual-stream drift",
-        columns=["input", "inject_layer", "local_rel_l2", "final_rel_l2",
-                 "amplification", "local_cosine_distance", "final_cosine_distance"],
+        columns=["input", "inject_layer", "n_seeds", "local_rel_l2", "local_rel_l2_std",
+                 "final_rel_l2", "final_rel_l2_std", "amplification", "amplification_std"],
         notes=(
-            "Six-layer fixed random residual stack; a Quest attention output replaces "
+            "Six-layer fixed random residual stack; a Performer attention output replaces "
             "dense attention at one layer, then dense dynamics continue. This isolates "
             "propagation, not trained-model quality. Amplification is final/local "
             "relative L2 error. Random and planted-retrieval inputs are controls."

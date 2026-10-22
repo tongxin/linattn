@@ -40,7 +40,7 @@ def test_approximation_research_docs_exist():
         "approximation-research-plan.md",
         "approximation-metrics.md",
         "approximation-theory-map.md",
-        "approximation-findings.md",
+        "attention-approximation-report.md",
         "attention-evaluation-protocol.md",
         "csa2-revisit-gate.md",
         "error-propagation.md",

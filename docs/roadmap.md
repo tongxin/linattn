@@ -78,6 +78,8 @@ only when the following are available:
 
 The general framework that should precede that study is in
 [`research/approximation-research-plan.md`](research/approximation-research-plan.md).
+The completed first-cycle report is
+[`research/attention-approximation-report.md`](research/attention-approximation-report.md).
 The current official-config comparison is
 [`csa2-official-config.md`](csa2-official-config.md).
 

@@ -38,6 +38,7 @@ make bench-frontier                                   # 2025–2026 variants -> 
 make csa2-analysis                                    # CSA2 error decomposition -> reports/csa2_approximation.*
 make csa2-official-check                              # published config comparison -> reports/csa2_official_config.*
 make approx-validation                                # metric hierarchy across variants -> reports/approximation_validation.*
+make theory-checks                                    # bound and trend validation -> reports/theory_checks.*
 make error-propagation                                # local vs downstream error -> reports/error_propagation.*
 make experiments                                      # the three studies -> reports/
 ```
@@ -116,8 +117,9 @@ attention with full softmax: [the research plan](docs/research/approximation-res
 and [metric hierarchy](docs/research/approximation-metrics.md), with a
 [theory map](docs/research/approximation-theory-map.md),
 [workload protocol](docs/research/attention-evaluation-protocol.md), and
-[CSA2 revisit gate](docs/research/csa2-revisit-gate.md). The cycle's synthesis is
-[approximation-findings.md](docs/research/approximation-findings.md). CSA2 sensitivity remains
+[CSA2 revisit gate](docs/research/csa2-revisit-gate.md). The complete research
+report is [attention-approximation-report.md](docs/research/attention-approximation-report.md).
+CSA2 sensitivity remains
 an explicit open problem until that framework reaches checkpoint-level evaluation.
 
 ## Running the benchmarks after cloning

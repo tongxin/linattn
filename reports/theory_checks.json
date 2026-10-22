@@ -1,0 +1,330 @@
+{
+  "name": "theory_checks",
+  "generated_utc": "2026-10-22T01:24:00Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": false,
+    "triton_installed": false,
+    "triton_msl": false,
+    "flex_attention_importable": true,
+    "mlx_installed": false,
+    "mlx_metal": false
+  },
+  "records": [
+    {
+      "study": "feature_convergence",
+      "input": "dispersed",
+      "variant": "performer",
+      "setting": "features=4",
+      "mean_rel_error": 0.9830065739106888,
+      "std_rel_error": 0.027209301962642308,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "dispersed",
+      "variant": "performer",
+      "setting": "features=8",
+      "mean_rel_error": 0.9535787906065222,
+      "std_rel_error": 0.05167422109049219,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "dispersed",
+      "variant": "performer",
+      "setting": "features=16",
+      "mean_rel_error": 0.9521613788328745,
+      "std_rel_error": 0.04840335167024557,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "dispersed",
+      "variant": "performer",
+      "setting": "features=32",
+      "mean_rel_error": 0.9084914312271758,
+      "std_rel_error": 0.023298730913161224,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "dispersed",
+      "variant": "performer",
+      "setting": "features=64",
+      "mean_rel_error": 0.9347521085385596,
+      "std_rel_error": 0.04923493851008902,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "dispersed",
+      "variant": "performer",
+      "setting": "features=128",
+      "mean_rel_error": 0.8972341551863636,
+      "std_rel_error": 0.02825715136010654,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "dispersed",
+      "variant": "performer",
+      "setting": "features=256",
+      "mean_rel_error": 0.8707617693760812,
+      "std_rel_error": 0.011827905638468755,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "random",
+      "variant": "performer",
+      "setting": "features=4",
+      "mean_rel_error": 0.7745616643671451,
+      "std_rel_error": 0.04724191276361559,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "random",
+      "variant": "performer",
+      "setting": "features=8",
+      "mean_rel_error": 0.6865102003415482,
+      "std_rel_error": 0.021194294398393754,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "random",
+      "variant": "performer",
+      "setting": "features=16",
+      "mean_rel_error": 0.6766199869804813,
+      "std_rel_error": 0.02025162480802053,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "random",
+      "variant": "performer",
+      "setting": "features=32",
+      "mean_rel_error": 0.6218993904988279,
+      "std_rel_error": 0.01213524415381458,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "random",
+      "variant": "performer",
+      "setting": "features=64",
+      "mean_rel_error": 0.6157254781838621,
+      "std_rel_error": 0.009900444741048148,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "random",
+      "variant": "performer",
+      "setting": "features=128",
+      "mean_rel_error": 0.5952120014126538,
+      "std_rel_error": 0.008725130550544665,
+      "n": 5
+    },
+    {
+      "study": "feature_convergence",
+      "input": "random",
+      "variant": "performer",
+      "setting": "features=256",
+      "mean_rel_error": 0.5862716674412938,
+      "std_rel_error": 0.010094691923809044,
+      "n": 5
+    },
+    {
+      "study": "precision",
+      "input": "dispersed",
+      "variant": "dense_kv",
+      "setting": "fp4",
+      "mean_rel_error": 0.1583439059745332,
+      "std_rel_error": 0.006244153923012238,
+      "n": 3
+    },
+    {
+      "study": "precision",
+      "input": "dispersed",
+      "variant": "dense_kv",
+      "setting": "fp8",
+      "mean_rel_error": 0.03660730018283761,
+      "std_rel_error": 0.0005564195773901349,
+      "n": 3
+    },
+    {
+      "study": "precision",
+      "input": "dispersed",
+      "variant": "dense_kv",
+      "setting": "fp16",
+      "mean_rel_error": 0.0,
+      "std_rel_error": 0.0,
+      "n": 3
+    },
+    {
+      "study": "precision",
+      "input": "random",
+      "variant": "dense_kv",
+      "setting": "fp4",
+      "mean_rel_error": 0.12198684358767392,
+      "std_rel_error": 0.0030877599214305497,
+      "n": 3
+    },
+    {
+      "study": "precision",
+      "input": "random",
+      "variant": "dense_kv",
+      "setting": "fp8",
+      "mean_rel_error": 0.029520132158865422,
+      "std_rel_error": 0.0001768651598219078,
+      "n": 3
+    },
+    {
+      "study": "precision",
+      "input": "random",
+      "variant": "dense_kv",
+      "setting": "fp16",
+      "mean_rel_error": 0.0,
+      "std_rel_error": 0.0,
+      "n": 3
+    },
+    {
+      "study": "selection_bound",
+      "input": "dispersed",
+      "variant": "minference",
+      "setting": "all",
+      "mean_rel_error": 0.7041857534201992,
+      "std_rel_error": 0.038031475711415866,
+      "mean_bound_ratio": 0.25417634762097996,
+      "bound_satisfied_rate": 1.0,
+      "n": 3
+    },
+    {
+      "study": "selection_bound",
+      "input": "dispersed",
+      "variant": "moba",
+      "setting": "all",
+      "mean_rel_error": 0.5543425328689605,
+      "std_rel_error": 0.0176878760417039,
+      "mean_bound_ratio": 0.25316622545373496,
+      "bound_satisfied_rate": 1.0,
+      "n": 3
+    },
+    {
+      "study": "selection_bound",
+      "input": "dispersed",
+      "variant": "quest",
+      "setting": "all",
+      "mean_rel_error": 0.6233422214326121,
+      "std_rel_error": 0.008342938994542344,
+      "mean_bound_ratio": 0.2564210669780677,
+      "bound_satisfied_rate": 1.0,
+      "n": 3
+    },
+    {
+      "study": "selection_bound",
+      "input": "dispersed",
+      "variant": "xattention",
+      "setting": "all",
+      "mean_rel_error": 0.9691811752969645,
+      "std_rel_error": 0.017193128689232094,
+      "mean_bound_ratio": 0.2759193739622978,
+      "bound_satisfied_rate": 1.0,
+      "n": 3
+    },
+    {
+      "study": "selection_bound",
+      "input": "random",
+      "variant": "minference",
+      "setting": "all",
+      "mean_rel_error": 0.6284449188059438,
+      "std_rel_error": 0.02705627421487169,
+      "mean_bound_ratio": 0.13362662417049292,
+      "bound_satisfied_rate": 1.0,
+      "n": 3
+    },
+    {
+      "study": "selection_bound",
+      "input": "random",
+      "variant": "moba",
+      "setting": "all",
+      "mean_rel_error": 0.558964848422396,
+      "std_rel_error": 0.0072958561354555,
+      "mean_bound_ratio": 0.1317635496546031,
+      "bound_satisfied_rate": 1.0,
+      "n": 3
+    },
+    {
+      "study": "selection_bound",
+      "input": "random",
+      "variant": "quest",
+      "setting": "all",
+      "mean_rel_error": 0.6002588619703082,
+      "std_rel_error": 0.011450907568334934,
+      "mean_bound_ratio": 0.13379017275834149,
+      "bound_satisfied_rate": 1.0,
+      "n": 3
+    },
+    {
+      "study": "selection_bound",
+      "input": "random",
+      "variant": "xattention",
+      "setting": "all",
+      "mean_rel_error": 0.8015903123649827,
+      "std_rel_error": 0.0829142395150124,
+      "mean_bound_ratio": 0.16525426150622405,
+      "bound_satisfied_rate": 1.0,
+      "n": 3
+    },
+    {
+      "study": "selection_bound",
+      "input": "retrieval",
+      "variant": "minference",
+      "setting": "all",
+      "mean_rel_error": 0.6910127087508396,
+      "std_rel_error": 0.07343475690348453,
+      "mean_bound_ratio": 0.19775788538120734,
+      "bound_satisfied_rate": 1.0,
+      "n": 3
+    },
+    {
+      "study": "selection_bound",
+      "input": "retrieval",
+      "variant": "moba",
+      "setting": "all",
+      "mean_rel_error": 0.5700716582708729,
+      "std_rel_error": 0.03461766052462574,
+      "mean_bound_ratio": 0.18649288858446905,
+      "bound_satisfied_rate": 1.0,
+      "n": 3
+    },
+    {
+      "study": "selection_bound",
+      "input": "retrieval",
+      "variant": "quest",
+      "setting": "all",
+      "mean_rel_error": 0.6372696956468261,
+      "std_rel_error": 0.04171292466131694,
+      "mean_bound_ratio": 0.18468128090125327,
+      "bound_satisfied_rate": 1.0,
+      "n": 3
+    },
+    {
+      "study": "selection_bound",
+      "input": "retrieval",
+      "variant": "xattention",
+      "setting": "all",
+      "mean_rel_error": 0.8288608729294115,
+      "std_rel_error": 0.021635900290354917,
+      "mean_bound_ratio": 0.23205552710671282,
+      "bound_satisfied_rate": 1.0,
+      "n": 3
+    }
+  ]
+}

@@ -9,7 +9,7 @@ PYTHON ?= $(shell test -x $(VENV_PY) && echo $(VENV_PY) || echo python3)
 
 export PYTHONPATH := src
 
-.PHONY: help venv install check docs bench bench-frontier csa2-analysis csa2-official-check approx-metrics approx-validation error-propagation bench-mlx kv experiments all clean
+.PHONY: help venv install check docs bench bench-frontier csa2-analysis csa2-official-check approx-metrics approx-validation theory-checks error-propagation bench-mlx kv experiments all clean
 
 help:  ## list targets
 	@grep -hE '^[a-z]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /: /' | column -t -s ':'
@@ -52,6 +52,9 @@ approx-metrics:  ## run the attention-approximation metric prototype
 
 approx-validation:  ## compare approximation metrics across representative variants
 	$(PYTHON) experiments/approximation_validation.py
+
+theory-checks:  ## validate sparse bounds, feature convergence and precision
+	$(PYTHON) experiments/theory_checks.py
 
 error-propagation:  ## local attention error vs residual-stack drift
 	$(PYTHON) experiments/error_propagation.py
