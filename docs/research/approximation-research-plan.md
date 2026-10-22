@@ -110,23 +110,24 @@ top-k selection is nearly optimal from evidence-sparse tasks where it is not.
 **Stop condition.** A small set of controlled tasks and clear reporting rules;
 no leaderboard claims.
 
-## Subproblem 6 — Synthesize and gate the CSA2 revisit
+## Subproblem 6 — Synthesize decision rules and evidence boundaries
 
-**Question.** What evidence would justify applying the framework to CSA2 and other
-deployed sparse designs?
+**Question.** What evidence would justify applying the framework to a deployed
+efficient-attention design, whether sparse, low-rank, recurrent or quantized?
 
 **Concepts.** Runnable checkpoint, dense teacher, layerwise output/hidden-state
 comparison, selection/mass diagnostics, precision ablation, and matched workloads.
 
-**Deliverable.** A decision framework and a CSA2-specific experiment gate.
+**Deliverable.** A general evidence checklist and decision framework.
 
-**Acceptance test.** The gate requires a dense or matched reference, disclosed
-configuration, and a task suite that includes evidence-sparse workloads.
+**Acceptance test.** The checklist requires a dense or matched reference,
+disclosed configuration, a stated approximation object, and a task suite that
+includes evidence-sparse workloads.
 
 **Dependency.** All earlier subproblems; not part of the current execution run.
 
-**Stop condition.** Publish the gate and return CSA2 to the backlog until the
-required checkpoint-level evidence exists.
+**Stop condition.** Publish the general decision framework. Specific systems such
+as CSA2 remain separate roadmap applications, not part of this research cycle.
 
 ## Execution state
 
@@ -137,7 +138,7 @@ required checkpoint-level evidence exists.
 | 3. Controlled metric validation | complete; see `reports/approximation_validation.md` |
 | 4. Propagation study | complete; see `reports/error_propagation.md` |
 | 5. Workload protocol | complete; see `attention-evaluation-protocol.md` |
-| 6. CSA2 revisit gate | complete; see `csa2-revisit-gate.md` |
+| 6. General decision rules | complete; see `attention-approximation-report.md` §6 |
 
 The consolidated argument, evidence and limitations are in
 [`attention-approximation-report.md`](attention-approximation-report.md).

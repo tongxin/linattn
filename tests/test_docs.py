@@ -42,7 +42,6 @@ def test_approximation_research_docs_exist():
         "approximation-theory-map.md",
         "attention-approximation-report.md",
         "attention-evaluation-protocol.md",
-        "csa2-revisit-gate.md",
         "error-propagation.md",
     ):
         assert (DOCS / "research" / name).exists(), f"missing docs/research/{name}"

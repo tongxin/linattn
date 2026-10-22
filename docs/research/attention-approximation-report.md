@@ -16,8 +16,8 @@ four conclusions: (1) no universal cheap-attention guarantee is possible for
 arbitrary inputs; (2) support mass alone does not determine output error; (3)
 kernel and precision approximations show the expected error-reduction trends,
 but the convergence can be slow and seed-dependent; (4) local attention error can
-attenuate or amplify through the residual stream. The report ends with a gated
-protocol for applying the framework to frontier systems such as CSA2.
+attenuate or amplify through the residual stream. The report ends with decision
+rules for applying the framework to any deployed efficient-attention system.
 
 ## 1. Problem statement
 
@@ -242,13 +242,13 @@ unbiasedness statement. A precision method should report the error of the
 attention output under the actual cache format. A compressed-state method should
 report associative-recall/interference diagnostics.
 
-### For CSA2
+### For deployed systems
 
-The framework is now ready to define a CSA2 evaluation, but the data are not.
-The official V4.1-Flash report gives model-level benchmark results and a
-substantial configuration disclosure, but no layerwise dense-versus-CSA2
-attention/hidden-state ablation. CSA2 remains in the [revisit gate](csa2-revisit-gate.md)
-until a checkpoint-level comparison is possible.
+The framework is general and should be instantiated explicitly for each deployment.
+For any specific system, state the reference, the approximation mechanism, the
+precision policy, the read budget, the workload family and the observation level.
+CSA2 is one deferred application in the [roadmap](../roadmap.md), not a required
+part of the general framework.
 
 ## 7. Limitations
 
@@ -270,6 +270,6 @@ benchmark error?” It is:
 
 This cycle establishes that question operationally. It supplies a tested metric
 hierarchy, verified claims from the literature, multi-seed controlled evidence,
-a local-to-final propagation probe, and a gate for CSA2. The next scientific step
-is a matched small checkpoint with the same protocol, not another synthetic
+and a local-to-final propagation probe. The next scientific step is a matched
+small checkpoint with the same general protocol, not another synthetic
 leaderboard.

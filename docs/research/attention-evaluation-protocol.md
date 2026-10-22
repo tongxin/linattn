@@ -93,6 +93,6 @@ An experiment is complete when it either:
    evidence.
 
 Do not add another benchmark merely to rescue a weak result. Do not claim a
-frontier-model approximation from a synthetic residual stack. The CSA2 revisit
-gate is separate and requires a runnable checkpoint plus a matched dense
-reference.
+frontier-model approximation from a synthetic residual stack. Applying the
+protocol to a specific deployed checkpoint is a separate roadmap decision and
+requires a matched dense reference.
