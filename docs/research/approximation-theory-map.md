@@ -7,6 +7,11 @@ optimization. A theorem in one row does not automatically transfer to another.
 
 Status is marked as **peer-reviewed**, **preprint**, or **foundational**. Dates
 are the arXiv dates unless a venue is named.
+BibTeX entries for the 2025-2026 theory line are in
+[`../citations.bib`](../citations.bib).
+Bibliographic metadata was checked against the arXiv API on 2026-10-22. The
+"result" column is a scoped reading of the paper's stated result, not an
+independent proof audit.
 
 ## 1. Hard limits and sampling/streaming bounds
 
@@ -17,6 +22,7 @@ are the arXiv dates unless a venue is named.
 | *Streaming Attention Approximation via Discrepancy Theory* (arXiv:2502.07861) | theory preprint | streaming attention approximation | BalanceKV constructs a balanced core-set with discrepancy-theoretic ε-approximation and space lower bounds | output/operator error and space | Input assumptions and the particular kernels matter; not a statement that every KV-cache heuristic is certified |
 | *Towards Tight Bounds for Streaming Attention* (arXiv:2606.07205) | preprint, Jun 2026 | streaming KV-cache approximation | Combines discrepancy, polynomial and space-partition methods for nearly tight upper/lower space bounds | output approximation vs space | The bound is for the modeled attention primitive, not a full trained LM |
 | *Certified Sparse Attention via Perturbed Retrieval* (arXiv:2610.24991) | preprint, Oct 2026 | sparse decode output with per-query certificates | Randomly perturbed retrieval yields nested samples and simultaneous confidence bounds; O(ε⁻² log(1/δ)) reads can meet a target error | probabilistic output error / certificate | Requires the sampling assumptions and calibrated perturbation; certificates are probabilistic |
+| *Express Language Modeling* (arXiv:2606.10944) | preprint, Oct 2026 update | conversion of a noncausal attention approximation to a causal one | Reports a general causal conversion with matching approximation guarantees; in its Thinformer setting it states `log^{3/2}(n)/s` error with `O(s)` memory and `O(s² log² n)` compression overhead | causal output/operator approximation and memory | The theorem applies to the specified approximation family and input setting, not to an arbitrary selector or trained LLM |
 
 The practical message is already strong: **there cannot be a universal cheap
 approximation guarantee for arbitrary K/V.** A useful theory must condition on
@@ -31,6 +37,9 @@ input structure, a sampling model, or a task distribution.
 | COBS (arXiv:2607.09052) | preprint | block selection | Reduces exact block selection to ranking blocks by attention mass; exact-mass selection matches dense, and a second-order proxy improves over first-order selection | block mass / output error | Requires a compact estimator for mass; block granularity and value geometry remain |
 | CEDAR (arXiv:2609.07237) | preprint | coarse-to-fine search | Derives an output-error bound depending on within-chunk key/value dispersion and spends refinement where the error estimate is high | output error / dispersion | Uses a learned or heuristic coarse summary; the bound is model-dependent |
 | *On the Trade-off Between Information Loss and Generalization in Sparse Attention* (arXiv:2610.04424) | preprint | sparse attention distribution and generalization | Gives a JS-divergence expression under i.i.d. sub-Gaussian score assumptions and Rademacher/mutual-information generalization bounds | JS divergence and generalization | The closed form is not valid for arbitrary correlated attention maps |
+| *Latent-Condensed Attention* (arXiv:2604.12452) | ACL 2026 | query-aware pooling plus anchor selection in MLA latent space | Proves a length-independent error bound for the proposed compression construction; reports up to 2.5x prefill speedup and 90% KV reduction at 128K context | latent-attention reconstruction/output error | The bound is specific to the construction and its assumptions; it is not a generic top-k guarantee |
+| *RetroInfer* (arXiv:2505.02922) | VLDB 2026 | sparse KV retrieval and CPU-GPU data movement | Uses a tripartite attention approximation and accuracy-bound attention estimation inside a vector-storage engine | retrieval/attention output error and read cost | The accounting depends on the wave index and retrieved-token model; end-to-end results still need workload-matched validation |
+| *RaBitQCache* (arXiv:2606.31519) | ICML 2026 | rotated binary proxy for top-p KV retrieval | Gives an unbiased proxy estimator with a proven error bound and adaptive retrieval budget | proxy-score error / retrieved attention | A proxy-score bound is weaker than a bound on the final dense-attention output |
 
 These results justify the metric hierarchy: dropped mass and JS divergence are
 diagnostics, but the value-weighted output and hidden-state propagation are the
@@ -45,6 +54,7 @@ objects that ultimately connect to model behavior.
 | Nyströmformer (NeurIPS 2021) | foundational | landmark matrix approximation | Reconstructs attention from a landmark sketch under matrix-approximation assumptions | operator approximation | Numerical conditioning and landmark coverage; the repository's small-scale implementation was unstable |
 | `k`NN Attention Demystified (arXiv:2411.04013) | preprint | kNN attention and gradients | Reformulates attention as an expectation and uses lazy Gumbel sampling for approximate gradients | probabilistic output/gradient error | Not a deterministic guarantee for hard top-k inference |
 | PolySketchFormer (arXiv:2310.01655) | preprint/theory | polynomial-kernel sketch | Sketching polynomial kernels to obtain near-linear attention | kernel/operator approximation | Polynomial degree, feature dimension and numerical error |
+| Sparse modern Hopfield retrieval (NeurIPS 2023, arXiv:2309.12673) | peer-reviewed | one-step sparse attention as memory retrieval | Derives a sparsity-dependent memory-retrieval error bound tighter than its dense analogue under the paper's conditions | retrieval error / sparsity | The result is for the Hopfield construction, not general top-k Transformer attention |
 
 The shared lesson is that **low-rank, kernel and sampling methods have different
 notions of approximation**. A low-rank projection error cannot be compared directly

@@ -32,11 +32,14 @@ def _masked_distribution(weights: torch.Tensor, support: torch.Tensor) -> torch.
     return selected / selected.sum(-1, keepdim=True).clamp_min(1e-12)
 
 
-def _evaluate(name: str, variant, q, k, v, p_ref, o_ref, input_kind: str) -> Dict:
+def _evaluate(name: str, variant, q, k, v, input_kind: str) -> Dict:
+    causal = bool(getattr(variant, "causal", True))
+    o_ref, p_ref = dense_attention(q, k, v, causal=causal, return_weights=True)
     out, _, stats = variant.forward(q, k, v, chunk=q.shape[-2], collect_stats=True)
     row: Dict = {
         "variant": name,
         "input": input_kind,
+        "reference_mode": "causal" if causal else "noncausal",
         "output_rel_l2": relative_l2(o_ref, out),
         "output_cosine_distance": cosine_distance(o_ref, out),
         "max_abs_error": float((o_ref - out).abs().max()),
@@ -60,7 +63,6 @@ def run(input_kind: str, cfg: AttnConfig, seed: int = 11) -> list[Dict]:
         else make_inputs(1, cfg.n_heads, t, cfg.head_dim, kv_heads=cfg.n_kv_heads, seed=seed)
     )
     q, k, v = q.double(), k.double(), v.double()
-    o_ref, p_ref = dense_attention(q, k, v, causal=True, return_weights=True)
     configs = {
         "quest": cfg,
         "xattention": cfg,
@@ -71,7 +73,7 @@ def run(input_kind: str, cfg: AttnConfig, seed: int = 11) -> list[Dict]:
     }
     rows = []
     for name, local_cfg in configs.items():
-        rows.append(_evaluate(name, build(name, local_cfg), q, k, v, p_ref, o_ref, input_kind))
+        rows.append(_evaluate(name, build(name, local_cfg), q, k, v, input_kind))
     return rows
 
 
@@ -98,6 +100,7 @@ def main() -> int:
             rows.append({
                 "variant": variant,
                 "input": input_kind,
+                "reference_mode": subset[0]["reference_mode"],
                 "n_seeds": len(subset),
                 "output_rel_l2_mean": statistics.mean(r["output_rel_l2"] for r in subset),
                 "output_rel_l2_std": statistics.pstdev(r["output_rel_l2"] for r in subset),
@@ -121,7 +124,7 @@ def main() -> int:
         "approximation_validation",
         rows,
         title="Metric hierarchy validation on representative attention variants",
-        columns=["variant", "input", "n_seeds", "output_rel_l2_mean",
+        columns=["variant", "input", "reference_mode", "n_seeds", "output_rel_l2_mean",
                  "output_rel_l2_std", "output_cosine_distance_mean", "max_abs_error_mean",
                  "reads_per_query_mean", "support_fraction_mean", "attention_js_mean",
                  "topk_agreement_mean"],
@@ -129,7 +132,9 @@ def main() -> int:
             "T=128, H=4, H_kv=2, d=32, four 16-token blocks, 32-token token budget. "
             "Mask-based selectors expose both support and a renormalized attention "
             "distribution; Performer/Linformer expose only an output, so distribution "
-            "cells are blank. This is a metric-validation experiment, not a quality "
+            "cells are blank. Linformer is compared with a noncausal dense reference "
+            "because its sequence projection mixes positions; other variants use the "
+            "causal reference. This is a metric-validation experiment, not a quality "
             "leaderboard. `structured` plants retrieval spikes; `random` is the control."
         ),
     )

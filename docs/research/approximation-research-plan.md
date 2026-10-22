@@ -37,9 +37,9 @@ vocabulary. Do not start a broad literature crawl in this subproblem.
 assumptions?
 
 **Concepts.** Low-rank/operator approximation, random features and kernel error,
-block selection and missing attention mass, quantization perturbation,
-compressed-state/recall separations, and error propagation through residual
-networks.
+block selection and missing attention mass, causalisation of noncausal
+approximations, quantization perturbation, compressed-state/recall separations,
+and error propagation through residual networks.
 
 **Deliverable.** A claim-by-claim literature map with theorem type, assumptions,
 guarantee level, and failure mode. Separate peer-reviewed results from preprints.
@@ -142,3 +142,20 @@ as CSA2 remain separate roadmap applications, not part of this research cycle.
 
 The consolidated argument, evidence and limitations are in
 [`attention-approximation-report.md`](attention-approximation-report.md).
+
+### Checkpoint outcome
+
+- H1 passed: exact sparse and quantization decompositions close to floating-point
+  precision, and all tested TV/output certificates hold.
+- H2 passed: equal attention total variation can produce zero or positive output
+  error depending on value geometry.
+- H3 passed in the matched tiny-model study: final hidden drift outranked local
+  attention error against task-loss change in both task families
+  (`rho=0.966/0.923` versus `0.914/0.869`).
+- H4 was refined: pooled first-order correlations (`0.582/0.723`) mixed different
+  checkpoint loss scales. Within checkpoint, the projection was competitive
+  (`0.853±0.072` retrieval, `0.960±0.016` dispersed), but hidden drift remained
+  the stronger common bridge.
+
+These outcomes close the first cycle. They do not promote the results to
+natural-language or frontier-model evidence.

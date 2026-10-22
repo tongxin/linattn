@@ -20,7 +20,7 @@ python experiments/csa2_official_check.py
 python experiments/approximation_validation.py
 python experiments/theory_checks.py
 python experiments/error_propagation.py
-python experiments/approximation_audit.py --steps 900 --seeds 2 --eval-examples 128
+python experiments/approximation_audit.py --steps 2200 --seeds 3 --eval-examples 256
 make kv            # or: python experiments/kv_economics.py
 ```
 
@@ -36,9 +36,13 @@ Reports currently checked in:
 | `csa2_approximation.md` | dense-vs-CSA2 error decomposition: pooling, top-k selection, FP4/FP8 precision, mass capture and cost |
 | `csa2_official_config.md` | published V4.1-Flash hyperparameters vs the repository's CSA2 surrogate |
 | `approximation_validation.md` | metric hierarchy across mask, kernel and low-rank attention variants |
-| `theory_checks.md` | sparse-support bound, Performer feature convergence and KV precision ordering |
+| `theory_checks.md` | exact sparse/quantisation identities, bounds, Performer features and KV precision ordering |
 | `error_propagation.md` | local attention error vs downstream residual-stack drift |
 | `approximation_audit.md` | matched tiny-checkpoint local-to-task intervention audit |
+| `approximation_audit_correlations.md` | aggregate metric-to-loss rank correlations |
+| `approximation_audit_seed_correlations.md` | the same correlations within each trained checkpoint |
+| `approximation_audit_training.md` | training and held-out accuracy controls |
+| `approximation_audit_raw.md` | every checkpoint x layer x intervention measurement |
 | `state_capacity.md` | exact associative-recall fidelity of a fixed-size delta-rule state vs. number of associations |
 | `selector_capacity.md` | learned-selector cross-entropy and attention-mass recall before and after fitting |
 

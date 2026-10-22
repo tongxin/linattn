@@ -1,6 +1,6 @@
 {
   "name": "theory_checks",
-  "generated_utc": "2026-10-22T01:34:12Z",
+  "generated_utc": "2026-10-22T01:50:04Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
@@ -147,7 +147,12 @@
       "setting": "fp4",
       "mean_rel_error": 0.1583439059745332,
       "std_rel_error": 0.006244153923012238,
-      "n": 3
+      "n": 3,
+      "mean_attention_tv": 0.06685156623522441,
+      "max_attention_tv_bound": 0.5103836059570312,
+      "max_certificate_ratio": 0.04533207416534424,
+      "certificate_satisfied_rate": 1.0,
+      "max_exact_decomposition_error": 3.725290298461914e-08
     },
     {
       "study": "precision",
@@ -156,7 +161,12 @@
       "setting": "fp8",
       "mean_rel_error": 0.03660730018283761,
       "std_rel_error": 0.0005564195773901349,
-      "n": 3
+      "n": 3,
+      "mean_attention_tv": 0.01591305745144685,
+      "max_attention_tv_bound": 0.1376839280128479,
+      "max_certificate_ratio": 0.041590556502342224,
+      "certificate_satisfied_rate": 1.0,
+      "max_exact_decomposition_error": 7.450580596923828e-09
     },
     {
       "study": "precision",
@@ -165,7 +175,12 @@
       "setting": "fp16",
       "mean_rel_error": 0.0,
       "std_rel_error": 0.0,
-      "n": 3
+      "n": 3,
+      "mean_attention_tv": 0.0,
+      "max_attention_tv_bound": 0.0,
+      "max_certificate_ratio": 0.0,
+      "certificate_satisfied_rate": 1.0,
+      "max_exact_decomposition_error": 0.0
     },
     {
       "study": "precision",
@@ -174,7 +189,12 @@
       "setting": "fp4",
       "mean_rel_error": 0.12198684358767392,
       "std_rel_error": 0.0030877599214305497,
-      "n": 3
+      "n": 3,
+      "mean_attention_tv": 0.03746239095926285,
+      "max_attention_tv_bound": 0.2719053328037262,
+      "max_certificate_ratio": 0.021864894777536392,
+      "certificate_satisfied_rate": 1.0,
+      "max_exact_decomposition_error": 5.122274160385132e-09
     },
     {
       "study": "precision",
@@ -183,7 +203,12 @@
       "setting": "fp8",
       "mean_rel_error": 0.029520132158865422,
       "std_rel_error": 0.0001768651598219078,
-      "n": 3
+      "n": 3,
+      "mean_attention_tv": 0.008916368708014488,
+      "max_attention_tv_bound": 0.06712119281291962,
+      "max_certificate_ratio": 0.021802684292197227,
+      "certificate_satisfied_rate": 1.0,
+      "max_exact_decomposition_error": 1.862645149230957e-09
     },
     {
       "study": "precision",
@@ -192,7 +217,12 @@
       "setting": "fp16",
       "mean_rel_error": 0.0,
       "std_rel_error": 0.0,
-      "n": 3
+      "n": 3,
+      "mean_attention_tv": 0.0,
+      "max_attention_tv_bound": 0.0,
+      "max_certificate_ratio": 0.0,
+      "certificate_satisfied_rate": 1.0,
+      "max_exact_decomposition_error": 0.0
     },
     {
       "study": "selection_bound",
@@ -201,9 +231,12 @@
       "setting": "all",
       "mean_rel_error": 0.7041857534201992,
       "std_rel_error": 0.038031475711415866,
-      "mean_bound_ratio": 0.25417634762097996,
+      "mean_bound_ratio": 0.2383102176493056,
       "bound_satisfied_rate": 1.0,
-      "n": 3
+      "n": 3,
+      "max_exact_decomposition_error": 1.3322676295501878e-15,
+      "max_implementation_parity_error": 2.6645352591003757e-15,
+      "mean_error_per_dropped_mass": 1844.6392622334643
     },
     {
       "study": "selection_bound",
@@ -212,9 +245,12 @@
       "setting": "all",
       "mean_rel_error": 0.5543425328689605,
       "std_rel_error": 0.0176878760417039,
-      "mean_bound_ratio": 0.25316622545373496,
+      "mean_bound_ratio": 0.23588789478889335,
       "bound_satisfied_rate": 1.0,
-      "n": 3
+      "n": 3,
+      "max_exact_decomposition_error": 1.3322676295501878e-15,
+      "max_implementation_parity_error": 2.220446049250313e-15,
+      "mean_error_per_dropped_mass": 1828.0222110862128
     },
     {
       "study": "selection_bound",
@@ -223,9 +259,12 @@
       "setting": "all",
       "mean_rel_error": 0.6233422214326121,
       "std_rel_error": 0.008342938994542344,
-      "mean_bound_ratio": 0.2564210669780677,
+      "mean_bound_ratio": 0.2393871695776068,
       "bound_satisfied_rate": 1.0,
-      "n": 3
+      "n": 3,
+      "max_exact_decomposition_error": 9.992007221626409e-16,
+      "max_implementation_parity_error": 1.7763568394002505e-15,
+      "mean_error_per_dropped_mass": 1853.4844658435293
     },
     {
       "study": "selection_bound",
@@ -234,9 +273,12 @@
       "setting": "all",
       "mean_rel_error": 0.9691811752969645,
       "std_rel_error": 0.017193128689232094,
-      "mean_bound_ratio": 0.2759193739622978,
+      "mean_bound_ratio": 0.26055814207197775,
       "bound_satisfied_rate": 1.0,
-      "n": 3
+      "n": 3,
+      "max_exact_decomposition_error": 1.0824674490095276e-15,
+      "max_implementation_parity_error": 1.7763568394002505e-15,
+      "mean_error_per_dropped_mass": 2018.4377905753265
     },
     {
       "study": "selection_bound",
@@ -245,9 +287,12 @@
       "setting": "all",
       "mean_rel_error": 0.6284449188059438,
       "std_rel_error": 0.02705627421487169,
-      "mean_bound_ratio": 0.13362662417049292,
+      "mean_bound_ratio": 0.1320113487752392,
       "bound_satisfied_rate": 1.0,
-      "n": 3
+      "n": 3,
+      "max_exact_decomposition_error": 4.440892098500626e-16,
+      "max_implementation_parity_error": 8.881784197001252e-16,
+      "mean_error_per_dropped_mass": 1022.45624898235
     },
     {
       "study": "selection_bound",
@@ -256,9 +301,12 @@
       "setting": "all",
       "mean_rel_error": 0.558964848422396,
       "std_rel_error": 0.0072958561354555,
-      "mean_bound_ratio": 0.1317635496546031,
+      "mean_bound_ratio": 0.13067221623719164,
       "bound_satisfied_rate": 1.0,
-      "n": 3
+      "n": 3,
+      "max_exact_decomposition_error": 4.440892098500626e-16,
+      "max_implementation_parity_error": 1.7763568394002505e-15,
+      "mean_error_per_dropped_mass": 1012.1593948412301
     },
     {
       "study": "selection_bound",
@@ -267,9 +315,12 @@
       "setting": "all",
       "mean_rel_error": 0.6002588619703082,
       "std_rel_error": 0.011450907568334934,
-      "mean_bound_ratio": 0.13379017275834149,
+      "mean_bound_ratio": 0.13157642479014747,
       "bound_satisfied_rate": 1.0,
-      "n": 3
+      "n": 3,
+      "max_exact_decomposition_error": 5.551115123125783e-16,
+      "max_implementation_parity_error": 1.1102230246251565e-15,
+      "mean_error_per_dropped_mass": 1019.3795369022724
     },
     {
       "study": "selection_bound",
@@ -278,9 +329,12 @@
       "setting": "all",
       "mean_rel_error": 0.8015903123649827,
       "std_rel_error": 0.0829142395150124,
-      "mean_bound_ratio": 0.16525426150622405,
+      "mean_bound_ratio": 0.15379238898551278,
       "bound_satisfied_rate": 1.0,
-      "n": 3
+      "n": 3,
+      "max_exact_decomposition_error": 4.440892098500626e-16,
+      "max_implementation_parity_error": 8.881784197001252e-16,
+      "mean_error_per_dropped_mass": 1189.5403590516069
     },
     {
       "study": "selection_bound",
@@ -289,9 +343,12 @@
       "setting": "all",
       "mean_rel_error": 0.6910127087508396,
       "std_rel_error": 0.07343475690348453,
-      "mean_bound_ratio": 0.19775788538120734,
+      "mean_bound_ratio": 0.1742726332399537,
       "bound_satisfied_rate": 1.0,
-      "n": 3
+      "n": 3,
+      "max_exact_decomposition_error": 1.1379786002407855e-15,
+      "max_implementation_parity_error": 1.3322676295501878e-15,
+      "mean_error_per_dropped_mass": 1348.2813015987713
     },
     {
       "study": "selection_bound",
@@ -300,9 +357,12 @@
       "setting": "all",
       "mean_rel_error": 0.5700716582708729,
       "std_rel_error": 0.03461766052462574,
-      "mean_bound_ratio": 0.18649288858446905,
+      "mean_bound_ratio": 0.16618403785248093,
       "bound_satisfied_rate": 1.0,
-      "n": 3
+      "n": 3,
+      "max_exact_decomposition_error": 1.1379786002407855e-15,
+      "max_implementation_parity_error": 2.6645352591003757e-15,
+      "mean_error_per_dropped_mass": 1286.4561871440787
     },
     {
       "study": "selection_bound",
@@ -311,9 +371,12 @@
       "setting": "all",
       "mean_rel_error": 0.6372696956468261,
       "std_rel_error": 0.04171292466131694,
-      "mean_bound_ratio": 0.18468128090125327,
+      "mean_bound_ratio": 0.17231942986727153,
       "bound_satisfied_rate": 1.0,
-      "n": 3
+      "n": 3,
+      "max_exact_decomposition_error": 1.2351231148954867e-15,
+      "max_implementation_parity_error": 1.7763568394002505e-15,
+      "mean_error_per_dropped_mass": 1334.1328048921594
     },
     {
       "study": "selection_bound",
@@ -322,9 +385,12 @@
       "setting": "all",
       "mean_rel_error": 0.8288608729294115,
       "std_rel_error": 0.021635900290354917,
-      "mean_bound_ratio": 0.23205552710671282,
+      "mean_bound_ratio": 0.1995539598201357,
       "bound_satisfied_rate": 1.0,
-      "n": 3
+      "n": 3,
+      "max_exact_decomposition_error": 1.3322676295501878e-15,
+      "max_implementation_parity_error": 1.7763568394002505e-15,
+      "mean_error_per_dropped_mass": 1543.5213110735463
     }
   ]
 }

@@ -1,301 +1,394 @@
-# Approximating full softmax attention: a measurement framework and first validation cycle
+# Quantifying how closely efficient attention approximates softmax attention
 
-**Status: first validation cycle with matched tiny-checkpoint evidence, not a
-frontier-model final report.** The framework, synthetic invariants and a matched
-two-layer trained intervention are complete. A larger natural-language checkpoint
-and broader independent evidence are still required before a final model-level
-claim.
+**Status: a complete first validation cycle on synthetic and matched tiny-model
+evidence, not a frontier-LLM result.**
 
 ## Abstract
 
-Efficient attention methods are usually compared through benchmark scores, yet
-they approximate different mathematical objects. A sparse selector changes an
-attention support, a random-feature method approximates a kernel, a low-rank
-method projects the sequence axis, and a quantized cache perturbs stored keys and
-values. This report asks what it means to say that one of these methods is close
-to full softmax attention. We propose a four-level measurement hierarchy:
-attention support/distribution, value-weighted output, propagated hidden state,
-and model/task behavior. We map recent theoretical results to those levels,
-separate impossibility results from structured guarantees, and run four
-controlled validation studies on the repository's variants. The results support
-four conclusions: (1) no universal cheap-attention guarantee is possible for
-arbitrary inputs; (2) support mass alone does not determine output error; (3)
-kernel and precision approximations show the expected error-reduction trends,
-but the convergence can be slow and seed-dependent; (4) local attention error can
-attenuate or amplify through the residual stream. The report ends with decision
-rules for applying the framework to any deployed efficient-attention system.
+Sparse selection, low-rank projection, random features, quantization, and
+compressed recurrent state all make attention cheaper, but they do not
+approximate the same object. Benchmark accuracy is therefore an unreliable
+standalone measure of approximation quality. This report develops and tests a
+three-stage audit:
 
-## 1. Problem statement
+1. certify the local attention operator against dense softmax at the same q/k/v;
+2. measure hidden-state drift after the remaining model layers execute;
+3. perform a matched layer intervention to measure predictive-distribution and
+   task consequences.
 
-Let
+The theory review finds no general subquadratic approximation guarantee for
+arbitrary K/V. It does yield useful conditional results: exact decompositions
+for sparse support, probabilistic bounds for sampling and streaming methods,
+and variance/concentration analyses for kernel approximations. We prove and test
+two elementary but load-bearing local bounds: support error depends on both
+dropped attention mass and value geometry, and quantized-key error is controlled
+by the maximum logit perturbation.
+
+The empirical cycle covers 60 one-layer interventions on each of two task
+families across three trained checkpoints. Final hidden-state drift ranks
+downstream loss better than local attention error in both tasks
+(within-checkpoint mean Spearman `rho=0.974/0.934` versus `0.927/0.898`). Local
+error remains useful, but it is not sufficient: interventions with nearly equal
+local error can differ by roughly 5-10x in task loss. The first-order task
+projection is competitive within a checkpoint but is misleading when loss deltas
+from checkpoints with different scales are pooled.
+
+## 1. Research question and estimand
+
+For one query and head, define dense causal attention by
 
 ```text
-a_j = q · k_j / sqrt(d)
-p = softmax(a)
-O = Σ_j p_j v_j
+z_j = q · k_j / sqrt(d)
+p_j = exp(z_j) / Σ_i exp(z_i)
+O   = Σ_j p_j v_j.
 ```
 
-be the full attention distribution and value-weighted output for one query and
-head. An efficient variant defines an approximation `F_hat`. The central
-question is:
+An efficient method produces `F_hat`. The question is not merely whether
+`F_hat(q,k,v)` is close to `F(q,k,v)`. It is:
 
-> Under what assumptions does `F_hat` approximate `F_ref`, at which level of the
-> computation graph, and how does that local approximation propagate to model
-> behavior?
+> Which object does the variant approximate, under what assumptions, and which
+> local and propagated errors are sufficient to predict its consequence in a
+> trained model and on a stated workload?
 
-This wording is deliberately more precise than “sparse attention is lossless.”
-An approximation can have small attention-distribution error but large output
-error, small output error but large hidden-state drift, or no local error but a
-different downstream task distribution. The report treats these as distinct
-claims requiring distinct evidence.
+The audit keeps three distinctions:
+
+- **different support:** sparse selection evaluates the same softmax on a
+  restricted token set;
+- **different kernel or precision:** random features, low-rank
+  projections, and quantization perturb the attention distribution itself;
+- **different state:** recurrent and compressed-state methods replace
+  token-addressable history with a fixed representation.
+
+These mechanisms require different theories. A benchmark score mixes all of
+them with data, training, and serving effects.
 
 ## 2. What the literature establishes
 
-The modern theory splits into five non-interchangeable families.
+The detailed claim-by-claim map is
+[approximation-theory-map.md](approximation-theory-map.md). The main conclusions
+are:
 
-### 2.1 Uniform approximation is impossible
+### 2.1 No universal guarantee over arbitrary inputs
 
-*Efficiently Approximating Attention Is Hard* (arXiv:2609.37261) shows that under
-standard complexity assumptions no truly subquadratic method gives a nontrivial
-uniform additive or relative guarantee over arbitrary inputs, even with
-polynomial KV preprocessing. This rules out a universal theorem saying that a
-general sparse or compressed attention is “within ε” of dense attention. It does
-not rule out useful guarantees for structured inputs, sampling schemes, or
-restricted function classes.
+*Efficiently Approximating Attention Is Hard* (arXiv:2609.37261) rules out a
+nontrivial uniform additive or relative guarantee for truly subquadratic
+attention under standard complexity assumptions, even with polynomial
+preprocessing of K/V. This does not say efficient attention cannot work. It says
+that every useful guarantee must condition on input structure, a sampling
+model, a restricted operator, or a task distribution.
 
-### 2.2 Sampling and streaming can be certified under models
+### 2.2 Sampling and streaming do support conditional certificates
 
-Priority sampling/MIPS results describe how many keys are needed for an
-ε-output estimate (arXiv:2610.10135). Certified sparse attention uses perturbed
-retrieval and Horvitz–Thompson estimates with simultaneous confidence bounds
-(arXiv:2610.24991). Streaming coreset and discrepancy methods bound approximation
-with explicit space costs (arXiv:2502.07861, arXiv:2606.07205).
+Priority sampling over a MIPS oracle gives explicit retrieved-key requirements
+(arXiv:2610.10135). Certified sparse attention uses perturbed retrieval and
+confidence bounds per query (arXiv:2610.24991). Streaming coreset methods give
+approximation-versus-space bounds (arXiv:2502.07861, arXiv:2606.07205).
+*Express* introduces a general conversion from noncausal to causal approximation
+with matching guarantees and reports `log^{3/2}(n)/s`-type error under its
+Thinformer setting (arXiv:2606.10944).
 
-These are genuine guarantees, but they rely on a sampling model or on a
-well-defined attention primitive. They do not certify a deployed heuristic on
-arbitrary language data merely because it uses similar scoring.
+These are not certificates for arbitrary top-k heuristics. Their assumptions,
+estimator, and output object must be instantiated explicitly.
 
-### 2.3 Dropped attention mass gives a useful local bound
+### 2.3 Sparse support has an exact interpretable decomposition
 
-SSA states that sparse-attention approximation error scales with dropped mass
-(arXiv:2511.20102). COBS reduces exact block selection to attention-mass ranking
-(arXiv:2607.09052); CEDAR adds a refinement bound based on within-chunk key/value
-dispersion (arXiv:2609.07237). The repository validates the simple consequence:
-if the selected support retains all but mass `δ`, and values have norm at most
-`V_max`, then
+Let `S` be the selected keys, `a=Σ_{j∈S}p_j`, `mu_S` the retained weighted
+average value, and `mu_D` the weighted average of omitted values. The selected
+output is `O_S=mu_S`, while
 
 ```text
-||O_ref - O_selected||₂ ≤ 2 δ V_max.
+O - O_S = (1-a) (mu_D - mu_S).
 ```
 
-This is a bound on the selected value-weighted output, not on the final model and
-not a statement that mass alone determines quality.
+Therefore
 
-### 2.4 Kernel and low-rank methods bound different surrogates
+```text
+||O - O_S||_2 <= (1-a) diam(V) <= 2(1-a) V_max.
+```
 
-Linformer's low-rank projection, Performer's positive random features,
-Nyström landmark reconstruction and polynomial sketches each approximate a
-different mathematical object. Performer is unbiased in expectation; that does
-not give a small per-query error, and the variance is visible in controlled runs.
-A low-rank projection can be accurate when attention is approximately low-rank
-but is not a sparse-support bound. These results must be attached to the metric
-they actually constrain.
+Dropped attention mass matters, but value-centroid separation and value diameter
+matter equally. High mass recall can still fail when the omitted values occupy a
+different useful subspace. COBS and CEDAR reach nearby conclusions from block
+mass and coarse-key/value dispersion respectively (arXiv:2607.09052,
+arXiv:2609.07237); SSA also shows dropped mass controls a sparse-output error
+(arXiv:2511.20102).
 
-### 2.5 Compressed state has an expressivity and interference problem
+### 2.4 Attention-distribution error does not identify output error
 
-Linear-attention and state-space models replace token-addressable KV with a fixed
-state. Recent controlled work shows that recall depends on write/read geometry,
-interference and training curriculum, not merely state size
-(arXiv:2609.33093, arXiv:2609.16183). A state method can have perfect storage
-efficiency and still fail exact associative recall.
+If `TV(p,p_hat)=tau` and the value diameter is `diam(V)`, then
 
-The complete claim map is in [approximation-theory-map.md](approximation-theory-map.md).
+```text
+||O - O_hat|| <= tau * diam(V).
+```
 
-## 3. Measurement framework
+The reverse implication is false. A minimal control in this repository gives
+the same `TV=0.4` while output error changes from zero, when the two keys have
+identical values, to `0.566`, when their values are orthogonal. Distribution
+metrics are diagnostics, not substitutes for value-weighted error.
 
-### 3.1 Metric hierarchy
+### 2.5 Quantized KV has a local perturbation certificate
 
-| level | primary metrics | question |
+For quantized keys, let
+
+```text
+eta = max_j |z_hat_j - z_j|.
+```
+
+Every posterior likelihood ratio lies between `exp(-2 eta)` and
+`exp(2 eta)`, giving
+
+```text
+TV(softmax(z), softmax(z_hat)) <= tanh(eta).
+```
+
+Value quantization can be separated from this key-induced term:
+
+```text
+O(q,k_hat,v_hat)-O(q,k,v)
+  = [O(q,k_hat,v)-O(q,k,v)]
+  + [O(q,k_hat,v_hat)-O(q,k_hat,v)].
+```
+
+The first term is bounded by `2 V_max tanh(eta)`; the second by
+`max_j ||v_hat_j-v_j||`, since the attention weights sum to one. This is a local
+bound, not a claim about FP4-trained checkpoints or end-to-end quantization.
+
+### 2.6 Kernel, low-rank, and recurrent methods have different guarantees
+
+- Performer/FAVOR+ gives an unbiased positive-feature estimator with variance
+  and concentration results; unbiasedness does not imply a small per-query
+  error (ICML 2021).
+- Linformer relies on an approximate sequence-axis low-rank hypothesis and a
+  Johnson-Lindenstrauss-style projection argument (ICML 2020).
+- Nyström and polynomial sketches bound conditional matrix/kernel
+  reconstructions, not arbitrary sparse-support outcomes.
+- Fixed-state recurrences cannot preserve arbitrary token-addressable KV
+  information. Recent controlled studies show interference, write/read
+  geometry, and training curriculum determine associative recall
+  (arXiv:2609.33093, arXiv:2609.16183).
+
+### 2.7 Local error does not compose for free
+
+For a block map `h_{l+1}=B_l(h_l)`, a local intervention with error vector
+`r_l=B_hat_l(h_l)-B_l(h_l)` obeys
+
+```text
+delta_{l+1} = B_l(h_l+delta_l)-B_l(h_l)+r_l.
+```
+
+If `B_l` is `L_l`-Lipschitz, then
+
+```text
+||delta_{l+1}|| <= L_l ||delta_l|| + ||r_l||.
+```
+
+Unrolling this inequality yields a product-of-Lipschitz bound and can be
+extremely loose. The practical task-aligned first-order quantity is
+`g^T r_l`, where `g` is the gradient of model loss with respect to the dense
+attention output. That quantity includes the downstream Jacobian, but it loses
+accuracy for finite perturbations because of curvature and cancellation.
+
+## 3. Audit protocol
+
+### 3.1 Required measurements
+
+| level | measurement | question |
 | --- | --- | --- |
-| support/distribution | mass recall, TV, JS, Hellinger, top-k agreement | which probability mass and keys were retained? |
-| value-weighted output | normalized L2, cosine distance | did retained/changed mass preserve the attention output? |
-| hidden state | next-layer and final relative L2, cosine drift | did the local error survive the residual stack? |
-| model/task | predictive divergence, task success, token/tool cost | did the model's behavior change? |
+| support | retained mass and support intersection | what evidence was omitted? |
+| posterior | total variation, JS, Hellinger | how did the probability vector change? |
+| operator | normalized value-weighted error and cosine distance | did the change alter the useful output? |
+| state | next-layer and final hidden-state drift | did the local error amplify or cancel? |
+| prediction/task | logit KL, task loss, accuracy, cost | did model behavior change? |
 
-The definitions and invariants are in [approximation-metrics.md](approximation-metrics.md).
+For an exact support approximation, report the omitted vector
+`(1-a)(mu_D-mu_S)` as well as its norm bound. For a kernel estimator, report
+feature count, variance/seed dispersion, and operator error; mass recall is not
+defined unless the method exposes an explicit support. For quantization, report
+key-induced and value-induced error separately.
 
-### 3.2 Falsifiable hypotheses
+### 3.2 Required controls
 
-The study tests four hypotheses:
+- use the same checkpoint, inputs, positions, and all non-attention weights;
+- replace one layer at a time before testing all-layer replacement;
+- match selected entries, bytes, and feature dimensions where possible;
+- keep dense FP16/BF16 as the reference for precision ablations;
+- evaluate both retrieval-shaped and dispersed-evidence inputs;
+- keep failed or non-converged seeds in the result.
 
-**H1. Sparse-support bound.** For mask-based selectors, the selected output obeys
-the dropped-mass/value-norm bound.
+### 3.3 Falsifiable hypotheses
 
-**H2. Non-implication.** Similar mass recall can coexist with different
-value-weighted output errors; support metrics are not a substitute for output
-metrics.
+**H1. Exact local identities.** Sparse omission, attention TV, and quantization
+decompositions should match their formulas to numerical precision.
 
-**H3. Estimator/precision trends.** Increasing Performer feature count reduces
-mean error, and FP4 produces larger KV perturbation than FP8, with FP16 exact.
+**H2. Metric non-identifiability.** Equal attention-distribution error should
+not always imply equal value-weighted error.
 
-**H4. Propagation.** The final hidden-state error is not a fixed scalar multiple
-of local attention error; injection layer and input structure change amplification.
+**H3. Propagation.** On a matched trained checkpoint, final hidden-state drift
+should rank task loss better than local attention error alone.
 
-## 4. Experimental design
+**H4. Pooling control.** Correlations must be computed within most comparable
+units; pooling loss deltas across differently calibrated checkpoints can reverse
+the apparent value of a first-order gradient metric.
 
-All experiments are CPU-only and synthetic. They validate measurement
-instruments, not frontier-model quality.
+## 4. Evidence
 
-- **Inputs:** random K/V, single-spike retrieval, and dispersed multi-block
-  retrieval.
-- **Metric matrix:** Quest, MInference block-sparse, MoBA, XAttention, Performer,
-  and Linformer; T=128, H=4, H_kv=2, d=32, three seeds.
-- **Theory checks:** selection bound across four selector families and three input
-  families; Performer feature counts 4–256; group-wise KV precision FP16/FP8/FP4.
-- **Propagation:** six-layer random residual stack; one Performer layer replaces
-  dense attention at a controlled injection layer; three seeds.
-- **Trained intervention:** two-layer causal transformers on single-key retrieval
-  and dispersed four-evidence summation; one layer replaced at a time with fixed
-  weights.
+All experiments run on CPU with PyTorch. Machine-readable outputs are listed at
+the end of this report.
 
-Reproduce:
+### 4.1 Local certificates hold
+
+The selector and quantization checks use three seeds and three input families:
+random, retrieval-shaped, and dispersed evidence. Across every tested selector,
+the exact sparse decomposition closes within `1.4e-15`, implementation parity is
+within `2.7e-15`, and the `2(1-a)V_max` bound is never violated. Its realized
+ratio to the bound is `0.131-0.261`, so it is sound but usually loose.
+
+For KV round-trips, all sampled rows satisfy the `tanh(eta)` TV bound. FP16 is
+exact; FP8 has smaller attention distribution and output error than FP4:
+
+| input | precision | mean TV | mean output relative error |
+| --- | --- | ---: | ---: |
+| random | FP8 | 0.0089 | 0.0295 |
+| random | FP4 | 0.0375 | 0.1220 |
+| dispersed | FP8 | 0.0159 | 0.0366 |
+| dispersed | FP4 | 0.0669 | 0.1583 |
+
+This validates the local error decomposition. It does not show that FP4 is
+acceptable after quantization-aware training.
+
+### 4.2 Matched trained-checkpoint intervention
+
+The audit trains two-layer causal transformers on two synthetic tasks:
+
+- four-key single-answer retrieval;
+- two-evidence dispersed summation.
+
+Three independently initialized checkpoints per task reach held-out accuracies
+of `0.979-1.000` for retrieval and `0.994-1.000` for dispersed summation. At each
+of two layers, ten interventions are evaluated while all weights and other
+layers remain dense and fixed. This gives 60 interventions per task.
+
+The interventions include Quest at one and two blocks, MoBA at one and two
+blocks, MInference block-sparse, an exact-mass oracle, sliding window, Performer
+with 32 features, and FP8/FP4 KV quantization.
+
+Rank correlations with task-loss change are:
+
+| task | local attention error | final hidden drift | first-order task projection |
+| --- | ---: | ---: | ---: |
+| retrieval, pooled | 0.914 | **0.966** | 0.582 |
+| retrieval, mean within checkpoint | 0.927 ± 0.029 | **0.974 ± 0.006** | 0.853 ± 0.072 |
+| dispersed, pooled | 0.869 | 0.923 | 0.723 |
+| dispersed, mean within checkpoint | 0.898 ± 0.005 | 0.934 ± 0.014 | **0.960 ± 0.016** |
+
+Final hidden drift has the higher within-checkpoint mean in both task families.
+It beats local error in five of six individual checkpoints and ties within
+`0.002` on the remaining retrieval checkpoint. This is descriptive for this model
+family, not a universal ranking theorem.
+
+### 4.3 Similar local error can hide different task damage
+
+The averages contain counterexamples that rule out treating local error as
+sufficient:
+
+| task | intervention | local error | final hidden drift | loss increase |
+| --- | --- | ---: | ---: | ---: |
+| retrieval | Quest top-2 | 0.142 | 0.134 | 0.149 |
+| retrieval | MInference block | 0.173 | 0.437 | 1.432 |
+| dispersed | MoBA top-2 | 0.081 | 0.090 | 0.331 |
+| dispersed | MInference block | 0.086 | 0.340 | 1.570 |
+
+In the dispersed case, local error differs by 5%; downstream hidden drift and
+loss differ by roughly 4-5x. The local metric omits the direction of the error
+relative to the checkpoint's later computation.
+
+### 4.4 First-order projection is not a replacement
+
+The first-order projection is an instructive failure of evaluation design. Its
+pooled correlations (`0.582/0.723`) look much worse than its within-checkpoint
+means (`0.853/0.960`). The cause is that absolute loss deltas have different
+scales across checkpoints: pooling ranks mix checkpoint calibration with
+intervention effect. We therefore rank interventions within checkpoint before
+aggregating.
+
+Within a checkpoint, the first-order projection remains weaker than hidden drift
+for retrieval but stronger for dispersed evidence. Curvature and cancellation
+still limit it as a finite-error guarantee, but the pooled number alone would
+have produced the wrong conclusion.
+
+## 5. Interpretation
+
+The evidence supports a conditional conclusion:
+
+> For an efficient attention approximation, local operator error is necessary
+> evidence but not a sufficient predictor of task damage. A defensible audit
+> measures the approximand, exact support/precision decomposition, propagated
+> hidden-state drift, and task consequences under matched interventions.
+
+The practical decision rules are:
+
+- reject any claim of “lossless sparse attention” that reports only retained
+  mass or benchmark accuracy;
+- for sparse selection, require dropped mass plus value-geometry diagnostics;
+- for kernel/low-rank methods, require feature/rank budgets and seed variance;
+- for quantization, ablate key and value errors and include outlier-sensitive
+  inputs;
+- for deployed systems, compare against a dense matched teacher or explicit
+  quality target, and report the task distribution;
+- do not use a single local score to rank methods across task families without
+  validating that score on the target checkpoint.
+
+## 6. Limitations and open problems
+
+- The trained checkpoints are tiny and synthetic. They establish the protocol
+  and falsify stronger claims about metric sufficiency; they do not estimate
+  behavior on natural language, code, or frontier models.
+- The task labels are single-token outputs. Multi-token reasoning, tool use, and
+  long-horizon error accumulation remain untested.
+- The experiments compare a fixed set of mechanisms and budgets. They do not
+  establish the best sparse method under native training.
+- The quantization certificate is deterministic only for the observed local
+  logit perturbation. It does not cover training, activation quantization, or
+  cache-management errors.
+- The literature map distinguishes preprints from foundational/peer-reviewed
+  results, but several 2026 entries have not yet received independent replication.
+- A natural-language or code-trained small checkpoint, multi-token tasks, and
+  native sparse training are required before applying this framework to a
+  frontier architecture.
+
+## 7. Conclusion
+
+There is no single scalar “approximation error” for efficient attention. The
+defensible quantities are:
+
+1. an exact or probabilistic statement about the attention operator;
+2. a value-weighted local error and, where available, a certificate;
+3. propagated hidden-state drift under the same checkpoint;
+4. a causal task intervention with matched weights and budgets.
+
+The first cycle confirms the exact sparse and quantization identities, shows
+that distribution metrics cannot replace value-weighted metrics, and provides
+matched trained-model evidence that downstream state drift adds information
+beyond local attention error. The next scientific step is not another
+approximation leaderboard; it is to rerun this protocol on a small
+natural-language or code-trained checkpoint with multi-token outputs and native
+sparse training.
+
+## Reproduction
 
 ```bash
-make approx-validation
-make theory-checks
-make error-propagation
+make theory-checks       # local identities, bounds, feature and precision controls
+make approx-validation   # cross-mechanism metric matrix
+make trained-audit       # 60 matched interventions per synthetic task
+make check               # invariant and documentation tests
 ```
 
-## 5. Results
+Artifacts:
 
-### 5.1 The selection bound holds, but it is loose
-
-Across random, retrieval and dispersed inputs, every mask-based selector
-satisfied the per-query bound `||O_ref-O_selected|| ≤ 2δV_max`. The mean realized
-bound ratio ranged from 0.13 to 0.28: the inequality is valid but not tight
-enough to explain the quality ordering. See
-[`reports/theory_checks.md`](../../reports/theory_checks.md).
-
-This is useful: a selector cannot be accepted merely because its dropped mass is
-small, but a large dropped mass does guarantee a large worst-case risk.
-
-### 5.2 Metric levels are not interchangeable
-
-Three-seed means on the metric matrix:
-
-| input | variant | output rel-L2 | support fraction | JS divergence |
-| --- | --- | ---: | ---: | ---: |
-| random | Quest | 0.195 ± 0.009 | 0.417 | 0.037 |
-| random | MoBA | 0.248 ± 0.007 | 0.368 | 0.054 |
-| random | MInference | 0.299 ± 0.007 | 0.370 | 0.066 |
-| random | XAttention | 0.802 ± 0.083 | 0.242 | 0.193 |
-| random | Performer | 0.620 ± 0.013 | n/a | n/a |
-| random | Linformer | 1.395 ± 0.059 | n/a | n/a |
-| structured | Quest | 0.068 ± 0.060 | 0.353 | 0.005 |
-| structured | MoBA | 0.529 ± 0.019 | 0.371 | 0.068 |
-| structured | MInference | 0.548 ± 0.043 | 0.374 | 0.075 |
-| structured | XAttention | 0.984 ± 0.050 | 0.114 | 0.263 |
-
-The ordering is not the point. The point is that support, distribution and output
-metrics diverge. MoBA and MInference retain nearly identical support fractions but
-have different output errors; XAttention retains much less support and also has a
-different distributional error. A mask recall alone would not identify these
-differences.
-
-See [`reports/approximation_validation.md`](../../reports/approximation_validation.md).
-
-### 5.3 Kernel and precision trends are real but slow
-
-Performer error decreased as feature count increased, but the convergence was
-slow and not monotone on every seed:
-
-| input | 4 features | 256 features |
-| --- | ---: | ---: |
-| random | 0.775 ± 0.047 | 0.586 ± 0.010 |
-| dispersed | 0.983 ± 0.027 | 0.871 ± 0.012 |
-
-FP16 was exact in the KV codec, FP8 was better than FP4, and both degraded with
-more heterogeneous values:
-
-| input | FP16 | FP8 | FP4 |
-| --- | ---: | ---: | ---: |
-| random | 0 | 0.030 | 0.122 |
-| dispersed | 0 | 0.037 | 0.158 |
-
-This validates the estimator/precision direction but shows why “unbiased” or
-“low precision” is not a complete quality claim.
-
-### 5.4 Propagation changes the ranking
-
-In the residual-stack experiment, random-input local errors of roughly 0.36–0.54
-produced final errors of 0.48–0.55, with amplification as high as 1.41×. On
-structured inputs the same injection was often attenuated, with amplification
-below 1. The local-error ranking therefore does not determine the final-error
-ranking.
-
-See [`reports/error_propagation.md`](../../reports/error_propagation.md).
-
-### 5.5 Matched trained checkpoint
-
-The residual-stack result is a controlled mechanism probe. We also trained two
-small two-layer causal transformers, one on retrieval and one on dispersed
-evidence, and replaced one attention layer at a time with the exact same weights.
-Across 40 interventions per task, final hidden-state drift had Spearman
-correlation 0.948/0.973 with task loss, versus 0.900/0.766 for local attention
-error. The task-projected first-order effect was weaker (0.829/0.670).
-
-This is the strongest evidence in the report: the hierarchy's hidden-state level
-adds predictive information beyond the local attention error. It remains a
-small synthetic checkpoint, not a frontier LLM. Details are in
-[trained-checkpoint-audit.md](trained-checkpoint-audit.md) and
-[`reports/approximation_audit.md`](../../reports/approximation_audit.md).
-
-## 6. What this changes
-
-### For research claims
-
-Do not report “attention approximation error” without naming the level. The
-minimum defensible claim names the input distribution, reference operator,
-metric, support/read budget and whether training was matched.
-
-### For method design
-
-A sparse selector should report both support behavior and value-weighted output
-error. A kernel method should report variance and feature count, not only an
-unbiasedness statement. A precision method should report the error of the
-attention output under the actual cache format. A compressed-state method should
-report associative-recall/interference diagnostics.
-
-### For deployed systems
-
-The framework is general and should be instantiated explicitly for each deployment.
-For any specific system, state the reference, the approximation mechanism, the
-precision policy, the read budget, the workload family and the observation level.
-CSA2 is one deferred application in the [roadmap](../roadmap.md), not a required
-part of the general framework.
-
-## 7. Limitations
-
-- Synthetic inputs are not natural-language distributions.
-- The residual stack is untrained and is not a transformer checkpoint.
-- The matched checkpoint is a tiny model trained on synthetic tasks, not a
-  natural-language pretrained model.
-- The sparse variants are selected at small budgets and do not include native
-  sparse training.
-- The metric matrix uses one layer; it does not establish model-level behavior.
-- The theory map includes preprints whose assumptions need independent review.
-- No conclusion here is a frontier-model quality guarantee.
-
-## 8. Conclusion
-
-The correct research question is not “which efficient attention has the lowest
-benchmark error?” It is:
-
-> Which object is being approximated, under which assumptions, and does the local
-> bound survive propagation to hidden states and task behavior?
-
-This cycle establishes that question operationally. It supplies a tested metric
-hierarchy, verified claims from the literature, multi-seed controlled evidence,
-and a local-to-final propagation probe. The next scientific step is a matched
-small checkpoint with the same general protocol, not another synthetic
-leaderboard.
+- [theory_checks.md](../../reports/theory_checks.md)
+- [approximation_validation.md](../../reports/approximation_validation.md)
+- [approximation_audit.md](../../reports/approximation_audit.md)
+- [approximation_audit_correlations.md](../../reports/approximation_audit_correlations.md)
+- [approximation_audit_seed_correlations.md](../../reports/approximation_audit_seed_correlations.md)
+- [approximation_audit_training.md](../../reports/approximation_audit_training.md)
+- [approximation_audit_raw.md](../../reports/approximation_audit_raw.md)

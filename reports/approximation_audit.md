@@ -1,28 +1,28 @@
 # Matched-checkpoint audit: local attention error to task behavior
 
-*Generated 2026-10-22T01:38:38Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-10-22T02:03:44Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
-Two-layer trained causal transformers on synthetic single-key retrieval and dispersed four-evidence summation. One attention layer is replaced at a time while weights and other layers remain fixed. task_projected_abs is the magnitude of the first-order loss effect g.delta_a on the dense trajectory; it uses the downstream Jacobian but is not a finite-error guarantee. Synthetic tasks validate the audit instrument, not frontier-model quality.
+Two-layer trained causal transformers on synthetic four-key retrieval and dispersed two-evidence summation. One attention layer is replaced at a time while weights and other layers remain fixed. task_projected_abs is the magnitude of the first-order loss effect g.delta_a on the dense trajectory; it uses the downstream Jacobian but is not a finite-error guarantee. Synthetic tasks validate the audit instrument, not frontier-model quality.
 
 | task | variant | n | local_attention_rel_l2 | final_hidden_rel_l2 | logit_kl | loss_delta | task_projected_abs | accuracy_delta |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| retrieval | kv-fp4 | 6 | 0.08709 | 0.07164 | 0.01968 | 0.01342 | 0.0002265 | -0.009766 |
-| retrieval | kv-fp8 | 6 | 0.01951 | 0.0168 | 0.0007626 | 0.0002725 | 4.77e-05 | -0.000651 |
-| retrieval | mass-oracle-2block | 6 | 0.05148 | 0.02424 | 0.00332 | 0.003326 | 6.645e-05 | -0.002604 |
-| retrieval | minference-block | 6 | 0.1404 | 0.4486 | 1.21 | 1.21 | 0.002143 | -0.1986 |
-| retrieval | moba-1block | 6 | 0.3118 | 0.3962 | 1.153 | 1.112 | 0.001609 | -0.196 |
-| retrieval | moba-2block | 6 | 0.1107 | 0.1747 | 0.3396 | 0.3116 | 0.0008233 | -0.0599 |
-| retrieval | performer-32 | 6 | 0.5603 | 0.83 | 3.536 | 3.592 | 0.002941 | -0.6107 |
-| retrieval | quest-1block | 6 | 0.8128 | 0.8834 | 3.808 | 3.768 | 0.003269 | -0.5202 |
-| retrieval | quest-2block | 6 | 0.1377 | 0.1277 | 0.2255 | 0.2224 | 0.0004081 | -0.04948 |
-| retrieval | sliding-window | 6 | 0.527 | 0.8109 | 3.276 | 3.211 | 0.00335 | -0.4557 |
-| dispersed | kv-fp4 | 6 | 0.06758 | 0.08426 | 0.001357 | 0.00161 | 5.806e-06 | 0 |
-| dispersed | kv-fp8 | 6 | 0.01398 | 0.02044 | 4.122e-05 | 0.0001192 | 1.41e-06 | 0 |
-| dispersed | mass-oracle-2block | 6 | 0.05668 | 0.01939 | 0.0002917 | 0.0003532 | 1.957e-06 | 0 |
-| dispersed | minference-block | 6 | 0.08186 | 0.3589 | 1.436 | 1.443 | 3.484e-05 | -0.2174 |
-| dispersed | moba-1block | 6 | 0.1541 | 0.2081 | 0.6643 | 0.6686 | 1.924e-05 | -0.1055 |
-| dispersed | moba-2block | 6 | 0.0768 | 0.09809 | 0.2901 | 0.2926 | 1.088e-05 | -0.04427 |
-| dispersed | performer-32 | 6 | 0.3486 | 0.8435 | 3.28 | 3.294 | 9.317e-05 | -0.5078 |
-| dispersed | quest-1block | 6 | 0.4368 | 1.085 | 6.046 | 6.07 | 0.0001064 | -0.7656 |
-| dispersed | quest-2block | 6 | 0.09042 | 0.04805 | 0.02115 | 0.02178 | 5.249e-06 | -0.007161 |
-| dispersed | sliding-window | 6 | 0.3375 | 1.066 | 5.972 | 5.995 | 9.786e-05 | -0.7578 |
+| retrieval | kv-fp4 | 6 | 0.0916 | 0.07419 | 0.004206 | 0.006054 | 1.605e-05 | -0.003255 |
+| retrieval | kv-fp8 | 6 | 0.02117 | 0.01794 | 0.0001101 | -6.27e-05 | 3.821e-06 | 0.000651 |
+| retrieval | mass-oracle-2block | 6 | 0.051 | 0.02328 | 0.0001333 | 0.0003842 | 4.152e-06 | 0 |
+| retrieval | minference-block | 6 | 0.1732 | 0.4369 | 1.437 | 1.432 | 0.0001527 | -0.1992 |
+| retrieval | moba-1block | 6 | 0.3671 | 0.4522 | 1.571 | 1.572 | 0.00014 | -0.2331 |
+| retrieval | moba-2block | 6 | 0.1388 | 0.1685 | 0.3471 | 0.3424 | 8.242e-05 | -0.05339 |
+| retrieval | performer-32 | 6 | 0.5694 | 0.9136 | 4.598 | 4.608 | 0.0001534 | -0.6758 |
+| retrieval | quest-1block | 6 | 0.7604 | 0.9586 | 5.173 | 5.172 | 0.0001609 | -0.5866 |
+| retrieval | quest-2block | 6 | 0.1421 | 0.1335 | 0.1469 | 0.1491 | 3.003e-05 | -0.02995 |
+| retrieval | sliding-window | 6 | 0.4889 | 0.8377 | 4.235 | 4.224 | 0.0002041 | -0.4941 |
+| dispersed | kv-fp4 | 6 | 0.06873 | 0.08008 | 0.003038 | 0.001292 | 1.513e-05 | -0.001302 |
+| dispersed | kv-fp8 | 6 | 0.01372 | 0.01902 | 6.101e-05 | -3.832e-05 | 2.313e-06 | 0 |
+| dispersed | mass-oracle-2block | 6 | 0.05568 | 0.01456 | 0.0003488 | 0.0008733 | 3.555e-06 | -0.001302 |
+| dispersed | minference-block | 6 | 0.08558 | 0.3397 | 1.565 | 1.57 | 4.055e-05 | -0.1875 |
+| dispersed | moba-1block | 6 | 0.1625 | 0.2133 | 0.9337 | 0.9377 | 3.77e-05 | -0.1113 |
+| dispersed | moba-2block | 6 | 0.08116 | 0.08957 | 0.3303 | 0.3305 | 2.257e-05 | -0.04232 |
+| dispersed | performer-32 | 6 | 0.3444 | 0.838 | 4.107 | 4.124 | 0.0001065 | -0.5033 |
+| dispersed | quest-1block | 6 | 0.4433 | 1.102 | 7.149 | 7.179 | 0.0001561 | -0.7578 |
+| dispersed | quest-2block | 6 | 0.08585 | 0.04615 | 0.03451 | 0.03268 | 1.676e-05 | -0.007161 |
+| dispersed | sliding-window | 6 | 0.3298 | 1.085 | 7.041 | 7.067 | 0.0001464 | -0.75 |

@@ -343,8 +343,8 @@ def evaluate_checkpoint(
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--steps", type=int, default=900)
-    parser.add_argument("--seeds", type=int, default=2)
+    parser.add_argument("--steps", type=int, default=2200)
+    parser.add_argument("--seeds", type=int, default=3)
     parser.add_argument("--eval-examples", type=int, default=256)
     args = parser.parse_args(argv)
 
@@ -373,20 +373,77 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             })
 
     correlations = []
+    seed_correlations = []
     for task in ("retrieval", "dispersed"):
         subset = [r for r in rows if r["task"] == task]
         y = [r["loss_delta"] for r in subset]
+        seed_rows = []
+        for seed in range(args.seeds):
+            seed_subset = [r for r in subset if r["seed"] == seed]
+            seed_y = [r["loss_delta"] for r in seed_subset]
+            seed_rows.append({
+                "local": spearman(
+                    [r["local_attention_rel_l2"] for r in seed_subset], seed_y
+                ),
+                "hidden": spearman(
+                    [r["final_hidden_rel_l2"] for r in seed_subset], seed_y
+                ),
+                "projected": spearman(
+                    [r["task_projected_abs"] for r in seed_subset], seed_y
+                ),
+            })
         correlations.append({
             "task": task,
             "n": len(subset),
-            "local_vs_loss_spearman": spearman([r["local_attention_rel_l2"] for r in subset], y),
-            "hidden_vs_loss_spearman": spearman([r["final_hidden_rel_l2"] for r in subset], y),
-            "projected_vs_loss_spearman": spearman([r["task_projected_abs"] for r in subset], y),
+            "local_vs_loss_spearman": spearman(
+                [r["local_attention_rel_l2"] for r in subset], y
+            ),
+            "hidden_vs_loss_spearman": spearman(
+                [r["final_hidden_rel_l2"] for r in subset], y
+            ),
+            "projected_vs_loss_spearman": spearman(
+                [r["task_projected_abs"] for r in subset], y
+            ),
             "local_vs_projected_spearman": spearman(
                 [r["local_attention_rel_l2"] for r in subset],
                 [r["task_projected_abs"] for r in subset],
             ),
+            "mean_seed_local_vs_loss": statistics.mean(
+                r["local"] for r in seed_rows
+            ),
+            "mean_seed_hidden_vs_loss": statistics.mean(
+                r["hidden"] for r in seed_rows
+            ),
+            "mean_seed_projected_vs_loss": statistics.mean(
+                r["projected"] for r in seed_rows
+            ),
+            "std_seed_local_vs_loss": statistics.pstdev(
+                r["local"] for r in seed_rows
+            ),
+            "std_seed_hidden_vs_loss": statistics.pstdev(
+                r["hidden"] for r in seed_rows
+            ),
+            "std_seed_projected_vs_loss": statistics.pstdev(
+                r["projected"] for r in seed_rows
+            ),
         })
+        for seed in range(args.seeds):
+            seed_subset = [r for r in subset if r["seed"] == seed]
+            seed_y = [r["loss_delta"] for r in seed_subset]
+            seed_correlations.append({
+                "task": task,
+                "seed": seed,
+                "n": len(seed_subset),
+                "local_vs_loss_spearman": spearman(
+                    [r["local_attention_rel_l2"] for r in seed_subset], seed_y
+                ),
+                "hidden_vs_loss_spearman": spearman(
+                    [r["final_hidden_rel_l2"] for r in seed_subset], seed_y
+                ),
+                "projected_vs_loss_spearman": spearman(
+                    [r["task_projected_abs"] for r in seed_subset], seed_y
+                ),
+            })
 
     path = save_report(
         "approximation_audit",
@@ -395,8 +452,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         columns=["task", "variant", "n", "local_attention_rel_l2", "final_hidden_rel_l2",
                  "logit_kl", "loss_delta", "task_projected_abs", "accuracy_delta"],
         notes=(
-            "Two-layer trained causal transformers on synthetic single-key retrieval and "
-            "dispersed four-evidence summation. One attention layer is replaced at a "
+            "Two-layer trained causal transformers on synthetic four-key retrieval and "
+            "dispersed two-evidence summation. One attention layer is replaced at a "
             "time while weights and other layers remain fixed. task_projected_abs is the "
             "magnitude of the first-order loss effect g.delta_a on the dense trajectory; "
             "it uses the downstream Jacobian but is not a finite-error guarantee. "
@@ -407,11 +464,39 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "approximation_audit_correlations",
         correlations,
         title="Matched-checkpoint audit: metric rank correlations",
-        columns=["task", "n", "local_vs_loss_spearman", "hidden_vs_loss_spearman",
-                 "projected_vs_loss_spearman", "local_vs_projected_spearman"],
+        columns=["task", "n", "local_vs_loss_spearman",
+                 "hidden_vs_loss_spearman",
+                 "projected_vs_loss_spearman", "local_vs_projected_spearman",
+                 "mean_seed_local_vs_loss", "mean_seed_hidden_vs_loss",
+                 "mean_seed_projected_vs_loss", "std_seed_local_vs_loss",
+                 "std_seed_hidden_vs_loss", "std_seed_projected_vs_loss"],
         notes=(
             "Spearman correlations over one-layer interventions. A high local-error "
             "correlation is evidence about this synthetic setup, not a general guarantee."
+        ),
+    )
+    save_report(
+        "approximation_audit_raw",
+        rows,
+        title="Matched-checkpoint audit: individual interventions",
+        columns=["task", "seed", "variant", "layer", "local_attention_rel_l2",
+                 "final_hidden_rel_l2", "logit_kl", "loss_delta",
+                 "task_projected_loss_delta", "task_projected_abs", "reference_loss",
+                 "accuracy_delta"],
+        notes=(
+            "One row per checkpoint x layer x attention intervention. These rows are "
+            "the source for the aggregate audit and correlation reports."
+        ),
+    )
+    save_report(
+        "approximation_audit_seed_correlations",
+        seed_correlations,
+        title="Matched-checkpoint audit: per-checkpoint rank correlations",
+        columns=["task", "seed", "n", "local_vs_loss_spearman",
+                 "hidden_vs_loss_spearman", "projected_vs_loss_spearman"],
+        notes=(
+            "Each row uses 20 interventions at two layers for one trained checkpoint. "
+            "These are descriptive correlations, not independent confidence intervals."
         ),
     )
     save_report(

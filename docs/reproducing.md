@@ -35,13 +35,13 @@ to it.
 ## 2. The commands
 
 ```bash
-make check          # ~5 s   75 validation checks, writes nothing
+make check          # validation suite, writes nothing
 make bench          # ~10 s  reports/suite_<T>_<budget>.{json,md}, reports/decode_<T>_<dim>.{json,md}
 make bench-mlx      # Apple Silicon only: reports/mlx_decode.{json,md}
 make kv             # ~5 s   reports/kv_economics.{json,md} + reports/csa2_model.{json,md}
 make experiments    # ~3 min reports/{selector_capacity,state_capacity,hybrid_recall}.{json,md}
 make docs           # regenerate docs/variants/*.md from the class docstrings and cost models
-make all            # docs, check, bench, experiments
+make all            # docs, checks, benchmarks, KV and research experiments
 make clean          # delete the generated reports and caches (keeps .venv)
 ```
 
@@ -52,6 +52,9 @@ python bench/run_suite.py --seq 8192 --budget 512 --topk-blocks 16 --topk-tokens
 python bench/run_frontier_2026.py          # focused 2025–2026 comparison
 python experiments/csa2_approximation.py --seq 512  # CSA2 error decomposition
 python experiments/csa2_official_check.py            # compare against published V4.1-Flash config
+python experiments/theory_checks.py                  # local bounds and precision/feature controls
+python experiments/approximation_validation.py       # cross-mechanism metric matrix
+python experiments/approximation_audit.py            # matched tiny-checkpoint interventions (~4 min)
 python bench/bench_decode.py --seq 262144 --budgets 256 2048 16384
 python experiments/state_capacity.py --counts 4 64 512 --states 8 64 256
 python experiments/hybrid_recall.py --steps 400 --seq 256 --d-state 16

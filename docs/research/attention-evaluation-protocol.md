@@ -15,12 +15,13 @@ For each claim, report:
 | training state | native sparse training vs post-hoc/adaptation |
 | precision | FP16 reference, then FP8/FP4 as separate ablations |
 | layer intervention | one approximate layer vs all approximate layers |
+| causal domain | same visible-token domain; never compare a noncausal projection with a causal dense reference |
 | workload | retrieval, dispersed evidence, multi-hop/chain, coding, agentic |
 | cost | layer FLOPs, KV bytes, read bytes, and end-to-end latency |
 
-The dense reference must use the same model state and pre-attention features. A
-different model, different training length or a changed tokenizer is not a
-controlled approximation comparison.
+The dense reference must use the same model state, pre-attention features, and
+causal domain. A different model, different training length, a changed tokenizer,
+or a causal/noncausal mismatch is not a controlled approximation comparison.
 
 ## 2. Workload families
 
@@ -88,7 +89,8 @@ The protocol should reproduce this qualitative pattern if the theory is useful:
 
 An experiment is complete when it either:
 
-1. shows a stable ordering across at least two seeds and two workload families; or
+1. shows the measured ordering within each of at least three checkpoints and
+   validates it across at least two workload families; or
 2. clearly fails to discriminate the mechanisms and is reported as negative
    evidence.
 

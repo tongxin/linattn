@@ -440,6 +440,13 @@ what was approximated. [academic-attention.md](academic-attention.md) is now
 reproductions measured -- including one classic (Nystromformer) that proved
 numerically unusable and is therefore not shipped.
 
+The 2026 theory line is treated separately from mechanism adoption. General
+subquadratic attention has no uniform approximation guarantee
+(arXiv:2609.37261), while sampling, streaming, causalisation, and construction-
+specific methods do provide conditional bounds. The consolidated treatment,
+including matched tiny-checkpoint interventions, is in
+[research/attention-approximation-report.md](research/attention-approximation-report.md).
+
 ## 5. What the evidence says about the workloads that matter
 
 Full detail and per-benchmark tables: [evaluation-evidence.md](evaluation-evidence.md).

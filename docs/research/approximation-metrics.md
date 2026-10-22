@@ -100,10 +100,49 @@ The executable definitions are in
 and the invariants are tested in
 [`../../tests/test_approximation_metrics.py`](../../tests/test_approximation_metrics.py).
 
-## 5. Exact local certificates
+## 5. Local error calculus
+
+The hierarchy is useful only if adjacent levels have explicit bridges. Two
+bridge inequalities are used throughout the study.
+
+For a fixed reference value set with diameter
+`diam(V)=max_{i,j}||v_i-v_j||`,
+
+```text
+||O - O_hat||_2 <= TV(p,p_hat) * diam(V).
+```
+
+The inequality is tight for adversarially chosen values. It is not reversible:
+attention weights may move substantially between keys with identical values,
+producing zero output error.
+
+For hard support selection, write `a=Σ_{j∈S}p_j`,
+
+```text
+mu_S    = (Σ_{j∈S} p_j v_j) / a
+mu_D    = (Σ_{j∉S} p_j v_j) / (1-a)
+O       = a mu_S + (1-a) mu_D
+O_S     = mu_S
+O-O_S   = (1-a)(mu_D-mu_S).
+```
+
+The last line is an exact identity. It is stronger than the commonly reported
+`2(1-a)V_max` bound because it exposes the direction and magnitude of the
+omitted value centroid.
+
+For quantized keys, let `eta=max_j|z_hat_j-z_j|`. The softmax likelihood ratio is
+bounded by `exp(2 eta)`, yielding
+
+```text
+TV(softmax(z),softmax(z_hat)) <= tanh(eta).
+```
+
+Quantized values add a separate weighted perturbation. Reporting the key- and
+value-induced output vectors separately prevents a low total error from hiding
+two larger canceling errors.
 
 [`../../experiments/approximation_certificates.py`](../../experiments/approximation_certificates.py)
-adds three auditable checks that are stronger than aggregate metrics:
+implements and tests these checks:
 
 - For hard sparse support, the omitted contribution is decomposed exactly as
   `(1-a)(μ_omitted-μ_selected)`, where `a` is retained mass. The conservative

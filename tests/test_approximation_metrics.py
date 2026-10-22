@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import torch
 
+from linattn.core import AttnConfig
+
 from experiments.approximation_metrics import (
     attention_operator_metrics,
     cosine_distance,
@@ -12,6 +14,7 @@ from experiments.approximation_metrics import (
     topk_agreement,
     total_variation,
 )
+from experiments.approximation_validation import run
 
 
 def test_identical_inputs_have_zero_error():
@@ -61,3 +64,20 @@ def test_operator_metrics_are_finite():
         "topk_agreement",
     }
     assert all(torch.isfinite(torch.tensor(v)).item() for v in rows.values())
+
+
+def test_validation_uses_a_matching_causal_domain_for_each_variant():
+    cfg = AttnConfig(
+        n_heads=2,
+        n_kv_heads=2,
+        head_dim=16,
+        block_size=8,
+        window_size=8,
+        topk_blocks=2,
+        topk_tokens=8,
+        sink_size=1,
+    )
+    rows = {row["variant"]: row for row in run("random", cfg, seed=0)}
+    assert rows["linformer"]["reference_mode"] == "noncausal"
+    assert rows["performer"]["reference_mode"] == "causal"
+    assert rows["quest"]["reference_mode"] == "causal"

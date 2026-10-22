@@ -166,6 +166,7 @@ What you get, and what to read first:
 | `make csa2-official-check` | `reports/csa2_official_config.md` | compares the surrogate defaults with the disclosed V4.1-Flash CSA2 schedule |
 | `make approx-validation` | `reports/approximation_validation.md` | metric hierarchy across sparse, kernel and low-rank variants |
 | `make error-propagation` | `reports/error_propagation.md` | local attention error versus downstream residual drift |
+| `make theory-checks` | `reports/theory_checks.md` | exact sparse and quantisation identities, bounds, feature and precision controls |
 | `make trained-audit` | `reports/approximation_audit.md` | matched tiny-checkpoint local-to-task intervention audit |
 
 If something does not run, `python -m linattn.cli backends` prints exactly what your

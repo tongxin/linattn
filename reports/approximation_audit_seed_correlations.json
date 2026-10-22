@@ -1,0 +1,66 @@
+{
+  "name": "approximation_audit_seed_correlations",
+  "generated_utc": "2026-10-22T02:03:44Z",
+  "environment": {
+    "platform": "Darwin arm64",
+    "torch": "2.14.1",
+    "threads": 4,
+    "cuda": false,
+    "mps": false,
+    "triton_installed": false,
+    "triton_msl": false,
+    "flex_attention_importable": true,
+    "mlx_installed": false,
+    "mlx_metal": false
+  },
+  "records": [
+    {
+      "task": "retrieval",
+      "seed": 0,
+      "n": 20,
+      "local_vs_loss_spearman": 0.968421052631579,
+      "hidden_vs_loss_spearman": 0.9669172932330827,
+      "projected_vs_loss_spearman": 0.9293233082706767
+    },
+    {
+      "task": "retrieval",
+      "seed": 1,
+      "n": 20,
+      "local_vs_loss_spearman": 0.9037593984962407,
+      "hidden_vs_loss_spearman": 0.9759398496240601,
+      "projected_vs_loss_spearman": 0.8721804511278195
+    },
+    {
+      "task": "retrieval",
+      "seed": 2,
+      "n": 20,
+      "local_vs_loss_spearman": 0.9097744360902256,
+      "hidden_vs_loss_spearman": 0.9804511278195489,
+      "projected_vs_loss_spearman": 0.7563909774436091
+    },
+    {
+      "task": "dispersed",
+      "seed": 0,
+      "n": 20,
+      "local_vs_loss_spearman": 0.9037593984962407,
+      "hidden_vs_loss_spearman": 0.9533834586466166,
+      "projected_vs_loss_spearman": 0.9804511278195489
+    },
+    {
+      "task": "dispersed",
+      "seed": 1,
+      "n": 20,
+      "local_vs_loss_spearman": 0.8917293233082707,
+      "hidden_vs_loss_spearman": 0.924812030075188,
+      "projected_vs_loss_spearman": 0.9578947368421052
+    },
+    {
+      "task": "dispersed",
+      "seed": 2,
+      "n": 20,
+      "local_vs_loss_spearman": 0.8977443609022556,
+      "hidden_vs_loss_spearman": 0.924812030075188,
+      "projected_vs_loss_spearman": 0.9413533834586466
+    }
+  ]
+}

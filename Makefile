@@ -60,7 +60,7 @@ error-propagation:  ## local attention error vs residual-stack drift
 	$(PYTHON) experiments/error_propagation.py
 
 trained-audit:  ## matched tiny-checkpoint local-to-task audit
-	$(PYTHON) experiments/approximation_audit.py --steps 900 --seeds 2 --eval-examples 128
+	$(PYTHON) experiments/approximation_audit.py --steps 2200 --seeds 3 --eval-examples 256
 
 bench-mlx:  ## Apple Silicon: MLX/Metal decode benchmark (needs `make install` + mlx)
 	$(PYTHON) bench/bench_mlx.py --lengths 4096 16384 65536
@@ -74,7 +74,7 @@ experiments:  ## the three studies behind the survey's empirical claims
 	$(PYTHON) experiments/state_capacity.py
 	$(PYTHON) experiments/hybrid_recall.py --steps 250
 
-all: docs check bench bench-frontier csa2-analysis csa2-official-check kv experiments  ## everything above, in order
+all: docs check bench bench-frontier csa2-analysis csa2-official-check approx-validation theory-checks error-propagation trained-audit kv experiments  ## everything above, in order
 
 clean:  ## remove generated reports and caches (keeps .venv)
 	rm -f reports/suite_*.json reports/suite_*.md reports/decode_*.json reports/decode_*.md

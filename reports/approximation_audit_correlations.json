@@ -1,6 +1,6 @@
 {
   "name": "approximation_audit_correlations",
-  "generated_utc": "2026-10-22T01:38:38Z",
+  "generated_utc": "2026-10-22T02:03:44Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
@@ -17,18 +17,30 @@
     {
       "task": "retrieval",
       "n": 60,
-      "local_vs_loss_spearman": 0.8780216726868573,
-      "hidden_vs_loss_spearman": 0.9662128368991385,
-      "projected_vs_loss_spearman": 0.6859127535426506,
-      "local_vs_projected_spearman": 0.6041122534037231
+      "local_vs_loss_spearman": 0.9141983884412335,
+      "hidden_vs_loss_spearman": 0.9656571269797164,
+      "projected_vs_loss_spearman": 0.5819949986107251,
+      "local_vs_projected_spearman": 0.469297026951931,
+      "mean_seed_local_vs_loss": 0.9273182957393484,
+      "mean_seed_hidden_vs_loss": 0.9744360902255639,
+      "mean_seed_projected_vs_loss": 0.8526315789473684,
+      "std_seed_local_vs_loss": 0.029167592032032383,
+      "std_seed_hidden_vs_loss": 0.005626552461314195,
+      "std_seed_projected_vs_loss": 0.07193986638837699
     },
     {
       "task": "dispersed",
       "n": 60,
-      "local_vs_loss_spearman": 0.8481244790219503,
-      "hidden_vs_loss_spearman": 0.944540150041678,
-      "projected_vs_loss_spearman": 0.8994720755765488,
-      "local_vs_projected_spearman": 0.7222561822728534
+      "local_vs_loss_spearman": 0.8690747429841621,
+      "hidden_vs_loss_spearman": 0.9233676021116975,
+      "projected_vs_loss_spearman": 0.7228118921922755,
+      "local_vs_projected_spearman": 0.5537093637121422,
+      "mean_seed_local_vs_loss": 0.8977443609022556,
+      "mean_seed_hidden_vs_loss": 0.9343358395989975,
+      "mean_seed_projected_vs_loss": 0.9598997493734336,
+      "std_seed_local_vs_loss": 0.004911257629640466,
+      "std_seed_hidden_vs_loss": 0.013468700594029482,
+      "std_seed_projected_vs_loss": 0.016024428434231377
     }
   ]
 }

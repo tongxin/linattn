@@ -56,8 +56,11 @@ def sparse_support_certificate(
     support = support.to(device=p.device, dtype=torch.bool)
     if support.shape != p.shape:
         raise ValueError("support must have the same shape as p")
-    if v.shape[:-2] != p.shape[:-1] or v.shape[-2] != p.shape[-1]:
-        raise ValueError("v must have shape p.shape + (D,)")
+    if v.shape[-2] != p.shape[-1]:
+        raise ValueError("v must have the same key dimension as p")
+    vv = v
+    while vv.ndim < p.ndim + 1:
+        vv = vv.unsqueeze(-3)
 
     retained = (p * support).sum(-1)
     selected = support & (p > 0)
@@ -66,15 +69,15 @@ def sparse_support_certificate(
 
     p_ref = p
     p_selected = p_selected_weight / retained.clamp_min(eps).unsqueeze(-1)
-    out_ref = torch.matmul(p_ref.unsqueeze(-2), v).squeeze(-2)
-    out_selected = torch.matmul(p_selected.unsqueeze(-2), v).squeeze(-2)
+    out_ref = torch.matmul(p_ref.unsqueeze(-2), vv).squeeze(-2)
+    out_selected = torch.matmul(p_selected.unsqueeze(-2), vv).squeeze(-2)
 
     selected_mean = torch.matmul(
-        (p_selected_weight / retained.clamp_min(eps).unsqueeze(-1)).unsqueeze(-2), v
+        (p_selected_weight / retained.clamp_min(eps).unsqueeze(-1)).unsqueeze(-2), vv
     ).squeeze(-2)
     omitted_mass = (1.0 - retained).clamp_min(0.0)
     omitted_mean = torch.matmul(
-        (omitted_weight / omitted_mass.clamp_min(eps).unsqueeze(-1)).unsqueeze(-2), v
+        (omitted_weight / omitted_mass.clamp_min(eps).unsqueeze(-1)).unsqueeze(-2), vv
     ).squeeze(-2)
 
     exact_omitted = omitted_mass.unsqueeze(-1) * (omitted_mean - selected_mean)
@@ -83,7 +86,7 @@ def sparse_support_certificate(
         (omitted_mass > eps).unsqueeze(-1), exact_omitted, torch.zeros_like(exact_omitted)
     )
     error = out_ref - out_selected
-    value_max = v.float().norm(dim=-1).amax(-1)
+    value_max = vv.float().norm(dim=-1).amax(-1).expand(p.shape[:-1])
     bound = 2.0 * omitted_mass * value_max
     error_norm = error.norm(dim=-1)
     return {

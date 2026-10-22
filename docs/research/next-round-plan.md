@@ -1,14 +1,17 @@
 # Next-round plan: from measurement framework to trained-model evidence
 
-The first cycle answered *how to measure*; it did not establish how deployed
-efficient attention behaves in a trained model. This next round has one primary
-scientific objective and three prerequisites.
+The first cycle now includes matched tiny-checkpoint interventions. It supports
+the measurement framework and shows that downstream hidden-state drift adds
+information beyond local attention error, but the checkpoints are synthetic and
+single-token. This next round tests whether the result survives natural-language
+or code training, multi-token outputs, and multi-layer replacement.
 
 ## Objective
 
 Estimate the layer-to-task approximation profile of at least two efficient
-attention mechanisms using a matched trained checkpoint, then compare the
-measured task degradation with the metric hierarchy's predictions.
+attention mechanisms on a small natural-language or code-trained checkpoint,
+then compare the measured task degradation with local, hidden-state, and
+task-projected predictions.
 
 ## Round 1 — extend to a matched natural-language checkpoint
 
