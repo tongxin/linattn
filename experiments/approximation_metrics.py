@@ -66,6 +66,35 @@ def topk_agreement(reference: torch.Tensor, estimate: torch.Tensor, k: int) -> f
     return float((a.unsqueeze(-1) == b.unsqueeze(-2)).any(-1).float().mean())
 
 
+def directional_output_metrics(
+    reference: torch.Tensor,
+    estimate: torch.Tensor,
+    *,
+    eps: float = 1e-12,
+) -> Dict[str, float]:
+    """Directional decomposition of output error.
+
+    ``parallel`` is the projection of the error onto the reference direction;
+    ``orthogonal`` is the remaining error. The fractions show whether the
+    approximation changes mostly the magnitude of the output or its direction.
+    """
+    r, e = _flat(reference), _flat(estimate)
+    error = r - e
+    r_norm = r.norm().clamp_min(eps)
+    e_norm = e.norm().clamp_min(eps)
+    err_norm = error.norm().clamp_min(eps)
+    parallel = (torch.dot(error, r) / r_norm.square().clamp_min(eps)) * r
+    orthogonal = error - parallel
+    return {
+        "output_cosine_distance": cosine_distance(reference, estimate),
+        "error_cosine_to_reference": float(torch.dot(error, r) / (err_norm * r_norm)),
+        "error_cosine_to_estimate": float(torch.dot(error, e) / (err_norm * e_norm)),
+        "parallel_error_fraction": float(parallel.norm() / err_norm),
+        "orthogonal_error_fraction": float(orthogonal.norm() / err_norm),
+        "estimate_to_reference_norm_ratio": float(e_norm / r_norm),
+    }
+
+
 def attention_operator_metrics(
     p_ref: torch.Tensor,
     p_hat: torch.Tensor,
@@ -74,23 +103,16 @@ def attention_operator_metrics(
     *,
     k: int = 8,
 ) -> Dict[str, float]:
-    error = o_ref - o_hat
-    return {
+    output = directional_output_metrics(o_ref, o_hat)
+    output["operator_cosine_distance"] = output["output_cosine_distance"]
+    output.update({
         "operator_rel_l2": relative_l2(o_ref, o_hat),
-        "operator_cosine_distance": cosine_distance(o_ref, o_hat),
-        "error_cosine_to_reference": float(
-            torch.dot(_flat(error), _flat(o_ref))
-            / (_flat(error).norm() * _flat(o_ref).norm()).clamp_min(1e-12)
-        ),
-        "error_cosine_to_estimate": float(
-            torch.dot(_flat(error), _flat(o_hat))
-            / (_flat(error).norm() * _flat(o_hat).norm()).clamp_min(1e-12)
-        ),
         "attention_tv": total_variation(p_ref, p_hat),
         "attention_js": jensen_shannon(p_ref, p_hat),
         "attention_hellinger": hellinger(p_ref, p_hat),
         "topk_agreement": topk_agreement(p_ref, p_hat, k),
-    }
+    })
+    return output
 
 
 def _demo() -> None:

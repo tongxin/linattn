@@ -76,12 +76,29 @@ def main() -> int:
             with torch.no_grad():
                 retrieved, state_norm = store_and_query_state(keys, values)
             fidelity = F.cosine_similarity(retrieved, values, dim=-1).mean()
+            error = retrieved - values
+            value_norm = values.norm(dim=-1).clamp_min(1e-12)
+            error_norm = error.norm(dim=-1).clamp_min(1e-12)
+            error_cosine = (
+                (error * values).sum(-1) / (error_norm * value_norm)
+            ).mean()
+            parallel = (
+                (error * values).sum(-1, keepdim=True)
+                / value_norm.square().unsqueeze(-1).clamp_min(1e-12)
+            ) * values
+            orthogonal = error - parallel
+            parallel_fraction = (parallel.norm(dim=-1) / error_norm).mean()
+            orthogonal_fraction = (orthogonal.norm(dim=-1) / error_norm).mean()
             state_floats = d_state * args.d_value
             records.append({
                 "associations": n_pairs,
                 "d_state": d_state,
                 "state_floats": state_floats,
                 "retrieval_cosine": float(fidelity),
+                "retrieval_error_rel_l2": float((error.norm(dim=-1) / value_norm).mean()),
+                "error_cosine_to_value": float(error_cosine),
+                "parallel_error_fraction": float(parallel_fraction),
+                "orthogonal_error_fraction": float(orthogonal_fraction),
                 "state_norm": state_norm,
             })
             print(f"N={n_pairs:5d}  d_state={d_state:4d}  state_floats={state_floats:6d}  "
@@ -91,7 +108,9 @@ def main() -> int:
         "state_capacity",
         records,
         title="Associative-recall capacity of a fixed-size delta-rule state",
-        columns=["associations", "d_state", "state_floats", "retrieval_cosine", "state_norm"],
+        columns=["associations", "d_state", "state_floats", "retrieval_cosine",
+                 "retrieval_error_rel_l2", "error_cosine_to_value",
+                 "parallel_error_fraction", "orthogonal_error_fraction", "state_norm"],
         notes=(
             "No training involved: random key/value vectors are written through the exact "
             "delta-rule recurrence (keys L2-normalised, beta=0.99, decay=0.99) and read "
@@ -99,6 +118,8 @@ def main() -> int:
             "between the retrieved and the true value; the state holds `d_state * "
             "d_value` floats, so the curve is really about *associations per unit of "
             "state* -- the quantity a hybrid trades against exact-attention layers."
+            " The error decomposition reports whether a miss changes magnitude or "
+            "value direction; it is descriptive, not a model-level bound."
         ),
     )
     print(f"wrote {path}")

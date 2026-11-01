@@ -341,6 +341,23 @@ for retrieval but stronger for dispersed evidence. Curvature and cancellation
 still limit it as a finite-error guarantee, but the pooled number alone would
 have produced the wrong conclusion.
 
+### 4.5 Direction lens across mechanism families
+
+The direction audit is not uniform across variants because the approximation
+objects differ. Sparse selectors are assessed with support mass, omitted/selected
+value centroids and output direction; kernel/low-rank methods with output
+direction and parallel/orthogonal error decomposition; quantisation with key- and
+value-induced component directions; and fixed-state recurrence with retrieval
+direction plus capacity load.
+
+The observed failure geometry differs by family. Sparse selectors often
+rotate the output (orthogonal error fractions near `0.96–0.999`), while
+fixed-state recurrence shifts from mostly orthogonal error at low associative
+load to a substantial parallel/magnitude component as the state saturates.
+Performer and Linformer are assessed only at the output level because they do not
+expose a causal sparse support. These are descriptive diagnostics, not one common
+certificate. See [directional-lens.md](directional-lens.md).
+
 ## 5. Interpretation
 
 The evidence supports a conditional conclusion:

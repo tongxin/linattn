@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import torch  # noqa: E402
 
 from approximation_certificates import quantized_kv_certificate, sparse_support_certificate  # noqa: E402
+from approximation_metrics import directional_output_metrics  # noqa: E402
 from linattn.core import AttnConfig, causal_mask, dense_attention, repeat_kv  # noqa: E402
 from linattn.harness import make_inputs, structured_inputs  # noqa: E402
 from linattn.kv.quant import QuantSpec, roundtrip  # noqa: E402
@@ -117,6 +118,7 @@ def feature_rows() -> list[Dict]:
             for features in (4, 8, 16, 32, 64, 128, 256):
                 layer = build("performer", cfg.with_(extras={"features": features}))
                 out, _ = layer.forward(q, k, v, chunk=q.shape[-2])
+                direction = directional_output_metrics(ref, out)
                 rows.append({
                     "study": "feature_convergence",
                     "input": kind,
@@ -124,6 +126,9 @@ def feature_rows() -> list[Dict]:
                     "variant": "performer",
                     "features": features,
                     "rel_l2_error": rel_error(out, ref),
+                    "output_cosine_distance": direction["output_cosine_distance"],
+                    "parallel_error_fraction": direction["parallel_error_fraction"],
+                    "orthogonal_error_fraction": direction["orthogonal_error_fraction"],
                 })
     return rows
 
@@ -145,6 +150,7 @@ def quant_rows() -> list[Dict]:
                 kq_rep = repeat_kv(kq, cfg.group_size)
                 vq_rep = repeat_kv(vq, cfg.group_size)
                 out = dense_attention(q, kq, vq)
+                direction = directional_output_metrics(ref, out)
                 cert = quantized_kv_certificate(q, k_rep, v_rep, kq_rep, vq_rep)
                 total = cert["total_error"].norm(dim=-1)
                 bound = cert["total_bound"]
@@ -155,6 +161,9 @@ def quant_rows() -> list[Dict]:
                     "variant": "dense_kv",
                     "bits": bits,
                     "rel_l2_error": rel_error(out, ref),
+                    "output_cosine_distance": direction["output_cosine_distance"],
+                    "parallel_error_fraction": direction["parallel_error_fraction"],
+                    "orthogonal_error_fraction": direction["orthogonal_error_fraction"],
                     "attention_tv": float(cert["attention_tv"].mean()),
                     "attention_tv_bound": float(cert["attention_tv_bound"].mean()),
                     "key_error_l2": float(cert["key_error"].norm(dim=-1).mean()),
@@ -182,9 +191,19 @@ def _summary(rows: list[Dict]) -> list[Dict]:
         if study == "feature_convergence":
             for features in sorted({r["features"] for r in subset}):
                 vals = [r["rel_l2_error"] for r in subset if r["features"] == features]
+                detail = [r for r in subset if r["features"] == features]
                 out.append({"study": study, "input": input_kind, "variant": variant,
                             "setting": f"features={features}", "mean_rel_error": statistics.mean(vals),
-                            "std_rel_error": statistics.pstdev(vals), "n": len(vals)})
+                            "std_rel_error": statistics.pstdev(vals), "n": len(vals),
+                            "mean_output_cosine_distance": statistics.mean(
+                                r["output_cosine_distance"] for r in detail
+                            ),
+                            "mean_parallel_error_fraction": statistics.mean(
+                                r["parallel_error_fraction"] for r in detail
+                            ),
+                            "mean_orthogonal_error_fraction": statistics.mean(
+                                r["orthogonal_error_fraction"] for r in detail
+                            )})
         elif study == "precision":
             for bits in sorted({r["bits"] for r in subset}):
                 vals = [r["rel_l2_error"] for r in subset if r["bits"] == bits]
@@ -195,6 +214,15 @@ def _summary(rows: list[Dict]) -> list[Dict]:
                             "mean_attention_tv": statistics.mean(r["attention_tv"] for r in detail),
                             "max_attention_tv_bound": max(r["attention_tv_bound"] for r in detail),
                             "mean_component_cosine": statistics.mean(r["component_cosine"] for r in detail),
+                            "mean_output_cosine_distance": statistics.mean(
+                                r["output_cosine_distance"] for r in detail
+                            ),
+                            "mean_parallel_error_fraction": statistics.mean(
+                                r["parallel_error_fraction"] for r in detail
+                            ),
+                            "mean_orthogonal_error_fraction": statistics.mean(
+                                r["orthogonal_error_fraction"] for r in detail
+                            ),
                             "mean_directional_component_to_triangle_bound": statistics.mean(
                                 r["directional_component_to_triangle_bound"] for r in detail
                             ),
@@ -241,7 +269,9 @@ def main() -> int:
         summary,
         title="Checks of attention error identities, bounds, feature convergence and KV precision",
         columns=["study", "input", "variant", "setting", "mean_rel_error",
-                 "std_rel_error", "mean_selected_mass", "mean_support_ratio_all",
+                 "std_rel_error", "mean_output_cosine_distance",
+                 "mean_parallel_error_fraction", "mean_orthogonal_error_fraction",
+                 "mean_selected_mass", "mean_support_ratio_all",
                  "mean_support_ratio_visible", "mean_reads_per_query",
                  "mean_bound_ratio", "mean_centroid_cosine",
                  "mean_centroid_error_to_vmax_bound",
@@ -285,8 +315,19 @@ def main() -> int:
             print(
                 f"{r['study']:<20} {r['input']:<10} {r['variant']:<12} "
                 f"{r['setting']:<16} err={r['mean_rel_error']:.4f} "
+                f"output_cos_dist={r['mean_output_cosine_distance']:.4f} "
+                f"parallel={r['mean_parallel_error_fraction']:.3f} "
+                f"orthogonal={r['mean_orthogonal_error_fraction']:.3f} "
                 f"component_cos={r['mean_component_cosine']:.4f} "
                 f"directional/triangle={r['mean_directional_component_to_triangle_bound']:.3f}"
+            )
+        elif r["study"] == "feature_convergence":
+            print(
+                f"{r['study']:<20} {r['input']:<10} {r['variant']:<12} "
+                f"{r['setting']:<16} err={r['mean_rel_error']:.4f} "
+                f"output_cos_dist={r['mean_output_cosine_distance']:.4f} "
+                f"parallel={r['mean_parallel_error_fraction']:.3f} "
+                f"orthogonal={r['mean_orthogonal_error_fraction']:.3f}"
             )
         else:
             print(f"{r['study']:<20} {r['input']:<10} {r['variant']:<12} "

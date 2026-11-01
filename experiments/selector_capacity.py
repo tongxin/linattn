@@ -35,6 +35,7 @@ from linattn.metrics import attention_mass, mass_recall, rel_error  # noqa: E402
 from linattn.reporting import save_report  # noqa: E402
 from linattn.variants.native_sparse import NSAAttention  # noqa: E402
 from linattn.variants.selection import DSAAttention, SeerAttentionR  # noqa: E402
+from approximation_metrics import directional_output_metrics  # noqa: E402
 
 
 def block_recall(mask: torch.Tensor, mass: torch.Tensor, block: int) -> float:
@@ -124,9 +125,13 @@ def main() -> int:
 
     # --- NSA branch gates ------------------------------------------------------
     nsa = NSAAttention(cfg)
-    err_before = rel_error(nsa.forward(q, k, v, chunk=args.seq)[0], reference)
+    out_before = nsa.forward(q, k, v, chunk=args.seq)[0]
+    err_before = rel_error(out_before, reference)
+    dir_before = directional_output_metrics(reference, out_before)
     loss = nsa.fit_gates(q, k, v, steps=args.steps, lr=0.05)
-    err_after = rel_error(nsa.forward(q, k, v, chunk=args.seq)[0], reference)
+    out_after = nsa.forward(q, k, v, chunk=args.seq)[0]
+    err_after = rel_error(out_after, reference)
+    dir_after = directional_output_metrics(reference, out_after)
     records.append({
         "selector": "nsa_branch_gates",
         "cross_entropy_before": float("nan"),
@@ -134,6 +139,10 @@ def main() -> int:
         "mass_recall_before": 1.0 - err_before,
         "mass_recall_after": 1.0 - err_after,
         "budget_fraction": float("nan"),
+        "output_cosine_distance_before": dir_before["output_cosine_distance"],
+        "output_cosine_distance_after": dir_after["output_cosine_distance"],
+        "orthogonal_error_fraction_before": dir_before["orthogonal_error_fraction"],
+        "orthogonal_error_fraction_after": dir_after["orthogonal_error_fraction"],
     })
     print(f"nsa_branch_gates    output rel_err {err_before:.4f} -> {err_after:.4f} (fit loss {loss:.4f})")
 
@@ -142,7 +151,9 @@ def main() -> int:
         records,
         title="Learned-selector capacity: before and after fitting",
         columns=["selector", "cross_entropy_before", "cross_entropy_after", "mass_recall_before",
-                 "mass_recall_after", "budget_fraction"],
+                 "mass_recall_after", "budget_fraction", "output_cosine_distance_before",
+                 "output_cosine_distance_after", "orthogonal_error_fraction_before",
+                 "orthogonal_error_fraction_after"],
         notes=(
             "Cross-entropy is between the selector's induced distribution over keys/blocks "
             "and the dense attention mass, so `before` is a randomly initialised selector "

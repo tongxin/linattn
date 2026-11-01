@@ -20,6 +20,7 @@ import torch  # noqa: E402
 from approximation_metrics import (  # noqa: E402
     attention_operator_metrics,
     cosine_distance,
+    directional_output_metrics,
     relative_l2,
 )
 from linattn.core import AttnConfig, dense_attention  # noqa: E402
@@ -42,10 +43,10 @@ def _evaluate(name: str, variant, q, k, v, input_kind: str) -> Dict:
         "input": input_kind,
         "reference_mode": "causal" if causal else "noncausal",
         "output_rel_l2": relative_l2(o_ref, out),
-        "output_cosine_distance": cosine_distance(o_ref, out),
         "max_abs_error": float((o_ref - out).abs().max()),
         "reads_per_query": float(stats[-1].get("reads_per_query", 0.0)),
     }
+    row.update({f"direction_{key}": value for key, value in directional_output_metrics(o_ref, out).items()})
     masks = getattr(variant, "_masks", [])
     if masks:
         support = masks[-1].to(q.device)
@@ -105,7 +106,15 @@ def main() -> int:
                 "n_seeds": len(subset),
                 "output_rel_l2_mean": statistics.mean(r["output_rel_l2"] for r in subset),
                 "output_rel_l2_std": statistics.pstdev(r["output_rel_l2"] for r in subset),
-                "output_cosine_distance_mean": statistics.mean(r["output_cosine_distance"] for r in subset),
+                "output_cosine_distance_mean": statistics.mean(
+                    r["direction_output_cosine_distance"] for r in subset
+                ),
+                "parallel_error_fraction_mean": statistics.mean(
+                    r["direction_parallel_error_fraction"] for r in subset
+                ),
+                "orthogonal_error_fraction_mean": statistics.mean(
+                    r["direction_orthogonal_error_fraction"] for r in subset
+                ),
                 "max_abs_error_mean": statistics.mean(r["max_abs_error"] for r in subset),
                 "reads_per_query_mean": statistics.mean(r["reads_per_query"] for r in subset),
                 "support_fraction_mean": (
@@ -135,6 +144,7 @@ def main() -> int:
         title="Metric hierarchy validation on representative attention variants",
         columns=["variant", "input", "reference_mode", "n_seeds", "output_rel_l2_mean",
                  "output_rel_l2_std", "output_cosine_distance_mean", "max_abs_error_mean",
+                 "parallel_error_fraction_mean", "orthogonal_error_fraction_mean",
                  "reads_per_query_mean", "support_fraction_mean", "attention_js_mean",
                  "error_cosine_to_reference_mean", "error_cosine_to_estimate_mean",
                  "topk_agreement_mean"],
@@ -152,6 +162,8 @@ def main() -> int:
     for r in rows:
         print(f"{r['input']:<10} {r['variant']:<12} "
               f"out={r['output_rel_l2_mean']:.4f}±{r['output_rel_l2_std']:.4f} "
+              f"cos_dist={r['output_cosine_distance_mean']:.4f} "
+              f"orthogonal={r['orthogonal_error_fraction_mean']:.3f} "
               f"support={r['support_fraction_mean'] if r['support_fraction_mean'] is not None else float('nan'):.3f} "
               f"JS={r['attention_js_mean'] if r['attention_js_mean'] is not None else float('nan'):.4f}")
     return 0

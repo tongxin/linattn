@@ -120,6 +120,8 @@ and [metric hierarchy](docs/research/approximation-metrics.md), with a
 [workload protocol](docs/research/attention-evaluation-protocol.md), and
 the complete research report
 [attention-approximation-report.md](docs/research/attention-approximation-report.md).
+A family-by-family coverage audit of the direction lens is in
+[directional-lens.md](docs/research/directional-lens.md).
 The report is explicitly a first validation cycle, with the trained-model round
 specified in [next-round-plan.md](docs/research/next-round-plan.md).
 CSA2 sensitivity remains a separate deferred application, not part of this

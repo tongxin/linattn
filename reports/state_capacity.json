@@ -1,6 +1,6 @@
 {
   "name": "state_capacity",
-  "generated_utc": "2026-10-16T12:31:12Z",
+  "generated_utc": "2026-11-01T13:23:16Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
@@ -8,7 +8,10 @@
     "cuda": false,
     "mps": false,
     "triton_installed": false,
-    "flex_attention_importable": true
+    "triton_msl": false,
+    "flex_attention_importable": true,
+    "mlx_installed": false,
+    "mlx_metal": false
   },
   "records": [
     {
@@ -16,6 +19,10 @@
       "d_state": 8,
       "state_floats": 512,
       "retrieval_cosine": 0.8277266954498165,
+      "retrieval_error_rel_l2": 0.6820008155786301,
+      "error_cosine_to_value": 0.006706270227692927,
+      "parallel_error_fraction": 0.08662729741594807,
+      "orthogonal_error_fraction": 0.9953568247121725,
       "state_norm": 3.9640023654779193
     },
     {
@@ -23,6 +30,10 @@
       "d_state": 32,
       "state_floats": 2048,
       "retrieval_cosine": 0.9583043297391212,
+      "retrieval_error_rel_l2": 0.28147040583158733,
+      "error_cosine_to_value": -0.13893929003974498,
+      "parallel_error_fraction": 0.1562006800612346,
+      "orthogonal_error_fraction": 0.9764116960700201,
       "state_norm": 3.8882283383857765
     },
     {
@@ -30,6 +41,10 @@
       "d_state": 128,
       "state_floats": 8192,
       "retrieval_cosine": 0.9852001911123873,
+      "retrieval_error_rel_l2": 0.16715581651321787,
+      "error_cosine_to_value": -0.13504433675174252,
+      "parallel_error_fraction": 0.16568008826508088,
+      "orthogonal_error_fraction": 0.9796177543098302,
       "state_norm": 3.9131542821966923
     },
     {
@@ -37,6 +52,10 @@
       "d_state": 8,
       "state_floats": 512,
       "retrieval_cosine": 0.5775957313435316,
+      "retrieval_error_rel_l2": 1.273864762180224,
+      "error_cosine_to_value": -0.08382075926458064,
+      "parallel_error_fraction": 0.11430599506392225,
+      "orthogonal_error_fraction": 0.9901386222505095,
       "state_norm": 7.255606308924648
     },
     {
@@ -44,6 +63,10 @@
       "d_state": 32,
       "state_floats": 2048,
       "retrieval_cosine": 0.8363186420338612,
+      "retrieval_error_rel_l2": 0.6111624965646112,
+      "error_cosine_to_value": -0.12278631947640897,
+      "parallel_error_fraction": 0.14856467348335525,
+      "orthogonal_error_fraction": 0.9833186629840582,
       "state_norm": 7.387648222051103
     },
     {
@@ -51,6 +74,10 @@
       "d_state": 128,
       "state_floats": 8192,
       "retrieval_cosine": 0.945584460116713,
+      "retrieval_error_rel_l2": 0.3258919353218116,
+      "error_cosine_to_value": -0.2761146985152474,
+      "parallel_error_fraction": 0.2812630612571997,
+      "orthogonal_error_fraction": 0.9458241627934911,
       "state_norm": 7.321698251176793
     },
     {
@@ -58,6 +85,10 @@
       "d_state": 8,
       "state_floats": 512,
       "retrieval_cosine": 0.3376064674296529,
+      "retrieval_error_rel_l2": 2.1956902049695257,
+      "error_cosine_to_value": -0.0971514170339475,
+      "parallel_error_fraction": 0.13862865790958856,
+      "orthogonal_error_fraction": 0.9847262744766927,
       "state_norm": 12.377331678825836
     },
     {
@@ -65,6 +96,10 @@
       "d_state": 32,
       "state_floats": 2048,
       "retrieval_cosine": 0.5708489306836355,
+      "retrieval_error_rel_l2": 1.0908003100876744,
+      "error_cosine_to_value": -0.2346460018747677,
+      "parallel_error_fraction": 0.24668822375776858,
+      "orthogonal_error_fraction": 0.9578236943558184,
       "state_norm": 12.00219262965156
     },
     {
@@ -72,6 +107,10 @@
       "d_state": 128,
       "state_floats": 8192,
       "retrieval_cosine": 0.8104560687497244,
+      "retrieval_error_rel_l2": 0.5925638276025349,
+      "error_cosine_to_value": -0.4202519839223279,
+      "parallel_error_fraction": 0.42838989600511507,
+      "orthogonal_error_fraction": 0.8759061138528875,
       "state_norm": 11.993355653714422
     },
     {
@@ -79,6 +118,10 @@
       "d_state": 8,
       "state_floats": 512,
       "retrieval_cosine": 0.14192031374099673,
+      "retrieval_error_rel_l2": 2.5446295442879414,
+      "error_cosine_to_value": -0.248574381934969,
+      "parallel_error_fraction": 0.25701497547661073,
+      "orthogonal_error_fraction": 0.9567790097534716,
       "state_norm": 13.964738884246625
     },
     {
@@ -86,6 +129,10 @@
       "d_state": 32,
       "state_floats": 2048,
       "retrieval_cosine": 0.2665101160448601,
+      "retrieval_error_rel_l2": 1.4000235986877165,
+      "error_cosine_to_value": -0.44626220884796963,
+      "parallel_error_fraction": 0.4493972658996732,
+      "orthogonal_error_fraction": 0.873480647467562,
       "state_norm": 13.949834466811312
     },
     {
@@ -93,6 +140,10 @@
       "d_state": 128,
       "state_floats": 8192,
       "retrieval_cosine": 0.43761277682206473,
+      "retrieval_error_rel_l2": 0.9091408703303332,
+      "error_cosine_to_value": -0.6775279567287845,
+      "parallel_error_fraction": 0.678824993246401,
+      "orthogonal_error_fraction": 0.6886668182767337,
       "state_norm": 13.979594214494536
     },
     {
@@ -100,6 +151,10 @@
       "d_state": 8,
       "state_floats": 512,
       "retrieval_cosine": 0.03476291593771757,
+      "retrieval_error_rel_l2": 2.641838843082847,
+      "error_cosine_to_value": -0.3428629206191691,
+      "parallel_error_fraction": 0.34552245714852603,
+      "orthogonal_error_fraction": 0.9291799265228335,
       "state_norm": 14.090267434144664
     },
     {
@@ -107,6 +162,10 @@
       "d_state": 32,
       "state_floats": 2048,
       "retrieval_cosine": 0.07560543077632403,
+      "retrieval_error_rel_l2": 1.537841411393351,
+      "error_cosine_to_value": -0.5770253487951862,
+      "parallel_error_fraction": 0.5782964170914953,
+      "orthogonal_error_fraction": 0.801350803395733,
       "state_norm": 14.101561940184135
     },
     {
@@ -114,6 +173,10 @@
       "d_state": 128,
       "state_floats": 8192,
       "retrieval_cosine": 0.1223422618329803,
+      "retrieval_error_rel_l2": 1.101535183095147,
+      "error_cosine_to_value": -0.8058372560681437,
+      "parallel_error_fraction": 0.8060601490831181,
+      "orthogonal_error_fraction": 0.5661712359675174,
       "state_norm": 14.021341269535506
     }
   ]

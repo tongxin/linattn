@@ -1,6 +1,6 @@
 {
   "name": "theory_checks",
-  "generated_utc": "2026-11-01T10:27:59Z",
+  "generated_utc": "2026-11-01T13:23:16Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
@@ -21,7 +21,10 @@
       "setting": "features=4",
       "mean_rel_error": 0.9830065739106888,
       "std_rel_error": 0.027209301962642308,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.6837814807891845,
+      "mean_parallel_error_fraction": 0.836964213848114,
+      "mean_orthogonal_error_fraction": 0.5455540895462037
     },
     {
       "study": "feature_convergence",
@@ -30,7 +33,10 @@
       "setting": "features=8",
       "mean_rel_error": 0.9535787906065222,
       "std_rel_error": 0.05167422109049219,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.6370648860931396,
+      "mean_parallel_error_fraction": 0.8523417830467224,
+      "mean_orthogonal_error_fraction": 0.5180550217628479
     },
     {
       "study": "feature_convergence",
@@ -39,7 +45,10 @@
       "setting": "features=16",
       "mean_rel_error": 0.9521613788328745,
       "std_rel_error": 0.04840335167024557,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.6233729004859925,
+      "mean_parallel_error_fraction": 0.8322539567947388,
+      "mean_orthogonal_error_fraction": 0.5488319516181945
     },
     {
       "study": "feature_convergence",
@@ -48,7 +57,10 @@
       "setting": "features=32",
       "mean_rel_error": 0.9084914312271758,
       "std_rel_error": 0.023298730913161224,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.5645288586616516,
+      "mean_parallel_error_fraction": 0.8431491613388061,
+      "mean_orthogonal_error_fraction": 0.5349193274974823
     },
     {
       "study": "feature_convergence",
@@ -57,7 +69,10 @@
       "setting": "features=64",
       "mean_rel_error": 0.9347521085385596,
       "std_rel_error": 0.04923493851008902,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.5884396076202393,
+      "mean_parallel_error_fraction": 0.8254567623138428,
+      "mean_orthogonal_error_fraction": 0.5535748898983002
     },
     {
       "study": "feature_convergence",
@@ -66,7 +81,10 @@
       "setting": "features=128",
       "mean_rel_error": 0.8972341551863636,
       "std_rel_error": 0.02825715136010654,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.5486265301704407,
+      "mean_parallel_error_fraction": 0.8594202041625977,
+      "mean_orthogonal_error_fraction": 0.5087330579757691
     },
     {
       "study": "feature_convergence",
@@ -75,7 +93,10 @@
       "setting": "features=256",
       "mean_rel_error": 0.8707617693760812,
       "std_rel_error": 0.011827905638468755,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.5069385528564453,
+      "mean_parallel_error_fraction": 0.88490149974823,
+      "mean_orthogonal_error_fraction": 0.4650771081447601
     },
     {
       "study": "feature_convergence",
@@ -84,7 +105,10 @@
       "setting": "features=4",
       "mean_rel_error": 0.7745616643671451,
       "std_rel_error": 0.04724191276361559,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.3317621469497681,
+      "mean_parallel_error_fraction": 0.5390211939811707,
+      "mean_orthogonal_error_fraction": 0.8408145189285279
     },
     {
       "study": "feature_convergence",
@@ -93,7 +117,10 @@
       "setting": "features=8",
       "mean_rel_error": 0.6865102003415482,
       "std_rel_error": 0.021194294398393754,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.2699881672859192,
+      "mean_parallel_error_fraction": 0.6096422076225281,
+      "mean_orthogonal_error_fraction": 0.7921207547187805
     },
     {
       "study": "feature_convergence",
@@ -102,7 +129,10 @@
       "setting": "features=16",
       "mean_rel_error": 0.6766199869804813,
       "std_rel_error": 0.02025162480802053,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.2584546685218811,
+      "mean_parallel_error_fraction": 0.5736409664154053,
+      "mean_orthogonal_error_fraction": 0.8185913443565369
     },
     {
       "study": "feature_convergence",
@@ -111,7 +141,10 @@
       "setting": "features=32",
       "mean_rel_error": 0.6218993904988279,
       "std_rel_error": 0.01213524415381458,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.21695576906204223,
+      "mean_parallel_error_fraction": 0.634768009185791,
+      "mean_orthogonal_error_fraction": 0.7723806619644165
     },
     {
       "study": "feature_convergence",
@@ -120,7 +153,10 @@
       "setting": "features=64",
       "mean_rel_error": 0.6157254781838621,
       "std_rel_error": 0.009900444741048148,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.21178975105285644,
+      "mean_parallel_error_fraction": 0.6439769387245178,
+      "mean_orthogonal_error_fraction": 0.7648663759231568
     },
     {
       "study": "feature_convergence",
@@ -129,7 +165,10 @@
       "setting": "features=128",
       "mean_rel_error": 0.5952120014126538,
       "std_rel_error": 0.008725130550544665,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.19491525888442993,
+      "mean_parallel_error_fraction": 0.6588205695152283,
+      "mean_orthogonal_error_fraction": 0.7521340727806092
     },
     {
       "study": "feature_convergence",
@@ -138,7 +177,10 @@
       "setting": "features=256",
       "mean_rel_error": 0.5862716674412938,
       "std_rel_error": 0.010094691923809044,
-      "n": 5
+      "n": 5,
+      "mean_output_cosine_distance": 0.1877223491668701,
+      "mean_parallel_error_fraction": 0.6631115198135376,
+      "mean_orthogonal_error_fraction": 0.7482447981834411
     },
     {
       "study": "precision",
@@ -151,6 +193,9 @@
       "mean_attention_tv": 0.06685156623522441,
       "max_attention_tv_bound": 0.5103836059570312,
       "mean_component_cosine": -0.006909957077975075,
+      "mean_output_cosine_distance": 0.012528518835703531,
+      "mean_parallel_error_fraction": 0.07569992418090503,
+      "mean_orthogonal_error_fraction": 0.9965089162190756,
       "mean_directional_component_to_triangle_bound": 0.7438276012738546,
       "max_certificate_ratio": 0.04533207416534424,
       "certificate_satisfied_rate": 1.0,
@@ -167,6 +212,9 @@
       "mean_attention_tv": 0.01591305745144685,
       "max_attention_tv_bound": 0.1376839280128479,
       "mean_component_cosine": 0.008149676490575075,
+      "mean_output_cosine_distance": 0.0006686051686604818,
+      "mean_parallel_error_fraction": 0.05540080430607001,
+      "mean_orthogonal_error_fraction": 0.9977190693219503,
       "mean_directional_component_to_triangle_bound": 0.747140109539032,
       "max_certificate_ratio": 0.041590556502342224,
       "certificate_satisfied_rate": 1.0,
@@ -183,6 +231,9 @@
       "mean_attention_tv": 0.0,
       "max_attention_tv_bound": 0.0,
       "mean_component_cosine": 0.0,
+      "mean_output_cosine_distance": -9.934107462565105e-08,
+      "mean_parallel_error_fraction": 0.0,
+      "mean_orthogonal_error_fraction": 0.0,
       "mean_directional_component_to_triangle_bound": 0.0,
       "max_certificate_ratio": 0.0,
       "certificate_satisfied_rate": 1.0,
@@ -199,6 +250,9 @@
       "mean_attention_tv": 0.03746239095926285,
       "max_attention_tv_bound": 0.2719053328037262,
       "mean_component_cosine": -0.020655178775389988,
+      "mean_output_cosine_distance": 0.007400810718536377,
+      "mean_parallel_error_fraction": 0.04890307163198789,
+      "mean_orthogonal_error_fraction": 0.9985963304837545,
       "mean_directional_component_to_triangle_bound": 0.7044451634089152,
       "max_certificate_ratio": 0.021864894777536392,
       "certificate_satisfied_rate": 1.0,
@@ -215,6 +269,9 @@
       "mean_attention_tv": 0.008916368708014488,
       "max_attention_tv_bound": 0.06712119281291962,
       "mean_component_cosine": 0.024395697750151157,
+      "mean_output_cosine_distance": 0.0004353920618693034,
+      "mean_parallel_error_fraction": 0.049053514997164406,
+      "mean_orthogonal_error_fraction": 0.9987084269523621,
       "mean_directional_component_to_triangle_bound": 0.7207999229431152,
       "max_certificate_ratio": 0.021802684292197227,
       "certificate_satisfied_rate": 1.0,
@@ -231,6 +288,9 @@
       "mean_attention_tv": 0.0,
       "max_attention_tv_bound": 0.0,
       "mean_component_cosine": 0.0,
+      "mean_output_cosine_distance": -1.5894571940104166e-07,
+      "mean_parallel_error_fraction": 0.0,
+      "mean_orthogonal_error_fraction": 0.0,
       "mean_directional_component_to_triangle_bound": 0.0,
       "max_certificate_ratio": 0.0,
       "certificate_satisfied_rate": 1.0,

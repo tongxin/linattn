@@ -42,6 +42,7 @@ def test_approximation_research_docs_exist():
         "approximation-theory-map.md",
         "attention-approximation-report.md",
         "attention-evaluation-protocol.md",
+        "directional-lens.md",
         "next-round-plan.md",
         "trained-checkpoint-audit.md",
         "discussion-log.md",

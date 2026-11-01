@@ -58,8 +58,12 @@ def test_operator_metrics_are_finite():
     assert set(rows) == {
         "operator_rel_l2",
         "operator_cosine_distance",
+        "output_cosine_distance",
         "error_cosine_to_reference",
         "error_cosine_to_estimate",
+        "parallel_error_fraction",
+        "orthogonal_error_fraction",
+        "estimate_to_reference_norm_ratio",
         "attention_tv",
         "attention_js",
         "attention_hellinger",

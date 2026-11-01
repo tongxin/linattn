@@ -1,6 +1,6 @@
 {
   "name": "selector_capacity",
-  "generated_utc": "2026-10-17T10:44:45Z",
+  "generated_utc": "2026-11-01T13:23:29Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
@@ -8,6 +8,7 @@
     "cuda": false,
     "mps": false,
     "triton_installed": false,
+    "triton_msl": false,
     "flex_attention_importable": true,
     "mlx_installed": false,
     "mlx_metal": false
@@ -35,7 +36,11 @@
       "cross_entropy_after": NaN,
       "mass_recall_before": 0.26964881685428066,
       "mass_recall_after": 0.3014100963355676,
-      "budget_fraction": NaN
+      "budget_fraction": NaN,
+      "output_cosine_distance_before": 0.2920801043510437,
+      "output_cosine_distance_after": 0.28441065549850464,
+      "orthogonal_error_fraction_before": 0.5048449039459229,
+      "orthogonal_error_fraction_after": 0.7063871026039124
     }
   ]
 }
