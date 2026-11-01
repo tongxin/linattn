@@ -1,6 +1,6 @@
 # Metric hierarchy validation on representative attention variants
 
-*Generated 2026-11-01T13:24:30Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-11-01T15:08:38Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
 T=128, H=4, H_kv=2, d=32, four 16-token blocks, 32-token token budget. Mask-based selectors expose both support and a renormalized attention distribution; Performer/Linformer expose only an output, so distribution cells are blank. Linformer is compared with a noncausal dense reference because its sequence projection mixes positions; other variants use the causal reference. This is a metric-validation experiment, not a quality leaderboard. `structured` plants retrieval spikes; `random` is the control.
 

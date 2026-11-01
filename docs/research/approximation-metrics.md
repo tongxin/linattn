@@ -185,6 +185,14 @@ cosine-aware expression is exact when both component vectors are available.
 This is the same directional phenomenon as the sparse centroid certificate,
 and it should be reported for precision experiments.
 
+Near-orthogonality in a random-input experiment does not mean that quantisation
+adds independent random noise. The codec is deterministic. In the E2M1/E4M3
+absmax-group construction used here, a group whose values are identical maps
+exactly to the top codebook point (up to float32 round-off), so its residual is
+zero. With varied inputs, residuals are shaped by bin boundaries, group scales
+and outliers; they can be coherent across tokens rather than averaging away.
+The test suite includes this constant-group counterexample.
+
 [`../../experiments/approximation_certificates.py`](../../experiments/approximation_certificates.py)
 implements and tests these checks:
 

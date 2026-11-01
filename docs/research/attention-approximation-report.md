@@ -278,6 +278,14 @@ bound. The triangle bound remains valid, but it throws away cancellation and
 component geometry; the directional certificate is the more informative local
 diagnostic when both components are available.
 
+This must not be read as independent random noise. Quantisation is a deterministic
+map of the input and its group scale. In the absmax E2M1/E4M3 codec used here, a
+group with identical values maps exactly to the top codebook point (up to
+float32 round-off), so the residual is zero; with varied values the residual is
+structured by bin boundaries, scales and outliers and can be coherent across
+tokens. The near-orthogonality observed here is a property of the tested data and
+codec, not an assumption about semantic directions.
+
 This validates the local error decomposition. It does not show that FP4 is
 acceptable after quantization-aware training.
 
