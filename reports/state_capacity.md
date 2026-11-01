@@ -1,8 +1,8 @@
-# Associative-recall capacity of a fixed-size delta-rule state
+# Associative-recall capacity of a fixed-size decayed additive state
 
-*Generated 2026-11-01T13:23:16Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
+*Generated 2026-11-01T16:24:24Z by `reporting.py` on Darwin arm64 (torch 2.14.1, cuda=False, triton=False).*
 
-No training involved: random key/value vectors are written through the exact delta-rule recurrence (keys L2-normalised, beta=0.99, decay=0.99) and read back with the same keys. `retrieval_cosine` is the mean cosine fidelity between the retrieved and the true value; the state holds `d_state * d_value` floats, so the curve is really about *associations per unit of state* -- the quantity a hybrid trades against exact-attention layers. The error decomposition reports whether a miss changes magnitude or value direction; it is descriptive, not a model-level bound.
+No training involved: random key/value vectors are written through a decayed additive recurrence (keys L2-normalised, beta=0.99, decay=0.99) and read back with the same keys. `retrieval_cosine` is the mean cosine fidelity between the retrieved and the true value; the state holds `d_state * d_value` floats, so the curve is really about *associations per unit of state* -- the quantity a hybrid trades against exact-attention layers. This is not the delta-rule erase used by GDN/KDA. At low load the retrieval error is mostly orthogonal cross-talk; at high load the retrieved value coefficient shrinks and the error develops a parallel component. The direction columns report whether a miss changes magnitude or value direction; they are descriptive, not a model-level bound.
 
 | associations | d_state | state_floats | retrieval_cosine | retrieval_error_rel_l2 | error_cosine_to_value | parallel_error_fraction | orthogonal_error_fraction | state_norm |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |

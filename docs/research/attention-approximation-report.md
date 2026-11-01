@@ -366,6 +366,14 @@ Performer and Linformer are assessed only at the output level because they do no
 expose a causal sparse support. These are descriptive diagnostics, not one common
 certificate. See [directional-lens.md](directional-lens.md).
 
+For the fixed-state probe, write the retrieved vector as
+`r = α v_true + u`, with `u` approximately orthogonal to `v_true`. Then
+`r-v_true = (α−1)v_true+u`. At low load `α≈1` and the error is mostly
+cross-talk; at high load key collisions and finite state rank reduce `α`, so
+the parallel term dominates. The tested implementation is a decayed additive
+state, not GDN/KDA's delta-rule erase, so the result must not be generalized to
+those update rules without a separate experiment.
+
 ## 5. Interpretation
 
 The evidence supports a conditional conclusion:

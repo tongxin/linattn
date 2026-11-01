@@ -73,7 +73,18 @@ components instead of only a total norm.
 
 At low associative load, state retrieval errors were almost entirely orthogonal
 to the value direction. At high load, the error acquired an increasing parallel
-component:
+component. The mechanism is visible in the decomposition
+
+```text
+retrieved = α · v_true + u,     u approximately orthogonal to v_true
+error = (α−1) v_true + u
+```
+
+The parallel error fraction is proportional to `|α−1|`; the orthogonal fraction
+comes from the interference `u`. At low load, cross-key interference is small
+and random-like, while `α` remains close to one. At high load, the fixed state
+saturates: keys collide, the surviving self coefficient `α` shrinks, and
+`(α−1)v_true` dominates the error. The measured components are:
 
 | associations | d_state | orthogonal fraction | parallel fraction | retrieval cosine |
 | ---: | ---: | ---: | ---: | ---: |
@@ -86,6 +97,11 @@ This is a different mechanism from sparse omission: as a fixed state saturates,
 the recovery failure increasingly looks like a magnitude/parallel loss, not only
 a rotation. The direction lens therefore reveals capacity saturation rather than
 just retrieval error.
+
+The current experiment is a **decayed additive state**, not the full delta-rule
+erase used by GDN/DeltaNet/KDA. Its capacity curve establishes the direction
+mechanism for this surrogate; a GDN/KDA-specific claim needs the corresponding
+erase recurrence.
 
 ### Learned selectors
 

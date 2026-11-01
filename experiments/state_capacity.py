@@ -1,4 +1,4 @@
-"""How many associations can a fixed-size state actually hold?
+"""How many associations can a decayed additive state actually hold?
 
 The claim in the survey is that compressed state cannot do exact recall, and that
 hybrids keep a few attention layers precisely to buy retrieval back.  Training a
@@ -6,14 +6,17 @@ small MQAR model does *not* demonstrate that: at the scale a laptop can train, e
 architecture we tried solves the task (see ``reports/hybrid_recall.md``).  This
 experiment isolates the capacity question with no training at all:
 
-1. write ``N`` random key->value associations into a delta-rule state using the exact
-   recurrence, with keys L2-normalised as every delta-rule model does;
+1. write ``N`` random key->value associations into a decayed additive state using
+   the exact recurrence, with keys L2-normalised as recurrent linear-attention
+   systems do;
 2. read them back with the same keys and measure cosine fidelity against the values;
 3. repeat for several state sizes and association counts.
 
 The result is the capacity curve: fidelity survives while the associations stay
-separable in key space, then collapses.  An attention layer has no such failure mode
-at all -- which is why the frontier hybrids keep them.
+separable in key space, then collapses. An attention layer has no such failure mode
+at all -- which is why the frontier hybrids keep them. This experiment isolates the
+additive-decay mechanism; it is not a measurement of the delta-rule erase used by
+GDN/KDA.
 
 Run::
 
@@ -35,7 +38,7 @@ from linattn.reporting import save_report  # noqa: E402
 
 
 def store_and_query_state(keys: torch.Tensor, values: torch.Tensor, *, beta: float = 0.99, decay: float = 0.99):
-    """Write ``N`` associations with the delta rule, then read them back.
+    """Write ``N`` associations with a decayed additive recurrence, then read them back.
 
     ``keys``: ``(B, N, d_state)``; ``values``: ``(B, N, d_value)``.
     Returns ``(retrieved (B, N, d_value), state_norm)``.
@@ -107,19 +110,23 @@ def main() -> int:
     path = save_report(
         "state_capacity",
         records,
-        title="Associative-recall capacity of a fixed-size delta-rule state",
+        title="Associative-recall capacity of a fixed-size decayed additive state",
         columns=["associations", "d_state", "state_floats", "retrieval_cosine",
                  "retrieval_error_rel_l2", "error_cosine_to_value",
                  "parallel_error_fraction", "orthogonal_error_fraction", "state_norm"],
         notes=(
-            "No training involved: random key/value vectors are written through the exact "
-            "delta-rule recurrence (keys L2-normalised, beta=0.99, decay=0.99) and read "
+            "No training involved: random key/value vectors are written through a "
+            "decayed additive recurrence (keys L2-normalised, beta=0.99, decay=0.99) and read "
             "back with the same keys. `retrieval_cosine` is the mean cosine fidelity "
             "between the retrieved and the true value; the state holds `d_state * "
             "d_value` floats, so the curve is really about *associations per unit of "
-            "state* -- the quantity a hybrid trades against exact-attention layers."
-            " The error decomposition reports whether a miss changes magnitude or "
-            "value direction; it is descriptive, not a model-level bound."
+            "state* -- the quantity a hybrid trades against exact-attention layers. "
+            "This is not the delta-rule erase used by GDN/KDA. At low load the "
+            "retrieval error is mostly orthogonal cross-talk; at high load the "
+            "retrieved value coefficient shrinks and the error develops a parallel "
+            "component. The direction columns report whether a miss changes "
+            "magnitude or value direction; they are descriptive, not a model-level "
+            "bound."
         ),
     )
     print(f"wrote {path}")
