@@ -94,7 +94,7 @@ def selection_bound_rows() -> list[Dict]:
                     "bound_2_delta_vmax": bound,
                     "bound_ratio": err / max(bound, 1e-12),
                     "mean_centroid_cosine": float(cert["centroid_cosine"].mean()),
-                    "centroid_to_vmax": float(
+                    "centroid_error_to_vmax_bound": float(
                         (cert["centroid_error_norm"] / cert["bound"].clamp_min(1e-12)).mean()
                     ),
                     "satisfied": float(err <= bound + 1e-10),
@@ -160,7 +160,7 @@ def quant_rows() -> list[Dict]:
                     "key_error_l2": float(cert["key_error"].norm(dim=-1).mean()),
                     "value_error_l2": float(cert["value_error"].norm(dim=-1).mean()),
                     "component_cosine": float(cert["component_cosine"].mean()),
-                    "directional_to_triangle": float(
+                    "directional_component_to_triangle_bound": float(
                         (
                             cert["directional_component_norm"]
                             / cert["triangle_component_norm"].clamp_min(1e-12)
@@ -195,7 +195,9 @@ def _summary(rows: list[Dict]) -> list[Dict]:
                             "mean_attention_tv": statistics.mean(r["attention_tv"] for r in detail),
                             "max_attention_tv_bound": max(r["attention_tv_bound"] for r in detail),
                             "mean_component_cosine": statistics.mean(r["component_cosine"] for r in detail),
-                            "mean_directional_to_triangle": statistics.mean(r["directional_to_triangle"] for r in detail),
+                            "mean_directional_component_to_triangle_bound": statistics.mean(
+                                r["directional_component_to_triangle_bound"] for r in detail
+                            ),
                             "max_certificate_ratio": max(r["certificate_ratio"] for r in detail),
                             "certificate_satisfied_rate": statistics.mean(
                                 r["certificate_satisfied"] for r in detail
@@ -214,7 +216,9 @@ def _summary(rows: list[Dict]) -> list[Dict]:
                         "mean_reads_per_query": statistics.mean(r["reads_per_query"] for r in subset),
                         "mean_bound_ratio": statistics.mean(r["bound_ratio"] for r in subset),
                         "mean_centroid_cosine": statistics.mean(r["mean_centroid_cosine"] for r in subset),
-                        "mean_centroid_to_vmax": statistics.mean(r["centroid_to_vmax"] for r in subset),
+                        "mean_centroid_error_to_vmax_bound": statistics.mean(
+                            r["centroid_error_to_vmax_bound"] for r in subset
+                        ),
                         "bound_satisfied_rate": statistics.mean(r["satisfied"] for r in subset),
                         "n": len(subset),
                         "max_exact_decomposition_error": max(
@@ -239,9 +243,11 @@ def main() -> int:
         columns=["study", "input", "variant", "setting", "mean_rel_error",
                  "std_rel_error", "mean_selected_mass", "mean_support_ratio_all",
                  "mean_support_ratio_visible", "mean_reads_per_query",
-                 "mean_bound_ratio", "mean_centroid_cosine", "mean_centroid_to_vmax",
+                 "mean_bound_ratio", "mean_centroid_cosine",
+                 "mean_centroid_error_to_vmax_bound",
                  "bound_satisfied_rate", "mean_attention_tv", "max_attention_tv_bound",
-                 "mean_component_cosine", "mean_directional_to_triangle", "max_certificate_ratio",
+                 "mean_component_cosine", "mean_directional_component_to_triangle_bound",
+                 "max_certificate_ratio",
                  "certificate_satisfied_rate", "max_exact_decomposition_error",
                  "max_implementation_parity_error", "mean_error_per_dropped_mass", "n"],
         notes=(
@@ -271,7 +277,16 @@ def main() -> int:
                 f"support_all={r['mean_support_ratio_all']:.4f} "
                 f"support_visible={r['mean_support_ratio_visible']:.4f} "
                 f"reads={r['mean_reads_per_query']:.2f} "
-                f"bound_ratio={r['mean_bound_ratio']:.3f}"
+                f"bound_ratio={r['mean_bound_ratio']:.3f} "
+                f"centroid_cos={r['mean_centroid_cosine']:.4f} "
+                f"centroid_error/old_bound={r['mean_centroid_error_to_vmax_bound']:.3f}"
+            )
+        elif r["study"] == "precision":
+            print(
+                f"{r['study']:<20} {r['input']:<10} {r['variant']:<12} "
+                f"{r['setting']:<16} err={r['mean_rel_error']:.4f} "
+                f"component_cos={r['mean_component_cosine']:.4f} "
+                f"directional/triangle={r['mean_directional_component_to_triangle_bound']:.3f}"
             )
         else:
             print(f"{r['study']:<20} {r['input']:<10} {r['variant']:<12} "
