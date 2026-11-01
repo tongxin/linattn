@@ -7,6 +7,10 @@ def test_sparse_selection_bound_is_satisfied():
     rows = selection_bound_rows()
     assert rows
     assert all(row["satisfied"] == 1.0 for row in rows)
+    assert all(0.0 <= row["selected_mass"] <= 1.0 for row in rows)
+    assert all(0.0 <= row["support_ratio_all"] <= 1.0 for row in rows)
+    assert all(0.0 <= row["support_ratio_visible"] <= 1.0 for row in rows)
+    assert all(row["reads_per_query"] >= 0 for row in rows)
     assert max(row["exact_decomposition_error"] for row in rows) < 1e-12
     assert max(row["implementation_parity"] for row in rows) < 1e-12
 

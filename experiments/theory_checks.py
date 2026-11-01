@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import torch  # noqa: E402
 
 from approximation_certificates import quantized_kv_certificate, sparse_support_certificate  # noqa: E402
-from linattn.core import AttnConfig, dense_attention, repeat_kv  # noqa: E402
+from linattn.core import AttnConfig, causal_mask, dense_attention, repeat_kv  # noqa: E402
 from linattn.harness import make_inputs, structured_inputs  # noqa: E402
 from linattn.kv.quant import QuantSpec, roundtrip  # noqa: E402
 from linattn.metrics import rel_error  # noqa: E402
@@ -68,6 +68,12 @@ def selection_bound_rows() -> list[Dict]:
                 err = float(cert["error_norm"].sum())
                 bound = float(cert["bound"].sum())
                 dropped = float(cert["omitted_mass"].mean())
+                visible = causal_mask(q.shape[-2], k.shape[-2], device=q.device)
+                support_ratio_all = float(support.float().mean())
+                support_ratio_visible = float(
+                    (support.sum(-1).float() / visible.sum(-1).float()).mean()
+                )
+                selected_mass = float((1.0 - cert["omitted_mass"]).mean())
                 exact_identity_error = float(
                     (cert["error"] - cert["exact_omitted"]).abs().max()
                 )
@@ -79,6 +85,10 @@ def selection_bound_rows() -> list[Dict]:
                     "variant": name,
                     "dropped_mass": dropped,
                     "mass_recall": 1.0 - dropped,
+                    "selected_mass": selected_mass,
+                    "support_ratio_all": support_ratio_all,
+                    "support_ratio_visible": support_ratio_visible,
+                    "reads_per_query": float(support.sum(-1).float().mean()),
                     "value_norm_max": float(v_rep.norm(dim=-1).max()),
                     "output_l2_error": err,
                     "bound_2_delta_vmax": bound,
@@ -182,8 +192,13 @@ def _summary(rows: list[Dict]) -> list[Dict]:
                             )})
         else:
             out.append({"study": study, "input": input_kind, "variant": variant,
-                        "setting": "all", "mean_rel_error": statistics.mean(r["output_rel_l2"] for r in subset),
+                        "setting": "all",
+                        "mean_rel_error": statistics.mean(r["output_rel_l2"] for r in subset),
                         "std_rel_error": statistics.pstdev(r["output_rel_l2"] for r in subset),
+                        "mean_selected_mass": statistics.mean(r["selected_mass"] for r in subset),
+                        "mean_support_ratio_all": statistics.mean(r["support_ratio_all"] for r in subset),
+                        "mean_support_ratio_visible": statistics.mean(r["support_ratio_visible"] for r in subset),
+                        "mean_reads_per_query": statistics.mean(r["reads_per_query"] for r in subset),
                         "mean_bound_ratio": statistics.mean(r["bound_ratio"] for r in subset),
                         "bound_satisfied_rate": statistics.mean(r["satisfied"] for r in subset),
                         "n": len(subset),
@@ -207,7 +222,9 @@ def main() -> int:
         summary,
         title="Checks of attention error identities, bounds, feature convergence and KV precision",
         columns=["study", "input", "variant", "setting", "mean_rel_error",
-                 "std_rel_error", "mean_bound_ratio", "bound_satisfied_rate",
+                 "std_rel_error", "mean_selected_mass", "mean_support_ratio_all",
+                 "mean_support_ratio_visible", "mean_reads_per_query",
+                 "mean_bound_ratio", "bound_satisfied_rate",
                  "mean_attention_tv", "max_attention_tv_bound", "max_certificate_ratio",
                  "certificate_satisfied_rate", "max_exact_decomposition_error",
                  "max_implementation_parity_error", "mean_error_per_dropped_mass", "n"],
@@ -215,6 +232,11 @@ def main() -> int:
             "Synthetic CPU validation across multiple seeds. Selection rows check the "
             "exact identity O_ref-O_selected=(1-a)(mu_omitted-mu_selected), selector "
             "implementation parity, and the conservative bound ||error||<=2(1-a)Vmax. "
+            "`mean_selected_mass` is the retained attention probability; `support_"
+            "ratio_all` is the fraction of all sequence positions selected; `support_"
+            "ratio_visible` normalizes by causally visible positions. `mean_rel_error` "
+            "is normalized by the dense output norm, while `mean_bound_ratio` is "
+            "absolute output error divided by the absolute conservative bound. "
             "Precision rows split total error into key-induced and value-induced terms "
             "and check TV(softmax(z),softmax(z+delta))<=tanh(max|delta|). Feature rows "
             "test the expected variance reduction of positive random features. The "
@@ -223,10 +245,19 @@ def main() -> int:
     )
     print(f"wrote {path}")
     for r in summary:
-        print(f"{r['study']:<20} {r['input']:<10} {r['variant']:<12} {r['setting']:<16} "
-              f"err={r['mean_rel_error']:.4f}" + (
-                  f" bound_ratio={r.get('mean_bound_ratio', 0):.3f}" if r["study"] == "selection_bound" else ""
-              ))
+        if r["study"] == "selection_bound":
+            print(
+                f"{r['study']:<20} {r['input']:<10} {r['variant']:<12} "
+                f"err={r['mean_rel_error']:.4f} "
+                f"selected_mass={r['mean_selected_mass']:.4f} "
+                f"support_all={r['mean_support_ratio_all']:.4f} "
+                f"support_visible={r['mean_support_ratio_visible']:.4f} "
+                f"reads={r['mean_reads_per_query']:.2f} "
+                f"bound_ratio={r['mean_bound_ratio']:.3f}"
+            )
+        else:
+            print(f"{r['study']:<20} {r['input']:<10} {r['variant']:<12} "
+                  f"{r['setting']:<16} err={r['mean_rel_error']:.4f}")
     return 0
 
 
