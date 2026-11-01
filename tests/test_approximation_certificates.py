@@ -20,6 +20,10 @@ def test_sparse_decomposition_is_exact_and_bound_holds():
     result = sparse_support_certificate(p, v, support)
     assert torch.allclose(result["error"], result["exact_omitted"], atol=1e-12, rtol=1e-12)
     assert torch.all(result["error_norm"] <= result["bound"] + 1e-10)
+    assert torch.allclose(result["error_norm"], result["centroid_error_norm"], atol=1e-12)
+    assert torch.all(result["centroid_error_norm"] <= result["bound"] + 1e-10)
+    assert torch.all(result["centroid_cosine"] >= -1.0 - 1e-6)
+    assert torch.all(result["centroid_cosine"] <= 1.0 + 1e-6)
     assert torch.allclose(result["attention_tv"], result["omitted_mass"], atol=1e-12)
 
 
@@ -50,6 +54,14 @@ def test_quantized_key_tv_bound_and_error_decomposition():
     assert torch.allclose(
         result["total_error"], result["key_error"] + result["value_error"], atol=1e-6
     )
+    assert torch.allclose(
+        result["directional_component_norm"],
+        result["total_error"].norm(dim=-1),
+        atol=1e-5,
+    )
+    assert torch.all(result["directional_component_norm"] <= result["triangle_component_norm"] + 1e-5)
+    assert torch.all(result["component_cosine"] >= -1.0 - 1e-5)
+    assert torch.all(result["component_cosine"] <= 1.0 + 1e-5)
     assert torch.all(result["total_error"].norm(dim=-1) <= result["total_bound"] + 1e-5)
 
 

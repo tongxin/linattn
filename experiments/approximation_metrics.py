@@ -74,9 +74,18 @@ def attention_operator_metrics(
     *,
     k: int = 8,
 ) -> Dict[str, float]:
+    error = o_ref - o_hat
     return {
         "operator_rel_l2": relative_l2(o_ref, o_hat),
         "operator_cosine_distance": cosine_distance(o_ref, o_hat),
+        "error_cosine_to_reference": float(
+            torch.dot(_flat(error), _flat(o_ref))
+            / (_flat(error).norm() * _flat(o_ref).norm()).clamp_min(1e-12)
+        ),
+        "error_cosine_to_estimate": float(
+            torch.dot(_flat(error), _flat(o_hat))
+            / (_flat(error).norm() * _flat(o_hat).norm()).clamp_min(1e-12)
+        ),
         "attention_tv": total_variation(p_ref, p_hat),
         "attention_js": jensen_shannon(p_ref, p_hat),
         "attention_hellinger": hellinger(p_ref, p_hat),

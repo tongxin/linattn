@@ -126,9 +126,41 @@ O_S     = mu_S
 O-O_S   = (1-a)(mu_D-mu_S).
 ```
 
-The last line is an exact identity. It is stronger than the commonly reported
-`2(1-a)V_max` bound because it exposes the direction and magnitude of the
-omitted value centroid.
+The last line is an exact identity. Define
+
+```text
+r_S = ||mu_S||, r_D = ||mu_D||,
+c   = cos(mu_S, mu_D).
+```
+
+Then the centroid certificate is
+
+```text
+||mu_D - mu_S||² = r_D² + r_S² - 2 r_D r_S c
+||O - O_S||₂   = (1-a) ||mu_D - mu_S||₂.
+```
+
+When the selected and omitted centroids have similar direction (`c` near +1),
+their difference is small even if both are large. When they point oppositely
+(`c` near -1), the error is amplified. If a selector exposes only a lower bound
+`c ≥ c_min`, substituting `c_min` gives a conservative bound. The old
+`2(1-a)V_max` bound is the special case that ignores centroid direction and
+uses only the value norm cap.
+
+It is an audit certificate, not a free online certificate: it needs selected and
+omitted centroid summaries. A deployed selector can use it only when those
+summaries are available from page metadata or a trusted offline profiler.
+
+Directional output metrics complement the norm:
+
+```text
+cos(O, O_S)       = output direction retained,
+cos(O-O_S, mu_D)  = error aligned with omitted evidence,
+cos(O-O_S, mu_S)  = error opposed to retained evidence.
+```
+
+These angles are descriptive diagnostics; the norm identity above is the
+certificate.
 
 For quantized keys, let `eta=max_j|z_hat_j-z_j|`. The softmax likelihood ratio is
 bounded by `exp(2 eta)`, yielding
@@ -141,12 +173,25 @@ Quantized values add a separate weighted perturbation. Reporting the key- and
 value-induced output vectors separately prevents a low total error from hiding
 two larger canceling errors.
 
+For quantization, write the key-induced error as `e_K` and the value-induced
+error as `e_V`. The exact combined norm is
+
+```text
+||e_K + e_V||² = ||e_K||² + ||e_V||² + 2 cos(e_K,e_V) ||e_K|| ||e_V||.
+```
+
+The triangle bound `||e_K||+||e_V||` is valid but ignores cancellation; the
+cosine-aware expression is exact when both component vectors are available.
+This is the same directional phenomenon as the sparse centroid certificate,
+and it should be reported for precision experiments.
+
 [`../../experiments/approximation_certificates.py`](../../experiments/approximation_certificates.py)
 implements and tests these checks:
 
 - For hard sparse support, the omitted contribution is decomposed exactly as
-  `(1-a)(μ_omitted-μ_selected)`, where `a` is retained mass. The conservative
-  norm bound `2(1-a)V_max` is tested separately.
+  `(1-a)(μ_omitted-μ_selected)`, where `a` is retained mass. The centroid norm,
+  cosine, directional output metrics and conservative `2(1-a)V_max` bound are
+  tested separately.
 - For KV quantisation, key-induced and value-induced output errors are reported
   separately, with a softmax logit-perturbation bound `TV ≤ tanh(η)`.
 - For distribution/value non-identifiability, two attention distributions with

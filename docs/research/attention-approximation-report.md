@@ -103,15 +103,26 @@ O - O_S = (1-a) (mu_D - mu_S).
 Therefore
 
 ```text
-||O - O_S||_2 <= (1-a) diam(V) <= 2(1-a) V_max.
+||O - O_S||_2 = (1-a) ||mu_D - mu_S||_2.
 ```
 
-Dropped attention mass matters, but value-centroid separation and value diameter
-matter equally. High mass recall can still fail when the omitted values occupy a
-different useful subspace. COBS and CEDAR reach nearby conclusions from block
-mass and coarse-key/value dispersion respectively (arXiv:2607.09052,
-arXiv:2609.07237); SSA also shows dropped mass controls a sparse-output error
-(arXiv:2511.20102).
+With `r_S=||mu_S||`, `r_D=||mu_D||`, and
+`c=cos(mu_S,mu_D)`, the centroid gap is
+
+```text
+||mu_D - mu_S||_2
+  = sqrt(r_D^2 + r_S^2 - 2 r_D r_S c)
+  <= r_D + r_S <= 2 V_max.
+```
+
+Dropped attention mass matters, but value-centroid separation and direction
+matter equally. Positive centroid cosine means the retained and omitted values
+share a direction and can partially cancel; negative cosine means the omission
+pushes the output away from the retained direction. High mass recall can still
+fail when the omitted values occupy a different useful subspace. COBS and CEDAR
+reach nearby conclusions from block mass and coarse-key/value dispersion
+respectively (arXiv:2607.09052, arXiv:2609.07237); SSA also shows dropped mass
+controls a sparse-output error (arXiv:2511.20102).
 
 ### 2.4 Attention-distribution error does not identify output error
 
@@ -243,6 +254,13 @@ the exact sparse decomposition closes within `1.4e-15`, implementation parity is
 within `2.7e-15`, and the `2(1-a)V_max` bound is never violated. Its realized
 ratio to the bound is `0.131-0.261`, so it is sound but usually loose.
 
+The centroid-aware certificate was tighter in every tested selector/input
+combination: its mean realized ratio was `0.095-0.227`. Selected/omitted centroid
+cosine was close to zero (`-0.023` to `-0.0003`), so most of the improvement came
+from using centroid norms rather than directional cancellation. A positive
+cosine would make the centroid gap even smaller; a negative cosine would enlarge
+it.
+
 For KV round-trips, all sampled rows satisfy the `tanh(eta)` TV bound. FP16 is
 exact; FP8 has smaller attention distribution and output error than FP4:
 
@@ -252,6 +270,13 @@ exact; FP8 has smaller attention distribution and output error than FP4:
 | random | FP4 | 0.0375 | 0.1220 |
 | dispersed | FP8 | 0.0159 | 0.0366 |
 | dispersed | FP4 | 0.0669 | 0.1583 |
+
+The key- and value-induced error vectors were nearly orthogonal in these tests:
+their mean cosine was about `-0.02` to `0.02`. Consequently, the directional
+combination of the two component norms was about `0.70-0.75` of the triangle
+bound. The triangle bound remains valid, but it throws away cancellation and
+component geometry; the directional certificate is the more informative local
+diagnostic when both components are available.
 
 This validates the local error decomposition. It does not show that FP4 is
 acceptable after quantization-aware training.

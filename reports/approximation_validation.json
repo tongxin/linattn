@@ -1,6 +1,6 @@
 {
   "name": "approximation_validation",
-  "generated_utc": "2026-10-22T01:45:57Z",
+  "generated_utc": "2026-11-01T10:15:19Z",
   "environment": {
     "platform": "Darwin arm64",
     "torch": "2.14.1",
@@ -26,6 +26,8 @@
       "reads_per_query_mean": 32.0,
       "support_fraction_mean": null,
       "attention_js_mean": null,
+      "error_cosine_to_reference_mean": null,
+      "error_cosine_to_estimate_mean": null,
       "topk_agreement_mean": null
     },
     {
@@ -40,6 +42,8 @@
       "reads_per_query_mean": 32.0,
       "support_fraction_mean": null,
       "attention_js_mean": null,
+      "error_cosine_to_reference_mean": null,
+      "error_cosine_to_estimate_mean": null,
       "topk_agreement_mean": null
     },
     {
@@ -54,6 +58,8 @@
       "reads_per_query_mean": 47.3125,
       "support_fraction_mean": 0.36962890625,
       "attention_js_mean": 0.06573093930880229,
+      "error_cosine_to_reference_mean": -0.0034451826165119805,
+      "error_cosine_to_estimate_mean": -0.2892375886440277,
       "topk_agreement_mean": 0.8436686197916666
     },
     {
@@ -68,6 +74,8 @@
       "reads_per_query_mean": 47.833333333333336,
       "support_fraction_mean": 0.3736979166666667,
       "attention_js_mean": 0.07543550183375676,
+      "error_cosine_to_reference_mean": 0.2872820397218068,
+      "error_cosine_to_estimate_mean": -0.2627875804901123,
       "topk_agreement_mean": 0.8521321614583334
     },
     {
@@ -82,6 +90,8 @@
       "reads_per_query_mean": 47.0625,
       "support_fraction_mean": 0.36767578125,
       "attention_js_mean": 0.05406937624017397,
+      "error_cosine_to_reference_mean": -0.049486856907606125,
+      "error_cosine_to_estimate_mean": -0.28559550642967224,
       "topk_agreement_mean": 0.890625
     },
     {
@@ -96,6 +106,8 @@
       "reads_per_query_mean": 47.458333333333336,
       "support_fraction_mean": 0.3707682291666667,
       "attention_js_mean": 0.06788140287001927,
+      "error_cosine_to_reference_mean": 0.27786924441655475,
+      "error_cosine_to_estimate_mean": -0.2527364244063695,
       "topk_agreement_mean": 0.8687337239583334
     },
     {
@@ -110,6 +122,8 @@
       "reads_per_query_mean": 32.0,
       "support_fraction_mean": null,
       "attention_js_mean": null,
+      "error_cosine_to_reference_mean": null,
+      "error_cosine_to_estimate_mean": null,
       "topk_agreement_mean": null
     },
     {
@@ -124,6 +138,8 @@
       "reads_per_query_mean": 32.0,
       "support_fraction_mean": null,
       "attention_js_mean": null,
+      "error_cosine_to_reference_mean": null,
+      "error_cosine_to_estimate_mean": null,
       "topk_agreement_mean": null
     },
     {
@@ -138,6 +154,8 @@
       "reads_per_query_mean": 53.395833333333336,
       "support_fraction_mean": 0.4171549479166667,
       "attention_js_mean": 0.03657287607590357,
+      "error_cosine_to_reference_mean": -0.029918716599543888,
+      "error_cosine_to_estimate_mean": -0.21933622161547342,
       "topk_agreement_mean": 0.9213053385416666
     },
     {
@@ -152,6 +170,8 @@
       "reads_per_query_mean": 45.145833333333336,
       "support_fraction_mean": 0.3527018229166667,
       "attention_js_mean": 0.005317204787085454,
+      "error_cosine_to_reference_mean": -0.03362492844462395,
+      "error_cosine_to_estimate_mean": -0.1013367623090744,
       "topk_agreement_mean": 0.97705078125
     },
     {
@@ -166,6 +186,8 @@
       "reads_per_query_mean": 30.916666666666668,
       "support_fraction_mean": 0.24153645833333334,
       "attention_js_mean": 0.1931211700042089,
+      "error_cosine_to_reference_mean": 0.033462593952814736,
+      "error_cosine_to_estimate_mean": -0.6064862807591757,
       "topk_agreement_mean": 0.6051432291666666
     },
     {
@@ -180,6 +202,8 @@
       "reads_per_query_mean": 14.541666666666666,
       "support_fraction_mean": 0.11360677083333333,
       "attention_js_mean": 0.2633362412452698,
+      "error_cosine_to_reference_mean": 0.4441261092821757,
+      "error_cosine_to_estimate_mean": -0.5156452556451162,
       "topk_agreement_mean": 0.4888509114583333
     }
   ]

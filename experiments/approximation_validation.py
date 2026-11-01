@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Dict
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import torch  # noqa: E402
 
@@ -115,6 +116,14 @@ def main() -> int:
                     statistics.mean(r["distribution_attention_js"] for r in subset)
                     if "distribution_attention_js" in subset[0] else None
                 ),
+                "error_cosine_to_reference_mean": (
+                    statistics.mean(r["distribution_error_cosine_to_reference"] for r in subset)
+                    if "distribution_error_cosine_to_reference" in subset[0] else None
+                ),
+                "error_cosine_to_estimate_mean": (
+                    statistics.mean(r["distribution_error_cosine_to_estimate"] for r in subset)
+                    if "distribution_error_cosine_to_estimate" in subset[0] else None
+                ),
                 "topk_agreement_mean": (
                     statistics.mean(r["distribution_topk_agreement"] for r in subset)
                     if "distribution_topk_agreement" in subset[0] else None
@@ -127,6 +136,7 @@ def main() -> int:
         columns=["variant", "input", "reference_mode", "n_seeds", "output_rel_l2_mean",
                  "output_rel_l2_std", "output_cosine_distance_mean", "max_abs_error_mean",
                  "reads_per_query_mean", "support_fraction_mean", "attention_js_mean",
+                 "error_cosine_to_reference_mean", "error_cosine_to_estimate_mean",
                  "topk_agreement_mean"],
         notes=(
             "T=128, H=4, H_kv=2, d=32, four 16-token blocks, 32-token token budget. "

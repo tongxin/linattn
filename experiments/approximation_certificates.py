@@ -17,6 +17,11 @@ from typing import Dict, Optional
 import torch
 
 
+def _safe_cosine(a: torch.Tensor, b: torch.Tensor, *, eps: float = 1e-12) -> torch.Tensor:
+    denom = a.norm(dim=-1) * b.norm(dim=-1)
+    return (a * b).sum(-1) / denom.clamp_min(eps)
+
+
 def _as_last_dim(x: torch.Tensor) -> torch.Tensor:
     return x.float().reshape(-1, x.shape[-1])
 
@@ -89,17 +94,35 @@ def sparse_support_certificate(
     value_max = vv.float().norm(dim=-1).amax(-1).expand(p.shape[:-1])
     bound = 2.0 * omitted_mass * value_max
     error_norm = error.norm(dim=-1)
+    selected_norm = selected_mean.norm(dim=-1)
+    omitted_norm = omitted_mean.norm(dim=-1)
+    centroid_cosine = _safe_cosine(selected_mean, omitted_mean)
+    centroid_gap_norm = (omitted_mean - selected_mean).norm(dim=-1)
+    centroid_error = omitted_mass * centroid_gap_norm
+    # This is the exact norm of the omitted contribution expressed through the
+    # two centroids. It is tighter than the diameter bound and exposes whether
+    # the omitted and selected value directions reinforce or cancel.
+    output_cosine = _safe_cosine(out_ref, out_selected)
     return {
         "retained_mass": retained,
         "omitted_mass": omitted_mass,
         "out_ref": out_ref,
         "out_selected": out_selected,
         "exact_omitted": exact_omitted,
+        "selected_mean": selected_mean,
+        "omitted_mean": omitted_mean,
+        "selected_norm": selected_norm,
+        "omitted_norm": omitted_norm,
+        "centroid_cosine": centroid_cosine,
+        "centroid_gap_norm": centroid_gap_norm,
+        "centroid_error_norm": centroid_error,
         "error": error,
         "error_norm": error_norm,
         "relative_error": relative_l2(out_ref, out_selected),
         "value_max": value_max,
         "bound": bound,
+        "centroid_bound_ratio": error_norm / centroid_error.clamp_min(eps),
+        "output_cosine": output_cosine,
         "bound_ratio": error_norm / bound.clamp_min(eps),
         "attention_tv": omitted_mass,
     }
@@ -152,6 +175,14 @@ def quantized_kv_certificate(
     total_error = out_quant - out_ref
     key_bound = 2.0 * tv_bound * value_max.unsqueeze(-1)
     value_bound = value_error.unsqueeze(-1).expand_as(key_bound)
+    key_norm = key_error.norm(dim=-1)
+    value_norm = value_error_vector.norm(dim=-1)
+    component_cosine = _safe_cosine(key_error, value_error_vector)
+    directional_component_norm = torch.sqrt(
+        key_norm.square() + value_norm.square()
+        + 2.0 * component_cosine * key_norm * value_norm
+    )
+    triangle_component_norm = key_norm + value_norm
     return {
         "attention_tv": tv,
         "attention_tv_bound": tv_bound,
@@ -159,6 +190,11 @@ def quantized_kv_certificate(
         "key_error": key_error,
         "value_error": value_error_vector,
         "total_error": total_error,
+        "key_error_norm": key_norm,
+        "value_error_norm": value_norm,
+        "component_cosine": component_cosine,
+        "directional_component_norm": directional_component_norm,
+        "triangle_component_norm": triangle_component_norm,
         "key_bound": key_bound,
         "value_bound": value_bound,
         "total_bound": key_bound + value_bound,

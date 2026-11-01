@@ -93,6 +93,10 @@ def selection_bound_rows() -> list[Dict]:
                     "output_l2_error": err,
                     "bound_2_delta_vmax": bound,
                     "bound_ratio": err / max(bound, 1e-12),
+                    "mean_centroid_cosine": float(cert["centroid_cosine"].mean()),
+                    "centroid_to_vmax": float(
+                        (cert["centroid_error_norm"] / cert["bound"].clamp_min(1e-12)).mean()
+                    ),
                     "satisfied": float(err <= bound + 1e-10),
                     "output_rel_l2": rel_error(out, o_ref),
                     "exact_decomposition_error": exact_identity_error,
@@ -155,6 +159,13 @@ def quant_rows() -> list[Dict]:
                     "attention_tv_bound": float(cert["attention_tv_bound"].mean()),
                     "key_error_l2": float(cert["key_error"].norm(dim=-1).mean()),
                     "value_error_l2": float(cert["value_error"].norm(dim=-1).mean()),
+                    "component_cosine": float(cert["component_cosine"].mean()),
+                    "directional_to_triangle": float(
+                        (
+                            cert["directional_component_norm"]
+                            / cert["triangle_component_norm"].clamp_min(1e-12)
+                        ).mean()
+                    ),
                     "certificate_ratio": float((total / bound.clamp_min(1e-12)).mean()),
                     "certificate_satisfied": float((total <= bound + 1e-8).float().mean()),
                     "exact_decomposition_error": float(
@@ -183,6 +194,8 @@ def _summary(rows: list[Dict]) -> list[Dict]:
                             "std_rel_error": statistics.pstdev(vals), "n": len(vals),
                             "mean_attention_tv": statistics.mean(r["attention_tv"] for r in detail),
                             "max_attention_tv_bound": max(r["attention_tv_bound"] for r in detail),
+                            "mean_component_cosine": statistics.mean(r["component_cosine"] for r in detail),
+                            "mean_directional_to_triangle": statistics.mean(r["directional_to_triangle"] for r in detail),
                             "max_certificate_ratio": max(r["certificate_ratio"] for r in detail),
                             "certificate_satisfied_rate": statistics.mean(
                                 r["certificate_satisfied"] for r in detail
@@ -200,6 +213,8 @@ def _summary(rows: list[Dict]) -> list[Dict]:
                         "mean_support_ratio_visible": statistics.mean(r["support_ratio_visible"] for r in subset),
                         "mean_reads_per_query": statistics.mean(r["reads_per_query"] for r in subset),
                         "mean_bound_ratio": statistics.mean(r["bound_ratio"] for r in subset),
+                        "mean_centroid_cosine": statistics.mean(r["mean_centroid_cosine"] for r in subset),
+                        "mean_centroid_to_vmax": statistics.mean(r["centroid_to_vmax"] for r in subset),
                         "bound_satisfied_rate": statistics.mean(r["satisfied"] for r in subset),
                         "n": len(subset),
                         "max_exact_decomposition_error": max(
@@ -224,14 +239,17 @@ def main() -> int:
         columns=["study", "input", "variant", "setting", "mean_rel_error",
                  "std_rel_error", "mean_selected_mass", "mean_support_ratio_all",
                  "mean_support_ratio_visible", "mean_reads_per_query",
-                 "mean_bound_ratio", "bound_satisfied_rate",
-                 "mean_attention_tv", "max_attention_tv_bound", "max_certificate_ratio",
+                 "mean_bound_ratio", "mean_centroid_cosine", "mean_centroid_to_vmax",
+                 "bound_satisfied_rate", "mean_attention_tv", "max_attention_tv_bound",
+                 "mean_component_cosine", "mean_directional_to_triangle", "max_certificate_ratio",
                  "certificate_satisfied_rate", "max_exact_decomposition_error",
                  "max_implementation_parity_error", "mean_error_per_dropped_mass", "n"],
         notes=(
             "Synthetic CPU validation across multiple seeds. Selection rows check the "
             "exact identity O_ref-O_selected=(1-a)(mu_omitted-mu_selected), selector "
-            "implementation parity, and the conservative bound ||error||<=2(1-a)Vmax. "
+            "implementation parity, the centroid gap "
+            "||error||=(1-a)||mu_omitted-mu_selected||, and the conservative "
+            "||error||<=2(1-a)Vmax bound. "
             "`mean_selected_mass` is the retained attention probability; `support_"
             "ratio_all` is the fraction of all sequence positions selected; `support_"
             "ratio_visible` normalizes by causally visible positions. `mean_rel_error` "
