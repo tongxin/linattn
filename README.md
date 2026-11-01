@@ -125,6 +125,9 @@ specified in [next-round-plan.md](docs/research/next-round-plan.md).
 CSA2 sensitivity remains a separate deferred application, not part of this
 general framework.
 
+A compact record of the recurring questions and side clarifications is kept in
+[discussion-log.md](docs/research/discussion-log.md).
+
 ## Running the benchmarks after cloning
 
 The only hard dependency is **PyTorch**; there is nothing to compile and no GPU or

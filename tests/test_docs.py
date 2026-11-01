@@ -44,6 +44,7 @@ def test_approximation_research_docs_exist():
         "attention-evaluation-protocol.md",
         "next-round-plan.md",
         "trained-checkpoint-audit.md",
+        "discussion-log.md",
         "error-propagation.md",
     ):
         assert (DOCS / "research" / name).exists(), f"missing docs/research/{name}"
